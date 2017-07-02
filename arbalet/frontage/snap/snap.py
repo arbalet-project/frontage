@@ -8,33 +8,31 @@
 
 from flask import Flask
 from flask_cors import CORS
+from ..hardware import Frontage
 
 
 class SnapServer(object):
     def __init__(self, port):
         super(SnapServer, self).__init__()
         self.flask = Flask(__name__)
+        self.frontage = Frontage('127.0.0.1', 33460)
+
         CORS(self.flask)
         self.port = int(port)
         self.route()
 
     def route(self):
-        self.flask.route('/set_pixel/<h>/<w>/<color>', methods=['GET'])(self.set_pixel)
         self.flask.route('/set_pixel_rgb/<h>/<w>/<r>/<g>/<b>', methods=['GET'])(self.set_pixel_rgb)
         self.flask.route('/erase_all', methods=['GET'])(self.erase_all)
 
-    def set_pixel(self, h, w, color):
-        self.model.set_pixel(int(h) - 1, int(w) - 1, color)
-        return ''
-
     def erase_all(self):
-        self.model.set_all('black')
+        self.frontage.set_all(0, 0, 0)
         return ''
 
     def set_pixel_rgb(self, h, w, r, g, b):
         def scale(v):
-            return min(1., max(0., float(v)/255.))
-        self.model.set_pixel(int(h) - 1, int(w) - 1, map(scale, [r, g, b]))
+            return min(255, max(0, int(v)))
+        self.frontage[int(h) - 1, int(w) - 1] = map(scale, [r, g, b])
         return ''
 
     def run(self):

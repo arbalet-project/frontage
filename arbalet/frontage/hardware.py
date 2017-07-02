@@ -20,4 +20,30 @@ class Frontage(object):
     def map(self, row, column):
         return self.mapping[row][column]
 
+    def __getitem__(self, row):
+        with self.model:
+            return self.model[row]
 
+    def __setitem__(self, key, value):
+        if not isinstance(key, tuple) or len(key) != 2:
+            raise KeyError("Please access with two indexes that way: Frontage[row, column]")
+
+        if not isinstance(value, tuple) or len(value) != 3:
+            raise ValueError("Assignment only supports 3-tuples: Frontage[row, column] = red, green, blue")
+
+        row, column = key
+        red, green, blue = value
+        url = self.url + "set/{}/{}/{}/{}".format(self.map(row, column), red, green, blue)
+
+        with self.model:
+            requests.get(url, timeout=self.timeout)
+            self.model[row, column] = value
+
+    def set_all(self, red, green, blue):
+        url = self.url + "set/all/{}/{}/{}".format(red, green, blue)
+
+        with self.model:
+            requests.get(url, timeout=self.timeout)
+            for row in range(self.model.height):
+                for column in range(self.model.width):
+                    self.model[row, column] = red, green, blue
