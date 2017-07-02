@@ -15,7 +15,7 @@ class SnapServer(object):
     def __init__(self, port):
         super(SnapServer, self).__init__()
         self.flask = Flask(__name__)
-        self.frontage = Frontage('127.0.0.1', 33460)
+        self.frontage = Frontage(33460)  # Blocking until the hardware client connects
 
         CORS(self.flask)
         self.port = int(port)
@@ -32,7 +32,7 @@ class SnapServer(object):
     def set_pixel_rgb(self, h, w, r, g, b):
         def scale(v):
             return min(255, max(0, int(v)))
-        self.frontage[int(h) - 1, int(w) - 1] = map(scale, [r, g, b])
+        self.frontage[int(h) - 1, int(w) - 1] = map(scale, (r, g, b))
         return ''
 
     def run(self):
