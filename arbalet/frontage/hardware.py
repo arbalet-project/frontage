@@ -1,5 +1,9 @@
+from __future__ import print_function 
+
 from .model import Model
 from socket import *
+from struct import pack
+import sys
 
 __all__ = ['Frontage']
 
@@ -7,7 +11,6 @@ __all__ = ['Frontage']
 class Frontage(object):
     def __init__(self, hardware_port):
         self.model = Model(4, 19)
-        self.command_width = 4096
 
         # row, column -> DMX address
         self.mapping = [[59, 60, 61, 62, 63, 64, 65,  0,  0,  0,  0,  0, 66, 67, 68, 69, 70, 71, 72],
@@ -17,14 +20,13 @@ class Frontage(object):
 
         # Use asyncio or twisted?
         self.hardware_server = socket(AF_INET, SOCK_STREAM)
-        self.hardware_server.settimeout(10.0)  # Non-blocking requests
+        #self.hardware_server.settimeout(10.0)  # Non-blocking requests
         self.hardware_server.bind(("127.0.0.1", hardware_port))
-        self.hardware_server.listen(5)
+        self.hardware_server.listen(1)
 
-
-        print("Waiting Hardware TCP client connection...")
-        client, address = self.hardware_server.accept()
-        print("Client {}:{} connected!".format(address[0], address[1]))
+        print("Waiting Hardware TCP client connection...", file=sys.stderr)
+        self.client, self.address = self.hardware_server.accept()
+        print("Client {}:{} connected!".format(self.address[0], self.address[1]), file=sys.stderr)
 
     def map(self, row, column):
         return self.mapping[row][column]
@@ -42,17 +44,17 @@ class Frontage(object):
 
         row, column = key
         red, green, blue = value
-        command = b"set/{}/{}/{}/{}".format(self.map(row, column), red, green, blue).ljust(self.command_width, '\0')
+        command = pack("!BBBB", self.map(row, column), red, green, blue)
 
         with self.model:
-            self.hardware_server.send(command)
+            self.client.send(command)
             self.model[row, column] = value
 
     def set_all(self, red, green, blue):
-        command = b"set/all/{}/{}/{}".format(red, green, blue).ljust(self.command_width, '\0')
+        command = pack("!BBBB", 255, red, green, blue)
 
         with self.model:
-            self.hardware_server.send(command)
+            self.client.send(command)
             for row in range(self.model.height):
                 for column in range(self.model.width):
                     self.model[row, column] = red, green, blue
