@@ -1,6 +1,7 @@
 from __future__ import print_function 
 
 from .model import Model
+from .simulator import Simulator
 from socket import *
 from struct import pack
 import sys
@@ -9,7 +10,7 @@ __all__ = ['Frontage']
 
 
 class Frontage(object):
-    def __init__(self, hardware_port):
+    def __init__(self, hardware_port, hardware=True, simulator=True):
         self.model = Model(4, 19)
 
         # row, column -> DMX address
@@ -24,9 +25,14 @@ class Frontage(object):
         self.hardware_server.bind(("127.0.0.1", hardware_port))
         self.hardware_server.listen(1)
 
-        print("Waiting Hardware TCP client connection...", file=sys.stderr)
-        self.client, self.address = self.hardware_server.accept()
-        print("Client {}:{} connected!".format(self.address[0], self.address[1]), file=sys.stderr)
+        self.simulator = Simulator(self.model) if simulator else None
+
+        if hardware:
+            print("Waiting Hardware TCP client connection...", file=sys.stderr)
+            self.client, self.address = self.hardware_server.accept()
+            print("Client {}:{} connected!".format(self.address[0], self.address[1]), file=sys.stderr)
+        else:
+            self.client, self.address = None, None
 
     def map(self, row, column):
         return self.mapping[row][column]
@@ -47,14 +53,20 @@ class Frontage(object):
         command = pack("!BBBB", self.map(row, column), red, green, blue)
 
         with self.model:
-            self.client.send(command)
+            if self.client is not None:
+                self.client.send(command)
             self.model[row, column] = value
+            if self.simulator is not None:
+                self.simulator.update()
 
     def set_all(self, red, green, blue):
         command = pack("!BBBB", 255, red, green, blue)
 
         with self.model:
-            self.client.send(command)
+            if self.client is not None:
+                self.client.send(command)
             for row in range(self.model.height):
                 for column in range(self.model.width):
                     self.model[row, column] = red, green, blue
+            if self.simulator is not None:
+                self.simulator.update()

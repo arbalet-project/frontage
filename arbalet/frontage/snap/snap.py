@@ -8,14 +8,13 @@
 
 from flask import Flask
 from flask_cors import CORS
-from ..hardware import Frontage
+from ..controller import Frontage
 
 
 class SnapServer(object):
-    def __init__(self, port):
-        super(SnapServer, self).__init__()
+    def __init__(self, port, hardware=True, simulator=True):
         self.flask = Flask(__name__)
-        self.frontage = Frontage(33460)  # Blocking until the hardware client connects
+        self.frontage = Frontage(33460, hardware, simulator)  # Blocking until the hardware client connects
 
         CORS(self.flask)
         self.port = int(port)
