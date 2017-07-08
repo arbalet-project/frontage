@@ -25,7 +25,11 @@ class Frontage(object):
         self.hardware_server.bind(("127.0.0.1", hardware_port))
         self.hardware_server.listen(1)
 
-        self.simulator = Simulator(self.model) if simulator else None
+        if simulator:
+            self.simulator = Simulator(self.model)
+            self.simulator.start()
+        else:
+            self.simulator = None
 
         if hardware:
             print("Waiting Hardware TCP client connection...", file=sys.stderr)

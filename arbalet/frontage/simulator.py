@@ -10,15 +10,19 @@
 from os.path import dirname, join
 #from ...resources.img import __file__ as img_resources_path
 from os import environ
-from pygame import color, display, draw, Rect, error, QUIT
+from pygame import color, event, display, draw, Rect, error, QUIT
+from pygame.time import Clock
 from pygame.image import load_extended
+from threading import Thread
 
 __all__ = ['Simulator']
 
 
-class Simulator(object):
+class Simulator(Thread):
     def __init__(self, model):
+        super(Simulator, self).__init__()
         factor_sim = 40   # TODO autosize
+        self.clock = Clock()
         self.model = model
         self.sim_width = self.model.width*factor_sim
         self.sim_height = self.model.height*factor_sim
@@ -26,6 +30,7 @@ class Simulator(object):
         self.cell_height = factor_sim
         self.cell_width = factor_sim
         self.display = None
+        self.running = False
 
         # Create the Window, load its title, icon
         environ['SDL_VIDEO_CENTERED'] = '1'
@@ -39,6 +44,17 @@ class Simulator(object):
         #else:
         #    display.set_icon(self.icon)
         display.set_caption("Arbalet Frontage simulator", "Arbalet")
+
+    def run(self):
+        self.running = True
+        while self.running:
+            for e in event.get():
+                if e.type == QUIT:
+                    self.display.lock()
+                    self.running = False
+                    display.quit()
+                    self.display.unlock()
+            self.clock.tick(20)
 
     def update(self):
         self.display.lock()
@@ -65,5 +81,3 @@ class Simulator(object):
         finally:
             self.display.unlock()
 
-    def close(self):
-        display.quit()
