@@ -15,7 +15,6 @@ from functools import wraps
 
 from ..controller import Frontage
 from webbrowser import open
-from numpy.random import randint
 from threading import RLock
 import sys
 import signal
@@ -23,12 +22,9 @@ import signal
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
-import tornado.gen
 
 import petname
 from time import time
-from time import sleep
-import datetime
 import logging
 import socket
 
@@ -69,11 +65,13 @@ class SnapServer(object):
         self.lock = RLock()
         CORS(self.flask)
         self.port = int(port)
+        self.loop = None
         self.route()
     
     def signal_handler(self, signal, frame):
         self.frontage.close()
-        sys.exit(0)
+        if self.loop is not None:
+            self.loop.stop()
 
     def route(self):
         self.flask.route('/admin', methods=['GET', 'POST'])(self.render_admin_page)
@@ -127,7 +125,6 @@ class SnapServer(object):
                             c = 0
                             r += 1
         except Exception:
-            raise
             sys.exc_clear()
         return ''  
 
@@ -163,17 +160,9 @@ class SnapServer(object):
     def run(self):
         # open('http://snap.berkeley.edu/run')
         signal.signal(signal.SIGINT, self.signal_handler)
-        try:
-            loop = IOLoop()
-            http_server = HTTPServer(WSGIContainer(self.flask))
-            http_server.listen(self.port)
-            loop.start()
-            
-        except socket.error as serr:
-            # Re raise the socket error if not "[Errno 98] Address already in use"
-            if serr.errno != errno.EADDRINUSE:
-                raise serr
-            else:
-                logger.warning("""The webserver port {} is already used.
-The Snap Server is maybe already run or another software use this port.""".format(self.port))
+        self.loop = IOLoop()
+        http_server = HTTPServer(WSGIContainer(self.flask))
+        http_server.listen(self.port)
+        self.loop.start()
+
 
