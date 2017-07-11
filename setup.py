@@ -13,7 +13,7 @@ setup(
     author_email="contact@arbalet-project.org",
     long_description=open('README.md').read(),
 
-    install_requires= ["zmq", "numpy", "flask", "flask_cors"],
+    install_requires= ["zmq", "numpy", "flask", "flask_cors", "petname"],
     include_package_data=True,
     zip_safe=False,  # contains data files
 
@@ -24,6 +24,9 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
         "Topic :: Games/Entertainment",
+    ],
+
+    data_files=[('arbalet/frontage/snap/templates', ['arbalet/frontage/snap/templates/admin.html']),
     ],
 
     packages=find_packages(),
