@@ -18,6 +18,8 @@ from webbrowser import open
 from numpy.random import randint
 from threading import RLock
 import sys
+import signal
+
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -68,6 +70,10 @@ class SnapServer(object):
         CORS(self.flask)
         self.port = int(port)
         self.route()
+    
+    def signal_handler(self, signal, frame):
+        self.frontage.close()
+        sys.exit(0)
 
     def route(self):
         self.flask.route('/admin', methods=['GET', 'POST'])(self.render_admin_page)
@@ -156,7 +162,7 @@ class SnapServer(object):
 
     def run(self):
         # open('http://snap.berkeley.edu/run')
-
+        signal.signal(signal.SIGINT, self.signal_handler)
         try:
             loop = IOLoop()
             http_server = HTTPServer(WSGIContainer(self.flask))

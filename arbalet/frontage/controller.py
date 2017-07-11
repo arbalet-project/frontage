@@ -74,3 +74,7 @@ class Frontage(object):
                     self.model[row, column] = red, green, blue
             if self.simulator is not None:
                 self.simulator.update()
+
+    def close(self):
+        if self.simulator is not None:
+            self.simulator.running = False

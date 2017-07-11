@@ -50,11 +50,11 @@ class Simulator(Thread):
         while self.running:
             for e in event.get():
                 if e.type == QUIT:
-                    self.display.lock()
                     self.running = False
-                    display.quit()
-                    self.display.unlock()
             self.clock.tick(20)
+        self.display.lock()
+        display.quit()
+        self.display.unlock()
 
     def update(self):
         self.display.lock()
