@@ -20,19 +20,19 @@ class Frontage(Thread):
         self.clock = Clock()
 
         # row, column -> DMX address
-        self.mapping = array([[59, 60, 61, 62, 63, 64, 65,  0,  0,  0,  0,  0, 66, 67, 68, 69, 70, 71, 72],
-                              [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58],
-                              [21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39],
-                              [ 2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]])
+        self.mapping = array([[19, 18, 17, 16, 15, 14, 13, 12, 11, 10,  9,  8,  7,  6,  5,  4,  3, 2,  1],
+                              [38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20],
+                              [57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39],
+                              [71, 70, 69, 68, 67, 66,  0,  0,  0,  0,  0, 65, 64, 63, 62, 61, 60, 59, 58]])
+
 
         self.num_pixels = self.mapping.shape[0] * self.mapping.shape[1]
         # Use asyncio or twisted?
         self.hardware_server = socket(AF_INET, SOCK_STREAM)
         #self.hardware_server.settimeout(10.0)  # Non-blocking requests
-        self.hardware_server.bind(("127.0.0.1", hardware_port))
+        self.hardware_server.bind(("0.0.0.0", hardware_port))
         self.hardware_server.listen(1)
         self.running = False
-        self.needs_update = True
 
         if simulator:
             self.simulator = Simulator(self.model)
@@ -55,34 +55,34 @@ class Frontage(Thread):
     def __setitem__(self, key, value):
         with self.model:
             self.model.__setitem__(key, value)
-            self.needs_update = True
+
+    def set_all(self, r, g, b):
+        for row in range(self.model.height):
+            for col in range(self.model.width):
+                self.model[row, col] = r, g, b
 
     def update(self):
         if self.client is not None:
             with self.model:
-                if self.needs_update:
-                    data_frame = []
-                    with self.model:
-                        for row in range(self.model.height):
-                            for col in range(self.model.width):
-                                led = self.mapping[row, col]
-                                r, g, b = self.model[row, col]
-                                data_frame.append(led)
-                                data_frame.append(r)
-                                data_frame.append(g)
-                                data_frame.append(b)
-                    command = pack("!{}B".format(self.num_pixels * 4), *data_frame)
-                    self.client.send(command)
-                    self.needs_update = False
-
-        if self.simulator is not None:
-            self.running = self.simulator.update()
+                data_frame = []
+                with self.model:
+                    for row in range(self.model.height):
+                        for col in range(self.model.width):
+                            led = self.mapping[row, col]
+                            r, g, b = self.model[row, col]
+                            data_frame.append(led)
+                            data_frame.append(r)
+                            data_frame.append(g)
+                            data_frame.append(b)
+                command = pack("!{}B".format(self.num_pixels * 4), *data_frame)
+                self.client.send(command)
 
     def run(self):
         self.running = True
         try:
             while self.running:
-                self.update()
+                if self.simulator is not None:
+                    self.running = self.simulator.update()
                 self.clock.tick(20)
         finally:
             self.close()
@@ -90,3 +90,6 @@ class Frontage(Thread):
     def close(self):
         if self.simulator is not None:
             self.simulator.close()
+        if self.hardware_server is not None:
+            self.hardware_server.close()
+

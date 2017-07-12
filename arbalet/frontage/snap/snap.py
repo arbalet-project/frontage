@@ -126,6 +126,8 @@ class SnapServer(object):
                             r += 1
         except Exception:
             sys.exc_clear()
+        else:
+            self.frontage.update()
         return ''  
 
     def erase_all(self):
