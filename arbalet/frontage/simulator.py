@@ -11,18 +11,14 @@ from os.path import dirname, join
 #from ...resources.img import __file__ as img_resources_path
 from os import environ
 from pygame import color, event, display, draw, Rect, error, QUIT
-from pygame.time import Clock
 from pygame.image import load_extended
-from threading import Thread
 
 __all__ = ['Simulator']
 
 
-class Simulator(Thread):
+class Simulator(object):
     def __init__(self, model):
-        super(Simulator, self).__init__()
         factor_sim = 40   # TODO autosize
-        self.clock = Clock()
         self.model = model
         self.sim_width = self.model.width*factor_sim
         self.sim_height = self.model.height*factor_sim
@@ -30,13 +26,12 @@ class Simulator(Thread):
         self.cell_height = factor_sim
         self.cell_width = factor_sim
         self.display = None
-        self.running = False
+        self.closed = False
 
         # Create the Window, load its title, icon
         environ['SDL_VIDEO_CENTERED'] = '1'
 
         self.display = display.set_mode((self.sim_width, self.sim_height), 0, 32)
-        self.update()
         #try:
         #    self.icon = load_extended(join(dirname(img_resources_path), 'icon.png'))
         #except error:
@@ -45,39 +40,42 @@ class Simulator(Thread):
         #    display.set_icon(self.icon)
         display.set_caption("Arbalet Frontage simulator", "Arbalet")
 
-    def run(self):
-        self.running = True
-        while self.running:
+    def update(self):
+        if not self.closed:
             for e in event.get():
                 if e.type == QUIT:
-                    self.running = False
-            self.clock.tick(20)
-        self.display.lock()
-        display.quit()
-        self.display.unlock()
+                    return False
+            self.display.lock()
+            try:
+                for w in range(self.model.width):
+                    for h in range(self.model.height):
+                        pixel = self.model[h, w]
+                        self.display.fill(color.Color(int(pixel[0]), int(pixel[1]), int(pixel[2])),
+                                          Rect(w * self.cell_width,
+                                               h * self.cell_height,
+                                               self.cell_width,
+                                               self.cell_height))
 
-    def update(self):
-        self.display.lock()
-        try:
-            for w in range(self.model.width):
+                # Draw vertical lines
+                for w in range(self.model.width):
+                    draw.line(self.display, color.Color(40, 40, 40), (w * self.cell_width, 0),
+                              (w * self.cell_width, self.sim_height), self.border_thickness)
+                # Draw horizontal lines
                 for h in range(self.model.height):
-                    pixel = self.model[h, w]
-                    self.display.fill(color.Color(int(pixel[0]), int(pixel[1]), int(pixel[2])),
-                                      Rect(w * self.cell_width,
-                                           h * self.cell_height,
-                                           self.cell_width,
-                                           self.cell_height))
+                    draw.line(self.display, color.Color(40, 40, 40), (0, h * self.cell_height),
+                              (self.sim_width, h * self.cell_height), self.border_thickness)
 
-            # Draw vertical lines
-            for w in range(self.model.width):
-                draw.line(self.display, color.Color(40, 40, 40), (w * self.cell_width, 0),
-                          (w * self.cell_width, self.sim_height), self.border_thickness)
-            # Draw horizontal lines
-            for h in range(self.model.height):
-                draw.line(self.display, color.Color(40, 40, 40), (0, h * self.cell_height),
-                          (self.sim_width, h * self.cell_height), self.border_thickness)
 
-            display.update()
-        finally:
-            self.display.unlock()
+                display.update()
+            finally:
+                self.display.unlock()
+                return True
 
+    def close(self):
+        if not self.closed:
+            self.display.lock()
+            try:
+                display.quit()
+                self.closed = True
+            finally:
+                self.display.unlock()

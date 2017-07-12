@@ -159,6 +159,7 @@ class SnapServer(object):
 
     def run(self):
         # open('http://snap.berkeley.edu/run')
+        self.frontage.start()
         signal.signal(signal.SIGINT, self.signal_handler)
         self.loop = IOLoop()
         http_server = HTTPServer(WSGIContainer(self.flask))
