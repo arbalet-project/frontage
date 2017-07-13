@@ -18,7 +18,7 @@ body {
   <thead><tr><th>Username</th><th>Active?</th></tr></thead>
   <tbody>
     <tr><td>Turn off</td><td><label> 
-    {% if authorized_nick =="" or authorized_nick == "turnoff" %}
+    {% if authorized_nick|string() == "turnoff" %}
     <input type="radio" name="active_user" data-user-id=turnoff value="active" checked="checked">
     {% else %}
     <input type="radio" name="active_user" data-user-id=turnoff value="active">
@@ -27,7 +27,7 @@ body {
     </td></tr>
   	{% for n in nicknames %}
     	<tr><td>{{ n }}</td><td><label> 
-      {% if n == authorized_nick %}
+      {% if n|string() == authorized_nick|string() %}
     	<input type="radio" name="active_user" data-user-id={{ n }} value="active" checked="checked">
       {% else %}
       <input type="radio" name="active_user" data-user-id={{ n }} value="active">

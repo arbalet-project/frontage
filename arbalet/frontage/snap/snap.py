@@ -60,7 +60,7 @@ class SnapServer(object):
         self.flask = Flask(__name__)
         self.frontage = Frontage(33460, hardware, simulator)  # Blocking until the hardware client connects
         logging.basicConfig(level=logging.DEBUG)
-        self.current_auth_nick = ""
+        self.current_auth_nick = "turnoff"
         self.nicknames = {}
         self.lock = RLock()
         CORS(self.flask)
@@ -87,6 +87,9 @@ class SnapServer(object):
             for k, v in self.nicknames.iteritems():
                 if time() - v < 20:
                     temp_dict[k] = v
+                else:
+                    if k == self.current_auth_nick:
+                        self.current_auth_nick = "turnoff"
             self.nicknames = temp_dict
 
     @requires_auth
