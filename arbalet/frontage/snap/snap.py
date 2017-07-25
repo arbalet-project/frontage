@@ -97,7 +97,6 @@ class SnapServer(object):
         res = render_template('admin.html', nicknames=self.nicknames.keys(), authorized_nick=self.current_auth_nick)
         return res
 
-    @requires_auth
     def authorize(self):
         with self.lock:
             self.current_auth_nick = request.get_data()
@@ -106,7 +105,7 @@ class SnapServer(object):
 
     @staticmethod
     def scale(v):
-        return min(255., max(0., int(v)))
+        return min(255., max(0., float(v)))
 
     def set_rgb_matrix(self):
         try:
