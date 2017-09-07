@@ -67,7 +67,7 @@ class SnapServer(object):
         self.port = int(port)
         self.loop = None
         self.route()
-    
+
     def signal_handler(self, signal, frame):
         self.frontage.close()
         if self.loop is not None:
@@ -130,7 +130,7 @@ class SnapServer(object):
             sys.exc_clear()
         else:
             self.frontage.update()
-        return ''  
+        return ''
 
     def erase_all(self):
         self.frontage.set_all(0, 0, 0)
