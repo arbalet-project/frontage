@@ -1,0 +1,10 @@
+pytz==2016.10
+redis==2.10.5
+celery==4.0.2
+Flask==0.12
+Flask-Cors==3.0.2
+Flask-RESTful==0.3.5
+PyJWT==1.5.0
+docopt
+gunicorn
+flask-swagger
