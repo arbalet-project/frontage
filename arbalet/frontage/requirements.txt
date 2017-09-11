@@ -14,3 +14,4 @@ influxdb
 sympy==1.1
 docopt
 gunicorn
+pika

@@ -1,0 +1,21 @@
+version: '2'
+services:
+  app:
+    build: .
+    volumes:
+      - ./arbalet/frontage:/usr/src/app
+    ports:
+      - 8123:8123
+    command: ["dev"]
+    env_file: .env-dev
+    links:
+      - rabbit:rabbit
+      - redis:redis
+  redis:
+    image: "redis"
+  rabbit:
+    image: "rabbitmq:3-management"
+    hostname: "rabbit"
+    env_file: .env-dev
+    labels:
+      NAME: "rabbit"
