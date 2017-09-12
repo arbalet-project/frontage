@@ -1,4 +1,4 @@
-from __future__ import print_function 
+from __future__ import print_function
 
 from .model import Model
 from .simulator import Simulator
@@ -60,6 +60,9 @@ class Frontage(Thread):
         for row in range(self.model.height):
             for col in range(self.model.width):
                 self.model[row, col] = r, g, b
+
+    def erase_all(self):
+        self.set_all(0, 0, 0)
 
     def update(self):
         if self.client is not None:

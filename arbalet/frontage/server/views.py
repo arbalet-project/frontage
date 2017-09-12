@@ -7,6 +7,8 @@ from server import app
 from flask import request, jsonify, abort
 from flask_restful import reqparse, abort, Api, Resource
 from utils.security import authentication_required
+from utils.red import redis, redis_get
+from scheduler import Scheduler
 
 def flask_log(msg):
     print(msg, file=sys.stderr)
@@ -67,6 +69,9 @@ class AppListView(Resource):
         tags = []
         return tags
 
+########### PUBLIC ###########
 
-api.add_resource(AppListView, ADMIN_BASE+'/apps')
-api.add_resource(AppRuningView, ADMIN_BASE+'/apps/running')
+@app.route('/frontage/status', methods=['GET'])
+def status():
+    state = True if (redis_get(Scheduler.KEY_USABLE, False) == 'True') else False
+    return jsonify(is_usable=state)
