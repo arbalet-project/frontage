@@ -13,7 +13,7 @@ import sys
 
 from server import app
 from docopt import docopt
-
+from tasks.tasks import start_scheduler
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='0.1')

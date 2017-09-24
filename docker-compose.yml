@@ -11,6 +11,16 @@ services:
     links:
       - rabbit:rabbit
       - redis:redis
+  worker:
+    build: .
+    volumes:
+      - ./arbalet/frontage:/usr/src/app
+    command: ["worker"]
+    env_file: .env-dev
+    links:
+      - rabbit:rabbit
+      - redis:redis
+    command: ["worker"]
   redis:
     image: "redis"
   rabbit:

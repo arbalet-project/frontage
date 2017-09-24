@@ -1,7 +1,7 @@
 from __future__ import print_function
 
-from .model import Model
-from .simulator import Simulator
+from model import Model
+from simulator import Simulator
 from threading import Thread
 from socket import *
 from struct import pack
