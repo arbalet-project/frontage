@@ -61,7 +61,7 @@ parser.add_argument('comment')
 class AppRuningView(Resource):
     @authentication_required
     def get(self):
-        return []
+        return jsonify( Scheduler.get_current_app() )
 
     @authentication_required
     def delete(self):
@@ -93,5 +93,5 @@ def next_date():
     return jsonify(is_usable=state)
 
 
-# api.add_resource(AppRuningView, '/api/views')
+api.add_resource(AppRuningView, '/b/admin/apps/running')
 api.add_resource(AppListView, '/b/admin/apps')
