@@ -1,13 +1,21 @@
 from __future__ import absolute_import
 
 from .celery import app
-from scheduler import Scheduler
+from scheduler_state import SchedulerState
+from apps.flags import Flags
+
+def TestApp():
+    print('[TASK] Running a test app. Im doing nothing at all')
 
 @app.task
-def start_scheduler():
-    scheduler = Scheduler(hardware=False, simulator=False)
-    print('---Started')
-    scheduler.run()
-    print('---Ended')
+def start_fap(fap_name=None, user_name='Anonymous'):
+    SchedulerState.set_app_started_at()
+    if fap_name:
+    	try:
+        	globals()[fap_name]()
+        except Exception, e:
+        	print(str(e))
+
+
 
 

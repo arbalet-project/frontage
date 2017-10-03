@@ -2,13 +2,13 @@ from __future__ import absolute_import
 
 import json
 import datetime
-
+import os
 
 from celery import Celery
-from scheduler import Scheduler
+from scheduler_state import SchedulerState
 from utils.red import redis, redis_get
 
-app = Celery('tasks', backend='redis://redis', broker='redis://redis', include=['tasks.tasks', 'tasks'])
+app = Celery('tasks', backend='redis://'+os.environ['REDIS_HOST'], broker='redis://'+os.environ['REDIS_HOST'], include=['tasks.tasks', 'tasks'])
 
 SUNRISE = ''
 
@@ -23,17 +23,17 @@ def setup_periodic_tasks(sender, **kwargs):
 def check_sunrise_sunset():
     print('[CELERY] {PERIODIC} Check Sunrise & Sunset}')
 
-    state = redis_get(Scheduler.KEY_SUN_STATE)
+    state = redis_get(SchedulerState.KEY_SUN_STATE)
     now = datetime.datetime.now()
 
-    if state == Scheduler.KEY_SUNRISE:
-        if now.time() > Scheduler.get_sundown().time():
-            state = redis.set(Scheduler.KEY_SUN_STATE, Scheduler.KEY_SUNDOWN)
-            Scheduler.set_usable(True)
+    if state == SchedulerState.KEY_SUNRISE:
+        if now.time() > SchedulerState.get_sundown().time():
+            state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNDOWN)
+            SchedulerState.set_usable(True)
     else:
-        if now.time() > Scheduler.get_sunrise().time():
-            state = redis.set(Scheduler.KEY_SUN_STATE, Scheduler.KEY_SUNRISE)
-            Scheduler.set_usable(False)
+        if now.time() > SchedulerState.get_sunrise().time():
+            state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNRISE)
+            SchedulerState.set_usable(False)
     return True
 
 

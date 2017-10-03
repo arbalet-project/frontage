@@ -10,7 +10,7 @@ from flask_restful import reqparse, abort, Api, Resource
 from utils.security import authentication_required
 from utils.red import redis, redis_get
 from scheduler import Scheduler
-from tasks.tasks import start_scheduler
+from scheduler_state import SchedulerState
 
 def flask_log(msg):
     print(msg, file=sys.stderr)
@@ -23,10 +23,6 @@ api = Api(app)
 def is_up():
     return jsonify(is_up=True)
 
-@app.route('/b/start', methods=['GET'])
-def scheduler_start():
-    start_scheduler.delay()
-    return jsonify(started=True)
 ########### AUTH ###########
 
 @app.route('/b/login', methods=['POST'])
@@ -82,9 +78,9 @@ class AppListView(Resource):
 
 @app.route('/frontage/status', methods=['GET'])
 def status():
-    state = Scheduler.usable()
+    state = SchedulerState.usable()
     return jsonify( is_usable=state,
-                    scheduled_time=Scheduler.default_scheduled_time(),
+                    scheduled_time=SchedulerState.default_scheduled_time(),
                     current_time=datetime.datetime.now())
 
 @app.route('/frontage/next_date', methods=['GET'])

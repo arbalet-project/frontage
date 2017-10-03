@@ -1,21 +1,29 @@
 from __future__ import print_function
 
+import sys
+import pika, os
+
 from model import Model
+from scheduler_state import SchedulerState
 from simulator import Simulator
 from threading import Thread
 from socket import *
 from struct import pack
 from numpy import array
 from pygame.time import Clock
+from rabbit import CHANNEL, RABBIT_CONNECTION
 
-import sys
 
 __all__ = ['Frontage']
 
+def print_flush(s):
+    print(s)
+    sys.stdout.flush()
+
 
 class Frontage(Thread):
-    def __init__(self, hardware_port, hardware=True, simulator=True):
-        super(Frontage, self).__init__()
+    def __init__(self, hardware_port, hardware=True):
+        Thread.__init__(self)
         self.model = Model(4, 19)
         self.clock = Clock()
 
@@ -30,19 +38,16 @@ class Frontage(Thread):
         # Use asyncio or twisted?
         self.hardware_server = socket(AF_INET, SOCK_STREAM)
         #self.hardware_server.settimeout(10.0)  # Non-blocking requests
-        self.hardware_server.bind(("0.0.0.0", hardware_port))
+        self.hardware_server.bind(("0.0.0.0", 33460))
         self.hardware_server.listen(1)
-        self.running = False
-
-        if simulator:
-            self.simulator = Simulator(self.model)
-        else:
-            self.simulator = None
+        # self.start_rabbit()
 
         if hardware:
-            print("Waiting Hardware TCP client connection...", file=sys.stderr)
+            print_flush("Waiting Hardware TCP client connection...")
+            print_flush(hardware_port)
             self.client, self.address = self.hardware_server.accept()
-            print("Client {}:{} connected!".format(self.address[0], self.address[1]), file=sys.stderr)
+            print_flush("CONNECTEDDDDDD")
+            print_flush("Client {}:{} connected!".format(self.address[0], self.address[1]))
         else:
             self.client, self.address = None, None
 
@@ -64,6 +69,23 @@ class Frontage(Thread):
     def erase_all(self):
         self.set_all(0, 0, 0)
 
+    def handle_model_msg(self, channel, method, properties, body):
+        print('[MODEL-QUEUE] Received data')
+        self.model.set_from_json(body)
+        self.update()
+
+    def run(self):
+        print("==> Frontage Controler Started")
+        try:
+            CHANNEL.basic_consume(self.handle_model_msg,
+              queue=SchedulerState.KEY_MODEL,
+              no_ack=True)
+
+            # start consuming (blocks)
+            CHANNEL.start_consuming()
+        finally:
+            self.close()
+
     def update(self):
         if self.client is not None:
             with self.model:
@@ -78,21 +100,15 @@ class Frontage(Thread):
                             data_frame.append(g)
                             data_frame.append(b)
                 command = pack("!{}B".format(self.num_pixels * 4), *data_frame)
+                print("------*****----")
+                print(len(command))
+                print("------*****+++")
                 self.client.send(command)
 
-    def run(self):
-        self.running = True
-        try:
-            while self.running:
-                if self.simulator is not None:
-                    self.running = self.simulator.update()
-                self.clock.tick(20)
-        finally:
-            self.close()
-
     def close(self):
-        if self.simulator is not None:
-            self.simulator.close()
+        print("==> Frontage Controler Ended. ByeBye")
         if self.hardware_server is not None:
             self.hardware_server.close()
+        if RABBIT_CONNECTION:
+             RABBIT_CONNECTION.close()
 

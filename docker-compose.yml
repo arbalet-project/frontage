@@ -1,5 +1,14 @@
 version: '2'
 services:
+  redis:
+    image: "redis"
+  rabbit:
+    image: "rabbitmq:3-management"
+    hostname: "rabbit"
+    env_file: .env-dev
+    ports:
+      - 5672:5672
+      - 15672:15672
   app:
     build: .
     volumes:
@@ -9,23 +18,34 @@ services:
     command: ["dev"]
     env_file: .env-dev
     links:
+      - redis:redis
+      - rabbit:rabbit
+  scheduler:
+    build: .
+    volumes:
+      - ./arbalet/frontage:/usr/src/app
+    env_file: .env-dev
+    links:
+      - redis:redis
+      - rabbit:rabbit
+    ports:
+      - 33460:33460
+    command: ["scheduler"]
+  queue:
+    build: .
+    volumes:
+      - ./arbalet/frontage:/usr/src/app
+    env_file: .env-dev
+    links:
       - rabbit:rabbit
       - redis:redis
+    command: ["queue"]
   worker:
     build: .
     volumes:
       - ./arbalet/frontage:/usr/src/app
-    command: ["worker"]
     env_file: .env-dev
     links:
       - rabbit:rabbit
       - redis:redis
     command: ["worker"]
-  redis:
-    image: "redis"
-  rabbit:
-    image: "rabbitmq:3-management"
-    hostname: "rabbit"
-    env_file: .env-dev
-    labels:
-      NAME: "rabbit"

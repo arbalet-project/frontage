@@ -8,6 +8,8 @@
     License: GPL version 3 http://www.gnu.org/licenses/gpl.html
 """
 import numpy as np
+import json
+
 from threading import RLock
 
 
@@ -72,3 +74,11 @@ class Model(object):
         m = Model(self.height, self.width)
         m._model = scalar*self._model
         return m
+
+    def json(self):
+        return json.dumps(self._model.tolist())
+
+    def set_from_json(self, json_data):
+        self._model = np.array(json.loads(json_data))
+
+        return self._model
