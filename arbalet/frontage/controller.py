@@ -46,7 +46,6 @@ class Frontage(Thread):
             print_flush("Waiting Hardware TCP client connection...")
             print_flush(hardware_port)
             self.client, self.address = self.hardware_server.accept()
-            print_flush("CONNECTEDDDDDD")
             print_flush("Client {}:{} connected!".format(self.address[0], self.address[1]))
         else:
             self.client, self.address = None, None
@@ -100,9 +99,6 @@ class Frontage(Thread):
                             data_frame.append(g)
                             data_frame.append(b)
                 command = pack("!{}B".format(self.num_pixels * 4), *data_frame)
-                print("------*****----")
-                print(len(command))
-                print("------*****+++")
                 self.client.send(command)
 
     def close(self):

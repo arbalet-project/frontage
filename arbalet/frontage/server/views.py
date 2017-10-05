@@ -7,7 +7,7 @@ import datetime
 from server import app
 from flask import request, jsonify, abort
 from flask_restful import reqparse, abort, Api, Resource
-from utils.security import authentication_required
+from utils.security import authentication_required, generate_user_token
 from utils.red import redis, redis_get
 from scheduler import Scheduler
 from scheduler_state import SchedulerState
@@ -26,9 +26,14 @@ def is_up():
 ########### AUTH ###########
 
 @app.route('/b/login', methods=['POST'])
-@authentication_required
 def login():
-    return jsonify(is_up=True)
+    username = request.get_json().get('username', False)
+    password = request.get_json().get('password', False)
+
+    if ((username == 'frontageadmin') and password == 'frontagepassword'):
+        return jsonify(login=True, token=generate_user_token(username))
+    else:
+        return jsonify(login=False)
 
 ########### ADMIN ###########
 
@@ -37,9 +42,9 @@ ADMIN_BASE = '/b/admin'
 @app.route(ADMIN_BASE+'/is_on', methods=['GET'])
 @authentication_required
 def admin_is_on():
-    return jsonify(is_on=True)
+    return jsonify(on=SchedulerState.usable())
 
-@app.route('/b/admin/cal/<timestamp>', methods=['GET'])
+@app.route('/b/admin/cal', methods=['GET'])
 @authentication_required
 def admin_cal_at(timestamp):
     return jsonify( on=Scheduler.get_sundown().strftime('%H:%M'),

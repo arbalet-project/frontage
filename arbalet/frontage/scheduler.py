@@ -14,6 +14,8 @@ def print_flush(s):
     print(s)
     sys.stdout.flush()
 
+TASK_EXPIRATION=1800
+
 class Scheduler(object):
 
     def __init__(self, port=33460, hardware=True, simulator=True):
@@ -103,14 +105,14 @@ class Scheduler(object):
             # Available, play machine state
             elif SchedulerState.usable():
                 self.check_scheduler()
-            self.running_task = start_fap.apply_async(args=['TestApp'], queue='userapp')
-            self.running_task = start_fap.apply_async(args=['Flags'], queue='userapp')
+            ## self.running_task = start_fap.apply_async(args=['TestApp'], queue='userapp', expires=TASK_EXPIRATION)
+            ## self.running_task = start_fap.apply_async(args=['Flags'], queue='userapp', expires=TASK_EXPIRATION)
 
             # Ugly sleep to avoid CPU consuming, not really usefull but I pref use it ATM before advanced tests
             count += 1
             if (count % 1000) == 0:
                 print_flush('=============> Scheduler is stil running around...')
-            sleep(0.005)
+            sleep(0.02)
 
 
 if __name__ == '__main__':
