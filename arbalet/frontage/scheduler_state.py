@@ -90,9 +90,6 @@ class SchedulerState(object):
     def get_scheduled_apps():
         return redis.lrange(SchedulerState.KEY_SCHEDULED_APP, 0, -1)
 
-    @staticmethod
-    def get_current_app():
-        return redis.hgetall(SchedulerState.KEY_CURRENT_RUNNING_APP)
 
     @staticmethod
     def add_schedule_app(app_name):
@@ -102,8 +99,16 @@ class SchedulerState(object):
         redis.rpush(SchedulerState.KEY_SCHEDULED_APP, app_name)
 
     @staticmethod
+    def get_current_app():
+        return json.loads(redis.get(SchedulerState.KEY_CURRENT_RUNNING_APP))
+
+    @staticmethod
+    def set_current_app(app_struct):
+        redis.set(SchedulerState.KEY_CURRENT_RUNNING_APP, json.dumps(app_struct))
+
+    @staticmethod
     def set_app_started_at():
-        redis.set(SchedulerState.KEY_APP_STARTED_AT, str(datetime.datetime.now()))
+        redis.set(SchedulerState.KEY_APP_STARTED_AT, datetime.datetime.now().isoformat())
 
     @staticmethod
     def app_started_at():

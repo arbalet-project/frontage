@@ -11,7 +11,7 @@ from socket import *
 from struct import pack
 from numpy import array
 from pygame.time import Clock
-from rabbit import CHANNEL, RABBIT_CONNECTION
+from rabbit import CHANNEL
 
 
 __all__ = ['Frontage']
@@ -105,6 +105,6 @@ class Frontage(Thread):
         print("==> Frontage Controler Ended. ByeBye")
         if self.hardware_server is not None:
             self.hardware_server.close()
-        if RABBIT_CONNECTION:
-             RABBIT_CONNECTION.close()
+        # if RABBIT_CONNECTION:
+        #      RABBIT_CONNECTION.close()
 

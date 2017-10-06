@@ -52,6 +52,8 @@ def admin_cal_at(timestamp):
                     default="",
                     params={})
 
+
+
 ########### APP ###########
 
 parser = reqparse.RequestParser()
@@ -62,14 +64,14 @@ parser.add_argument('comment')
 class AppRuningView(Resource):
     @authentication_required
     def get(self):
-        return jsonify( Scheduler.get_current_app() )
+        return jsonify( SchedulerState.get_current_app() )
 
     @authentication_required
     def delete(self):
         return '', 204
 
     @authentication_required
-    def get(self):
+    def post(self):
         tags = []
         return tags
 
@@ -77,7 +79,7 @@ class AppRuningView(Resource):
 class AppListView(Resource):
     @authentication_required
     def get(self):
-        return Scheduler.get_available_apps()
+        return SchedulerState.get_available_apps()
 
 ########### PUBLIC ###########
 
@@ -90,7 +92,7 @@ def status():
 
 @app.route('/frontage/next_date', methods=['GET'])
 def next_date():
-    state = Scheduler.usable()
+    state = SchedulerState.usable()
     return jsonify(is_usable=state)
 
 

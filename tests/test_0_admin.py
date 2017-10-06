@@ -28,3 +28,30 @@ def test_admin_is_on_status(login):
     assert isinstance(res['on'], bool)
 
 
+def test_admin_apps_list(login):
+    res = utils.call('GET',
+                        url='/b/admin/apps',
+                        json={'username': 'frontageadmin', 'password': 'frontagepassword'},
+                        headers={'Authorization': 'Bearer '+login})
+    assert utils.is_status_ok(res.status_code)
+
+    res = res.json()
+    assert isinstance(res, dict)
+
+
+def test_admin_current_app(login):
+    res = utils.call('GET',
+                        url='/b/admin/apps/running',
+                        json={'username': 'frontageadmin', 'password': 'frontagepassword'},
+                        headers={'Authorization': 'Bearer '+login})
+    assert utils.is_status_ok(res.status_code)
+    res = res.json()
+
+    assert 'name' in res
+    assert res['started_at']
+    assert 'params' in res
+    assert 'username' in res
+
+
+
+

@@ -5,11 +5,14 @@ from model import Model
 from rabbit import CHANNEL
 
 class Fap(object):
-    PARAMS = []
+    PARAMS_LIST = []
+    PLAYABLE = False
+    ENABLE = True
 
     def __init__(self, model=None):
         self.username = None
         self.max_time = None
+        self.params = None
 
         if not model:
             self.model = Model(4, 19)
@@ -26,7 +29,9 @@ class Fap(object):
     def jsonify(self):
         struct = {}
         struct['name'] = self.__class__.__name__
-        struct['params'] = self.PARAMS
+        struct['params'] = self.params
+        struct['params_list'] = self.PARAMS_LIST
         struct['user'] = self.username
+        struct['playable'] = self.PLAYABLE
         struct['max_time'] = self.max_time
         return struct

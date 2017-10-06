@@ -25,6 +25,7 @@ class Scheduler(object):
 
         redis.set(SchedulerState.KEY_SUNRISE, SchedulerState.DEFAULT_RISE)
         redis.set(SchedulerState.KEY_SUNDOWN, SchedulerState.DEFAULT_DOWN)
+        SchedulerState.set_current_app('{}')
 
         # Dict { Name: ClassName, Start_at: XXX, End_at: XXX, task_id: XXX}
         self.current_app_state = None
@@ -37,27 +38,27 @@ class Scheduler(object):
         redis.set(SchedulerState.KEY_SCHEDULED_APP_TIME, SchedulerState.DEFAULT_APP_SCHEDULE_TIME)
 
 
-    def start_next_app(self):
-        app = {}
-        app['name'] = redis.lindex(SchedulerState.KEY_SCHEDULED_APP, 0)
-        app['end_at'] = datetime.datetime.now() + datetime.timedelta(minutes=SchedulerState.DEFAULT_APP_SCHEDULE_TIME)
-        app['user'] = ""
+    # def start_next_app(self):
+    #     app = {}
+    #     app['name'] = redis.lindex(SchedulerState.KEY_SCHEDULED_APP, 0)
+    #     app['end_at'] = datetime.datetime.now() + datetime.timedelta(minutes=SchedulerState.DEFAULT_APP_SCHEDULE_TIME)
+    #     app['user'] = ""
 
-        self.current_app_state = app
-        app_rdis = app.copy()
-        app_rdis['end_at'] = app['end_at'].strftime('%Y-%m-%d %H:%M:%S.%f')
-        redis.hmset(KEY_CURRENT_RUNNING_APP, app_rdis)
+    #     self.current_app_state = app
+    #     app_rdis = app.copy()
+    #     app_rdis['end_at'] = app['end_at'].strftime('%Y-%m-%d %H:%M:%S.%f')
+    #     redis.hmset(KEY_CURRENT_RUNNING_APP, app_rdis)
 
-    def play_current_app(self):
-        if self.current_app_state:
-            # Shgoudl the app stop and let the other one play ?
-            if self.current_app_state.end_at < datetime.datetime.now():
-                print(' App end, go to next')
-                # Remove 1st item, and put it in the end (circular fifo)
-                old_current = redis.lpop(SchedulerState.KEY_SCHEDULED_APP)
-                redis.rpush(SchedulerState.KEY_SCHEDULED_APP, old_current)
-                self.start_next_app()
-            print(' BlaBLa Im running Bru` ')
+    # def play_current_app(self):
+    #     if self.current_app_state:
+    #         # Shgoudl the app stop and let the other one play ?
+    #         if self.current_app_state.end_at < datetime.datetime.now():
+    #             print(' App end, go to next')
+    #             # Remove 1st item, and put it in the end (circular fifo)
+    #             old_current = redis.lpop(SchedulerState.KEY_SCHEDULED_APP)
+    #             redis.rpush(SchedulerState.KEY_SCHEDULED_APP, old_current)
+    #             self.start_next_app()
+    #         print(' BlaBLa Im running Bru` ')
 
     def start_queued_app(self):
         pass
@@ -105,12 +106,12 @@ class Scheduler(object):
             # Available, play machine state
             elif SchedulerState.usable():
                 self.check_scheduler()
-            ## self.running_task = start_fap.apply_async(args=['TestApp'], queue='userapp', expires=TASK_EXPIRATION)
             ## self.running_task = start_fap.apply_async(args=['Flags'], queue='userapp', expires=TASK_EXPIRATION)
 
             # Ugly sleep to avoid CPU consuming, not really usefull but I pref use it ATM before advanced tests
             count += 1
-            if (count % 1000) == 0:
+            if (count % 500) == 0:
+                self.running_task = start_fap.apply_async(args=['TestApp'], queue='userapp', expires=TASK_EXPIRATION)
                 print_flush('=============> Scheduler is stil running around...')
             sleep(0.02)
 

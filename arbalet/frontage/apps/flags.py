@@ -9,10 +9,7 @@ class Flags(Fap):
 
     PLAYABLE = False
 
-    PARAMS = [  FRENCH,
-                GERMANY,
-                SPAIN,
-                ITALY ]
+    PARAMS_LIST = {'uapp' : [FRENCH, GERMANY, SPAIN, ITALY ]}
 
     def french(self):
         bleu = name_to_rgb('navy')
@@ -59,5 +56,6 @@ class Flags(Fap):
         self.send_model()
 
     def run(self, param):
-        if param in self.PARAMS:
+        self.params = params
+        if param in self.PARAMS_LIST['uapp']:
             getattr(self, param)()
