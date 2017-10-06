@@ -25,7 +25,7 @@ class Scheduler(object):
 
         redis.set(SchedulerState.KEY_SUNRISE, SchedulerState.DEFAULT_RISE)
         redis.set(SchedulerState.KEY_SUNDOWN, SchedulerState.DEFAULT_DOWN)
-        SchedulerState.set_current_app('{}')
+        SchedulerState.set_current_app({})
 
         # Dict { Name: ClassName, Start_at: XXX, End_at: XXX, task_id: XXX}
         self.current_app_state = None

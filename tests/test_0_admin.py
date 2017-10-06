@@ -27,6 +27,16 @@ def test_admin_is_on_status(login):
     res = res.json()
     assert isinstance(res['on'], bool)
 
+def test_admin_cal(login):
+    res = utils.call('GET',
+                        url='/b/admin/cal',
+                        json={'username': 'frontageadmin', 'password': 'frontagepassword'},
+                        headers={'Authorization': 'Bearer '+login})
+    assert utils.is_status_ok(res.status_code)
+
+    res = res.json()
+    assert isinstance(res['on'], (str, unicode))
+    assert isinstance(res['off'], (str, unicode))
 
 def test_admin_apps_list(login):
     res = utils.call('GET',
@@ -46,11 +56,14 @@ def test_admin_current_app(login):
                         headers={'Authorization': 'Bearer '+login})
     assert utils.is_status_ok(res.status_code)
     res = res.json()
+    assert isinstance(res, dict)
+    if res:
+        assert 'name' in res
+        assert res['started_at']
+        assert 'params' in res
+        assert 'username' in res
 
-    assert 'name' in res
-    assert res['started_at']
-    assert 'params' in res
-    assert 'username' in res
+
 
 
 

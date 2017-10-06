@@ -46,9 +46,9 @@ def admin_is_on():
 
 @app.route('/b/admin/cal', methods=['GET'])
 @authentication_required
-def admin_cal_at(timestamp):
-    return jsonify( on=Scheduler.get_sundown().strftime('%H:%M'),
-                    off=Scheduler.get_sunrise().strftime('%H:%M'),
+def admin_cal_at():
+    return jsonify( on=SchedulerState.get_sundown().strftime('%H:%M'),
+                    off=SchedulerState.get_sunrise().strftime('%H:%M'),
                     default="",
                     params={})
 
