@@ -111,7 +111,7 @@ class Scheduler(object):
             # Ugly sleep to avoid CPU consuming, not really usefull but I pref use it ATM before advanced tests
             count += 1
             if (count % 500) == 0:
-                self.running_task = start_fap.apply_async(args=['TestApp'], queue='userapp', expires=TASK_EXPIRATION)
+                # self.running_task = start_fap.apply_async(args=['TestApp'], queue='userapp', expires=TASK_EXPIRATION)
                 print_flush('=============> Scheduler is stil running around...')
             sleep(0.02)
 
