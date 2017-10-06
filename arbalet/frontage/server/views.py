@@ -41,12 +41,12 @@ ADMIN_BASE = '/b/admin'
 
 @app.route(ADMIN_BASE+'/is_on', methods=['GET'])
 @authentication_required
-def admin_is_on():
+def admin_is_on(user):
     return jsonify(on=SchedulerState.usable())
 
 @app.route('/b/admin/cal', methods=['GET'])
 @authentication_required
-def admin_cal_at():
+def admin_cal_at(user):
     return jsonify( on=SchedulerState.get_sundown().strftime('%H:%M'),
                     off=SchedulerState.get_sunrise().strftime('%H:%M'),
                     default="",
@@ -63,22 +63,22 @@ parser.add_argument('comment')
 
 class AppRuningView(Resource):
     @authentication_required
-    def get(self):
+    def get(self, user):
         return jsonify( SchedulerState.get_current_app() )
 
     @authentication_required
-    def delete(self):
+    def delete(self, user):
         return '', 204
 
     @authentication_required
-    def post(self):
+    def post(self, user):
         tags = []
         return tags
 
 
 class AppListView(Resource):
     @authentication_required
-    def get(self):
+    def get(self, user):
         return SchedulerState.get_available_apps()
 
 ########### PUBLIC ###########

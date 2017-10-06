@@ -14,12 +14,11 @@ ONE_YEARS = 60 * 60 * 24 * 7 * 52
 ONE_HOUR = 60 * 60
 
 TOKEN_ALGO = 'RS512'
-PUBLIC_MASTER_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCjhgga9+VB9o+cQdvu7ZBzkGmySN6+uwFMLb84Q6eBU0lIRLPlPYJ7iMAeOWheLyA3CnjsVZdgt0NLEb+NmSkOUisyhur8AFjwx5LNQreZX4maMBHLQUJy7+4fFSokHc9U/ue8nmw2XmJ+Xh0BsoyEkJs+VpDt21lazIazgBTcdN0/zrYrcXNKUQQAz3cB9+Nc7JuL3+X3+Liknp1+T1Cr0NuMXbwV88O20db4b6ulwZ/IYNu1R2ldPGRvDfcyDaq4A52n5znWHCoaSUoPUAfi8KSnTf/wt+Lur29W5yq6TU7bWBcdd3X2h7vAGRnfDEgVULIAnYoI3wc7FetTyH7v'
 
 
 def extract_payload(token):
     try:
-        payload = jwt.decode(token, PUBLIC_MASTER_KEY, algorithm=TOKEN_ALGO)
+        payload = jwt.decode(token, PUBLIC_WEB_KEY, algorithm=TOKEN_ALGO)
         return payload
     except jwt.ExpiredSignatureError, e:
         print(str(e)+" ExpiredSignatureError")
@@ -46,11 +45,11 @@ def authentication_required(f):
         else:
             abort(403, 'Empty token')
         try:
-            jwt.decode(token, PUBLIC_WEB_KEY, algorithm=TOKEN_ALGO)
+            payload = extract_payload(token)
         except Exception, e:
             abort(403, 'User not logged or session expired')
         else:
-            return f(*args, **kwargs)
+            return f(user=payload, *args, **kwargs)
     return decorated_function
 
 """
