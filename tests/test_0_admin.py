@@ -20,7 +20,6 @@ def test_admin_login():
 def test_admin_is_on_status(login):
     res = utils.call('GET',
                         url='/b/admin/is_on',
-                        json={'username': 'frontageadmin', 'password': 'frontagepassword'},
                         headers={'Authorization': 'Bearer '+login})
     assert utils.is_status_ok(res.status_code)
 
@@ -30,7 +29,6 @@ def test_admin_is_on_status(login):
 def test_admin_cal(login):
     res = utils.call('GET',
                         url='/b/admin/cal',
-                        json={'username': 'frontageadmin', 'password': 'frontagepassword'},
                         headers={'Authorization': 'Bearer '+login})
     assert utils.is_status_ok(res.status_code)
 
@@ -41,7 +39,6 @@ def test_admin_cal(login):
 def test_admin_apps_list(login):
     res = utils.call('GET',
                         url='/b/admin/apps',
-                        json={'username': 'frontageadmin', 'password': 'frontagepassword'},
                         headers={'Authorization': 'Bearer '+login})
     assert utils.is_status_ok(res.status_code)
 
@@ -52,7 +49,6 @@ def test_admin_apps_list(login):
 def test_admin_current_app(login):
     res = utils.call('GET',
                         url='/b/admin/apps/running',
-                        json={'username': 'frontageadmin', 'password': 'frontagepassword'},
                         headers={'Authorization': 'Bearer '+login})
     assert utils.is_status_ok(res.status_code)
     res = res.json()
@@ -62,6 +58,16 @@ def test_admin_current_app(login):
         assert res['started_at']
         assert 'params' in res
         assert 'username' in res
+
+
+
+def test_admin_current_app_set(login):
+    res = utils.call('POST',
+                        url='/b/admin/apps/running',
+                        json={'name': 'flag', 'params': ''},
+                        headers={'Authorization': 'Bearer '+login})
+    assert utils.is_status_ok(res.status_code)
+
 
 
 

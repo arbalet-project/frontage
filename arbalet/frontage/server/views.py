@@ -72,8 +72,10 @@ class AppRuningView(Resource):
 
     @authentication_required
     def post(self, user):
-        tags = []
-        return tags
+        name = request.get_json()['name']
+        params = request.get_json()['params']
+
+        return True
 
 
 class AppListView(Resource):
