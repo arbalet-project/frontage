@@ -6,22 +6,24 @@ from time import sleep
 from utils.red import redis, redis_get
 
 
-
-
 class SchedulerState(object):
 
-    DEFAULT_RISE = '2017-07-07 01:00:00.000000'
-    DEFAULT_DOWN = '2017-07-07 22:00:00.000000'
+    DEFAULT_RISE = '2017-07-07T01:00:00'
+    DEFAULT_DOWN = '2017-07-07T22:00:00'
     DEFAULT_USER_OCCUPATION = 120 # in seconde
     DEFAULT_APP_SCHEDULE_TIME = 15 # in minutes
+    KEY_DAY_TABLE = 'frontage_day_table'
+    CITY = 'data/bordeaux_user.sun'
 
     KEY_USABLE = 'frontage_usable'
     KEY_MODEL = 'frontage_model'
-    KEY_SUNDOWN = 'frontage_sundown'
     KEY_SUNRISE = 'frontage_sunrise'
+    KEY_SUNDOWN = 'frontage_sundown'
     KEY_SUN_STATE = 'frontage_sunstate'
     KEY_REGISTERED_APP = 'frontage_registered_app'
     KEY_APP_STARTED_AT = 'frontage_app_started_at'
+    KEY_NIGHT_START_AT = 'astronomical_twilight_end'
+    KEY_NIGHT_END_AT = 'astronomical_twilight_begin'
 
     KEY_SCHEDULED_APP_TIME = 'frontage_scheduler_app_time'
 
@@ -76,15 +78,43 @@ class SchedulerState(object):
         return redis.hmset(SchedulerState.KEY_CURRENT_USER, {'user_name': user_name,
                                                         'start_at':now,
                                                         'end_at': now+timedelta(seconds=DEFAULT_USER_OCCUPATION)})"""
-    @staticmethod
-    def get_sunrise():
-        v = redis_get(SchedulerState.KEY_SUNRISE, SchedulerState.DEFAULT_RISE)
-        return datetime.datetime.strptime(v, '%Y-%m-%d %H:%M:%S.%f')
 
     @staticmethod
-    def get_sundown():
-        v = redis_get(SchedulerState.KEY_SUNDOWN, SchedulerState.DEFAULT_DOWN)
-        return datetime.datetime.strptime(v, '%Y-%m-%d %H:%M:%S.%f')
+    def set_sundown(day, at):
+        table = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
+        table[day][SchedulerState.KEY_NIGHT_START_AT] = day+'T'+at+':00'
+        dumped = json.dumps(table)
+
+        with open(SchedulerState.CITY, 'w') as f:
+            f.write(dumped)
+        redis.set(SchedulerState.KEY_DAY_TABLE, dumped)
+
+    @staticmethod
+    def set_sunrise(day, at):
+        table = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
+        table[day][SchedulerState.KEY_NIGHT_END_AT] = day+'T'+at+':00'
+        dumped = json.dumps(table)
+
+        with open(SchedulerState.CITY, 'w') as f:
+            f.write(dumped)
+
+        redis.set(SchedulerState.KEY_DAY_TABLE, dumped)
+
+    @staticmethod
+    def get_sunrise(at=None):
+        if not at:
+            at = datetime.datetime.now().strftime('%Y-%m-%d')
+
+        v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(SchedulerState.KEY_NIGHT_END_AT, SchedulerState.DEFAULT_RISE)
+        return datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
+
+    @staticmethod
+    def get_sundown(at=None):
+        if not at:
+            at = datetime.datetime.now().strftime('%Y-%m-%d')
+
+        v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(SchedulerState.KEY_NIGHT_START_AT, SchedulerState.DEFAULT_DOWN)
+        return datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
 
     @staticmethod
     def get_scheduled_apps():

@@ -44,11 +44,36 @@ ADMIN_BASE = '/b/admin'
 def admin_is_on(user):
     return jsonify(on=SchedulerState.usable())
 
-@app.route('/b/admin/cal', methods=['GET'])
+
+@app.route(ADMIN_BASE+'/enabled', methods=['POST'])
 @authentication_required
-def admin_cal_at(user):
-    return jsonify( on=SchedulerState.get_sundown().strftime('%H:%M'),
-                    off=SchedulerState.get_sunrise().strftime('%H:%M'),
+def admin_enabled_scheduler(user):
+    SchedulerState.set_usable(request.get_json().get('enabled', False))
+    return jsonify(enabled=SchedulerState.usable())
+
+
+
+
+@app.route('/b/admin/cal', methods=['GET'])
+@app.route('/b/admin/cal/<at>', methods=['GET'])
+@authentication_required
+def admin_cal_at(user, at=None):
+    return jsonify( on=SchedulerState.get_sundown(at).strftime('%H:%M'),
+                    off=SchedulerState.get_sunrise(at).strftime('%H:%M'),
+                    default="",
+                    params={})
+
+# format .strftime('%Y-%m-%d')
+@app.route('/b/admin/cal/<at>', methods=['PATCH'])
+@authentication_required
+def admin_set_cal_at(user, at):
+    if request.get_json().get('on'):
+        SchedulerState.set_sundown(day=at, at=request.get_json()['on'])
+    if request.get_json().get('off'):
+        SchedulerState.set_sunrise(day=at, at=request.get_json()['off'])
+
+    return jsonify( on=SchedulerState.get_sundown(at).strftime('%H:%M'),
+                    off=SchedulerState.get_sunrise(at).strftime('%H:%M'),
                     default="",
                     params={})
 

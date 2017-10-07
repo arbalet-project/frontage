@@ -25,6 +25,7 @@ class Scheduler(object):
 
         redis.set(SchedulerState.KEY_SUNRISE, SchedulerState.DEFAULT_RISE)
         redis.set(SchedulerState.KEY_SUNDOWN, SchedulerState.DEFAULT_DOWN)
+
         SchedulerState.set_current_app({})
 
         # Dict { Name: ClassName, Start_at: XXX, End_at: XXX, task_id: XXX}
@@ -116,6 +117,14 @@ class Scheduler(object):
             sleep(0.02)
 
 
+
+def load_day_table(file_name):
+    with open(file_name, 'r') as f:
+        SUN_TABLE = json.loads(f.read())
+        redis.set(SchedulerState.KEY_DAY_TABLE, json.dumps(SUN_TABLE))
+
+
 if __name__ == '__main__':
+    load_day_table(SchedulerState.CITY)
     scheduler = Scheduler(hardware=False)
     scheduler.run()
