@@ -19,6 +19,8 @@ class Fap(object):
         else:
             self.model = model
 
+    def run(self):
+        raise NotImplementedError("Fap.run() must be overidden")
 
     def send_model(self):
         CHANNEL.basic_publish(exchange='',

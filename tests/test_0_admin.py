@@ -2,6 +2,7 @@
 import utils
 
 from utils import Settings, login
+from time import sleep
 
 def test_admin_respond_200():
     assert utils.is_status_ok(utils.call('GET', url='/status/is_up').status_code)
@@ -124,7 +125,28 @@ def test_admin_force_app_set(login):
                         headers={'Authorization': 'Bearer '+login})
     assert utils.is_status_ok(res.status_code)
 
+def test_admin_force_app_set(login):
+    sleep(2)
+    params = {'colors': [(0.5, 0.5, 0.5), (0.9, 0.2, 0.7)],'refresh_rate': 100,  'generator': 'random_flashing'}
+    res = utils.call('POST',
+                        url='/b/admin/apps/running',
+                        json={'name': 'Colors', 'params': params},
+                        headers={'Authorization': 'Bearer '+login})
+    assert utils.is_status_ok(res.status_code)
 
+
+def test_admin_force_app_set_2(login):
+    sleep(2)
+    params = {  'colors': [(0.1, 0.9, 0.5), (0.9, 0.2, 0.7), (0.5, 0.1, 0.4)],
+                'dur_min': 1,
+                'dur_max': 2,
+                'refresh_rate': 250,
+                'generator': 'random_flashing'}
+    res = utils.call('POST',
+                        url='/b/admin/apps/running',
+                        json={'name': 'Colors', 'params': params},
+                        headers={'Authorization': 'Bearer '+login})
+    assert utils.is_status_ok(res.status_code)
 
 
 

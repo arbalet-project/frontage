@@ -45,6 +45,11 @@ class Model(object):
             for h in range(self.height):
                 self._model[h, w] = color
 
+    def set_pixel(self, h, w, color):
+        if isinstance(color, str):
+            color = name_to_rgb(color)
+        self._model[h, w] = color
+
     def __enter__(self):
         self._model_lock.acquire()
 

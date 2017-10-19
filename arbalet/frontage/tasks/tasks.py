@@ -5,7 +5,8 @@ import datetime
 from .celery import app
 from scheduler_state import SchedulerState
 from utils.red import redis
-from apps.flags import *
+from apps.flags import Flags
+from apps.colors import Colors
 
 class TestApp():
     def run(self, params):
@@ -40,7 +41,7 @@ def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
             return True
         except Exception, e:
             print('Error when starting task '+str(e))
-            return 'Error when starting task '+str(e)
+            raise
         finally:
             redis.set(SchedulerState.KEY_FORCED_APP, False)
     return True
