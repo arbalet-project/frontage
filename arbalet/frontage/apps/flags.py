@@ -17,9 +17,9 @@ class Flags(Fap):
         rouge = name_to_rgb('red')
         for i in range(0, 5):
             self.model.set_column(i, bleu)
-        for i in range(6, 12):
+        for i in range(5, 12):
             self.model.set_column(i, blanc)
-        for i in range(13, 18):
+        for i in range(12, 19):
             self.model.set_column(i, rouge)
         self.send_model()
 
@@ -29,9 +29,9 @@ class Flags(Fap):
         r = name_to_rgb('firebrick')
         for i in range(0, 5):
             self.model.set_column(i, g)
-        for i in range(6, 12):
+        for i in range(5, 12):
             self.model.set_column(i, w)
-        for i in range(13, 18):
+        for i in range(12, 19):
             self.model.set_column(i, r)
         self.send_model()
 
@@ -55,7 +55,7 @@ class Flags(Fap):
 
         self.send_model()
 
-    def run(self, param):
+    def run(self, params):
         self.params = params
-        if param in self.PARAMS_LIST['uapp']:
-            getattr(self, param)()
+        if params in self.PARAMS_LIST['uapp']:
+            getattr(self, params)()

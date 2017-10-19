@@ -117,10 +117,10 @@ def test_admin_current_app(login):
         assert 'params' in res
         assert 'username' in res
 
-def test_admin_current_app_set(login):
+def test_admin_force_app_set(login):
     res = utils.call('POST',
                         url='/b/admin/apps/running',
-                        json={'name': 'flag', 'params': ''},
+                        json={'name': 'Flags', 'params': 'spain'},
                         headers={'Authorization': 'Bearer '+login})
     assert utils.is_status_ok(res.status_code)
 

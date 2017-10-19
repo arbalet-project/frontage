@@ -5,7 +5,6 @@ import pika, os
 
 from model import Model
 from scheduler_state import SchedulerState
-from simulator import Simulator
 from threading import Thread
 from socket import *
 from struct import pack
@@ -22,9 +21,11 @@ def print_flush(s):
 
 
 class Frontage(Thread):
-    def __init__(self, hardware_port, hardware=True):
+    def __init__(self, hardware_port=33640, hardware=True):
         Thread.__init__(self)
         self.model = Model(4, 19)
+        self.hardware_port = hardware_port
+        self.hardware = hardware
         self.clock = Clock()
 
         # row, column -> DMX address
@@ -35,21 +36,23 @@ class Frontage(Thread):
 
 
         self.num_pixels = self.mapping.shape[0] * self.mapping.shape[1]
+        self.start_server()
+
+    def start_server(self):
         # Use asyncio or twisted?
         self.hardware_server = socket(AF_INET, SOCK_STREAM)
         #self.hardware_server.settimeout(10.0)  # Non-blocking requests
-        self.hardware_server.bind(("0.0.0.0", 33460))
+        self.hardware_server.bind(("0.0.0.0", self.hardware_port))
         self.hardware_server.listen(1)
         # self.start_rabbit()
 
-        if hardware:
+        if self.hardware:
             print_flush("Waiting Hardware TCP client connection...")
-            print_flush(hardware_port)
+            print_flush(self.hardware_port)
             self.client, self.address = self.hardware_server.accept()
             print_flush("Client {}:{} connected!".format(self.address[0], self.address[1]))
         else:
             self.client, self.address = None, None
-
     def map(self, row, column):
         return self.mapping[row][column]
 
@@ -69,7 +72,7 @@ class Frontage(Thread):
         self.set_all(0, 0, 0)
 
     def handle_model_msg(self, channel, method, properties, body):
-        print('[MODEL-QUEUE] Received data')
+        # print('[MODEL-QUEUE] Received data')
         self.model.set_from_json(body)
         self.update()
 
@@ -95,11 +98,18 @@ class Frontage(Thread):
                             led = self.mapping[row, col]
                             r, g, b = self.model[row, col]
                             data_frame.append(led)
-                            data_frame.append(r)
-                            data_frame.append(g)
-                            data_frame.append(b)
+                            data_frame.append(r*255)
+                            data_frame.append(g*255)
+                            data_frame.append(b*255)
                 command = pack("!{}B".format(self.num_pixels * 4), *data_frame)
-                self.client.send(command)
+                try:
+                    self.client.send(command)
+                except Exception, e:
+                    print(str(e))
+                    print('=> Deconnected from client')
+                    print('=> Wait for new client connection')
+                    self.start_server()
+
 
     def close(self):
         print("==> Frontage Controler Ended. ByeBye")

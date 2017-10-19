@@ -1,9 +1,15 @@
+from __future__ import print_function
+
 import json
 import datetime
 import sys
 
 from time import sleep
 from utils.red import redis, redis_get
+
+def flask_log(msg):
+    print(msg, file=sys.stderr)
+
 
 
 class SchedulerState(object):
@@ -41,6 +47,16 @@ class SchedulerState(object):
     def get_forced_app():
         # add callback on frocer_app_task_launcher to set variable to false when done
         return redis_get(SchedulerState.KEY_FORCED_APP, False)
+
+    @staticmethod
+    def set_forced_app(app_name, params, expires=600):
+        from tasks.tasks import start_forced_fap
+        from tasks.celery import app
+        # kill all task,
+        app.control.purge()
+        SchedulerState.set_current_app({})
+        t = start_forced_fap.apply_async(args=[app_name, 'FORCED', params], expires=expires)
+
 
     @staticmethod
     def set_registered_apps(apps):

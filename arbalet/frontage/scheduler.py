@@ -97,6 +97,7 @@ class Scheduler(object):
         print('[SCHEDULER] Entering loop')
         # self.running_task = start_fap.apply_async(args=['app1'], queue='userapp')
         self.frontage.start()
+        self.running_task = start_fap.apply_async(args=['Flags', 'user', 'french'], queue='userapp', expires=2)
 
         while True:
             # Check if usable change
@@ -112,8 +113,15 @@ class Scheduler(object):
             # Ugly sleep to avoid CPU consuming, not really usefull but I pref use it ATM before advanced tests
             count += 1
             if (count % 500) == 0:
-                # self.running_task = start_fap.apply_async(args=['TestApp'], queue='userapp', expires=TASK_EXPIRATION)
-                print_flush('=============> Scheduler is stil running around...')
+                print('===== Scheduler still running =====')
+            # if (count % 20) == 0:
+            #     self.running_task = start_fap.apply_async(args=['Flags', 'user', 'french'], queue='userapp', expires=2)
+            # if ((count+10) % 20) == 0:
+            #     self.running_task = start_fap.apply_async(args=['Flags', 'user', 'spain'], queue='userapp', expires=2)
+            # if ((count+5) % 20) == 0:
+            #     self.running_task = start_fap.apply_async(args=['Flags', 'user', 'germany'], queue='userapp', expires=2)
+            # if ((count+15) % 20) == 0:
+            #     self.running_task = start_fap.apply_async(args=['Flags', 'user', 'italy'], queue='userapp', expires=2)
             sleep(0.02)
 
 
@@ -126,5 +134,5 @@ def load_day_table(file_name):
 
 if __name__ == '__main__':
     load_day_table(SchedulerState.CITY)
-    scheduler = Scheduler(hardware=False)
+    scheduler = Scheduler(hardware=True)
     scheduler.run()

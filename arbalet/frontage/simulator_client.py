@@ -7,7 +7,9 @@
     Copyright 2015 Yoan Mollard - Arbalet project - http://github.com/arbalet-project
     License: GPL version 3 http://www.gnu.org/licenses/gpl.html
 """
-from socket import *
+import socket
+import struct
+
 from time import sleep
 from os.path import dirname, join
 #from ...resources.img import __file__ as img_resources_path
@@ -33,7 +35,10 @@ class Simulator(object):
 
         # Create the Window, load its title, icon
         environ['SDL_VIDEO_CENTERED'] = '1'
-        self.start_socket(port)
+
+        while not self.start_socket(port):
+            print('Next connection try in 3 sec')
+            sleep(3)
 
         self.display = display.set_mode((self.sim_width, self.sim_height), 0, 32)
         #try:
@@ -45,8 +50,17 @@ class Simulator(object):
         display.set_caption("Arbalet Frontage simulator", "Arbalet")
 
     def start_socket(self, port):
-        self.client = socket(AF_INET, SOCK_STREAM)
-        self.client.connect(("127.0.0.1", port))
+        print('->Start Connecting...')
+        print('Port: '+str(port))
+        try:
+            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.client.connect(("127.0.0.1", port))
+        except socket.error, e:
+            print(str(e))
+            return False
+        print('->Connected')
+
+        return True
 
     def update(self):
         if not self.closed:
@@ -78,8 +92,22 @@ class Simulator(object):
             finally:
                 self.display.unlock()
                 return True
+
+    def raw_to_model(self, raw):
+        for row in range(self.model.height):
+            for col in range(self.model.width):
+                current_cell = row*self.model.width+col
+                current_cell = current_cell*4
+                self.model[row, col] = raw[current_cell+1:current_cell+4]
+
     def run(self):
         while True:
+
+            resp = self.client.recv(304)
+            if resp != "":
+                raw = struct.unpack("!{}B".format(76*4), resp)
+                self.raw_to_model(raw)
+                self.update()
             sleep(0.005)
 
 

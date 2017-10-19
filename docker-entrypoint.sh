@@ -31,7 +31,8 @@ case "$1" in
     queue)
         cd /usr/src/app/
         sleep 8
-        exec celery -A tasks worker --concurrency=1 --loglevel=DEBUG -l debug -Q userapp -n workerqueue
+        exec celery -A tasks worker --concurrency=1 -Q userapp -n workerqueue
+        #--loglevel=DEBUG -l debug
         ;;
     *)
         echo "Please specify argument (prod|dev) [ARGS..]";

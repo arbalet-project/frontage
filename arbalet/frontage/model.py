@@ -18,7 +18,7 @@ __all__ = ['Model']
 
 class Model(object):
     # line, column
-    def __init__(self, height, width, color=(0, 0, 0)):
+    def __init__(self, height, width, color=(0.0, 0.0, 0.0)):
         self.height = height
         self.width = width
         self.font = None

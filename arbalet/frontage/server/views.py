@@ -77,6 +77,13 @@ def admin_set_cal_at(user, at):
                     default="",
                     params={})
 
+@app.route('/b/admin/flag/<country>', methods=['GET'])
+def set_color(country):
+
+    state = SchedulerState.usable()
+    if state:
+        pass
+    return True
 
 
 ########### APP ###########
@@ -99,6 +106,8 @@ class AppRuningView(Resource):
     def post(self, user):
         name = request.get_json()['name']
         params = request.get_json()['params']
+        expires = request.get_json().get('expire', 600)
+        SchedulerState.set_forced_app(name, params, expires)
 
         return True
 
