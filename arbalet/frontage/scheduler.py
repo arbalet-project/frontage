@@ -134,5 +134,5 @@ def load_day_table(file_name):
 
 if __name__ == '__main__':
     load_day_table(SchedulerState.CITY)
-    scheduler = Scheduler(hardware=True)
+    scheduler = Scheduler(hardware=False)
     scheduler.run()

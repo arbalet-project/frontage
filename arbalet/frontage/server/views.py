@@ -7,7 +7,7 @@ import datetime
 from server import app
 from flask import request, jsonify, abort
 from flask_restful import reqparse, abort, Api, Resource
-from utils.security import authentication_required, generate_user_token
+from utils.security import authentication_required, generate_user_token, is_admin
 from utils.red import redis, redis_get
 from scheduler import Scheduler
 from scheduler_state import SchedulerState
@@ -117,7 +117,11 @@ class AppRuningView(Resource):
 class AppListView(Resource):
     @authentication_required
     def get(self, user):
-        return SchedulerState.get_available_apps()
+        apps = SchedulerState.get_available_apps()
+        if is_admin(user):
+            return SchedulerState.get_available_apps()
+        else:
+            return {k: v for k, v in apps.items() if v['activated']}
 
 ########### PUBLIC ###########
 

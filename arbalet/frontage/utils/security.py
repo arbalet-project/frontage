@@ -52,6 +52,32 @@ def authentication_required(f):
             return f(user=payload, *args, **kwargs)
     return decorated_function
 
+def is_admin(paylaod):
+    return paylaod.get('is_admin', False)
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'Authorization' not in request.headers:
+            abort(403, 'User not logged or no token received')
+        token = request.headers['Authorization']
+        token = token.split('Bearer ')
+        if len(token) > 1:
+            token = token[1]
+        else:
+            abort(403, 'Empty token')
+        try:
+            payload = extract_payload(token)
+        except Exception, e:
+            abort(403, 'User not logged or session expired')
+        else:
+            if payload['is_admin'] == True:
+                return f(user=payload, *args, **kwargs)
+            else:
+                abort(403, 'User is not an admin')
+    return decorated_function
+
+
 """
     Generate a JWT token for the CLIENT SIDE. User can READ but nor modify the token
 """

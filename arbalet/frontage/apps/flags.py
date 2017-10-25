@@ -8,6 +8,7 @@ class Flags(Fap):
     ITALY = 'italy'
 
     PLAYABLE = False
+    ACTIVATED = False
 
     PARAMS_LIST = {'uapp' : [FRENCH, GERMANY, SPAIN, ITALY ]}
 

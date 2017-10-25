@@ -7,6 +7,7 @@ from rabbit import CHANNEL
 class Fap(object):
     PARAMS_LIST = []
     PLAYABLE = False
+    ACTIVATED = True
     ENABLE = True
 
     def __init__(self, model=None):
@@ -35,5 +36,6 @@ class Fap(object):
         struct['params_list'] = self.PARAMS_LIST
         struct['user'] = self.username
         struct['playable'] = self.PLAYABLE
+        struct['activated'] = self.ACTIVATED
         struct['max_time'] = self.max_time
         return struct
