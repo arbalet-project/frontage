@@ -7,6 +7,7 @@ import pytest
 class Settings(object):
     BASE_URL = "http://127.0.0.1:8123"
     ADMIN = {'username': 'frontageadmin', 'password': 'frontagepassword'}
+    USER = {'username': '__XXX__'}
 
 
 def call(method, url, headers=None, **kwargs):

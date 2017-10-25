@@ -55,7 +55,7 @@ def authentication_required(f):
 """
     Generate a JWT token for the CLIENT SIDE. User can READ but nor modify the token
 """
-def generate_user_token(username):
+def generate_user_token(username, is_admin=False):
     now = datetime.datetime.utcnow()
     delta = datetime.timedelta(seconds=ONE_HOUR)
 
@@ -68,6 +68,7 @@ def generate_user_token(username):
         #'aud': audience
     }
     payload['username'] = username
+    payload['is_admin'] = is_admin
 
     return jwt.encode(payload, PRIVATE_WEB_KEY, algorithm=TOKEN_ALGO)
 

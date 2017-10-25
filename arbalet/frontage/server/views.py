@@ -31,7 +31,9 @@ def login():
     password = request.get_json().get('password', False)
 
     if ((username == 'frontageadmin') and password == 'frontagepassword'):
-        return jsonify(login=True, token=generate_user_token(username))
+        return jsonify(login=True, token=generate_user_token(username=username, is_admin=True))
+    elif username:
+        return jsonify(login=True, token=generate_user_token(username=username, is_admin=False))
     else:
         return jsonify(login=False)
 

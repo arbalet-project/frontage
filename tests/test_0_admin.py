@@ -8,6 +8,16 @@ def test_admin_respond_200():
     assert utils.is_status_ok(utils.call('GET', url='/status/is_up').status_code)
 
 
+def test_user_login():
+    res = utils.call('POST', url='/b/login', json=Settings.USER)
+    assert utils.is_status_ok(res.status_code)
+
+    res = res.json()
+
+    assert res['login']
+    assert len(res['token']) > 32
+
+
 def test_admin_login():
     res = utils.call('POST', url='/b/login', json=Settings.ADMIN)
     assert utils.is_status_ok(res.status_code)
@@ -16,7 +26,6 @@ def test_admin_login():
 
     assert res['login']
     assert len(res['token']) > 32
-
 
 def test_admin_is_on_status(login):
     res = utils.call('GET',
