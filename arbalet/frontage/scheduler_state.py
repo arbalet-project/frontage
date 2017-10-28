@@ -50,11 +50,8 @@ class SchedulerState(object):
 
     @staticmethod
     def set_forced_app(app_name, params, expires=600):
-        from tasks.tasks import start_forced_fap
-        from tasks.celery import app
-        # kill all task,
-        app.control.purge()
-        SchedulerState.set_current_app({})
+        from tasks.tasks import start_forced_fap, clear_all_task
+        clear_all_task()
         t = start_forced_fap.apply_async(args=[app_name, 'FORCED', params], expires=expires)
 
 

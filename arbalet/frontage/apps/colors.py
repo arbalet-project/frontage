@@ -9,26 +9,35 @@
 import random
 
 from utils.tools import Rate
-from ._generator import gen_random_flashing, gen_sweep_async, gen_sweep_rand
 from .fap import Fap
-
+from ._generator import animations
 
 class Colors(Fap):
     PLAYABLE = False
-    PARAMS_LIST = ['dur_min', 'dur_max', 'refresh_rate', 'generator']
-    GENERATORS_DICT = {  'random_flashing': gen_random_flashing,
-                    'sweep_async': gen_sweep_async,
-                    'sweep_rand': gen_sweep_rand }
+    # GENERATORS_DICT = { 'random_flashing': gen_random_flashing,
+    #                     'sweep_async': gen_sweep_async,
+    #                     'sweep_rand': gen_sweep_rand }
+    PARAMS_LIST = { 'uapp': [],
+                    'dur_min': 5,
+                    'dur_max': 20 ,
+                    'refresh_rate': 50}
 
-    def __init__(self):
+    def __init__(self, gen):
         Fap.__init__(self)
+        self.generator = gen
 
     def run(self, params):
-        self.durations_min = params.get('dur_min', 60)
-        self.durations_max = params.get('dur_max', 600)
-        self.rate = Rate(params.get('refresh_rate', 50))
+        if not self.generator:
+            print('GENERATOR NOT DEFINED. ABORDED')
+
+        if params and params.get('uapp', False) in self.PARAMS_LIST['uapp']:
+            params = animations[params['uapp']]
+
+        self.durations_min = params.get('dur_min', self.PARAMS_LIST.get('dur_min'))
+        self.durations_max = params.get('dur_max', self.PARAMS_LIST.get('dur_max'))
+        self.rate = Rate(params.get('refresh_rate', self.PARAMS_LIST.get('refresh_rate')))
         self.colors = params['colors']
-        self.generator = self.GENERATORS_DICT[params.get('generator')]
+
 
         # Construct all pixel generators
         generators = []

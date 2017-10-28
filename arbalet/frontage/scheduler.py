@@ -5,10 +5,14 @@ import sys
 from time import sleep
 from utils.red import redis, redis_get
 from controller import Frontage
-from apps.flags import Flags
 from tasks.tasks import start_fap
 from tasks.celery import app
 from scheduler_state import SchedulerState
+
+from apps.flags import Flags
+from apps.random_flashing import RandomFlashing
+from apps.sweep_async import SweepAsync
+from apps.sweep_rand import SweepRand
 
 def print_flush(s):
     print(s)
@@ -25,6 +29,7 @@ class Scheduler(object):
 
         redis.set(SchedulerState.KEY_SUNRISE, SchedulerState.DEFAULT_RISE)
         redis.set(SchedulerState.KEY_SUNDOWN, SchedulerState.DEFAULT_DOWN)
+        redis.set(SchedulerState.KEY_FORCED_APP, False)
 
         SchedulerState.set_current_app({})
 
@@ -33,7 +38,11 @@ class Scheduler(object):
         self.queue = None
         # Struct { ClassName : Instance, ClassName: Instance }
         # app.__class__.__name__
-        self.apps = {Flags.__name__: Flags(self.frontage)}
+        self.apps = {   Flags.__name__: Flags(),
+                        SweepAsync.__name__: SweepAsync(),
+                        SweepRand.__name__: SweepRand(),
+                        RandomFlashing.__name__: RandomFlashing()}
+
         SchedulerState.set_registered_apps(self.apps)
         # Set schduled time for app, in minutes
         redis.set(SchedulerState.KEY_SCHEDULED_APP_TIME, SchedulerState.DEFAULT_APP_SCHEDULE_TIME)
@@ -134,5 +143,5 @@ def load_day_table(file_name):
 
 if __name__ == '__main__':
     load_day_table(SchedulerState.CITY)
-    scheduler = Scheduler(hardware=False)
+    scheduler = Scheduler(hardware=True)
     scheduler.run()
