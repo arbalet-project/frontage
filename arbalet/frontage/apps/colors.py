@@ -14,6 +14,7 @@ from ._generator import animations
 
 class Colors(Fap):
     PLAYABLE = False
+    ACTIVATED = True
     # GENERATORS_DICT = { 'random_flashing': gen_random_flashing,
     #                     'sweep_async': gen_sweep_async,
     #                     'sweep_rand': gen_sweep_rand }

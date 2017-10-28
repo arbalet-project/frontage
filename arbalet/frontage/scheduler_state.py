@@ -16,7 +16,8 @@ class SchedulerState(object):
 
     DEFAULT_RISE = '2017-07-07T01:00:00'
     DEFAULT_DOWN = '2017-07-07T22:00:00'
-    DEFAULT_USER_OCCUPATION = 120 # in seconde
+    DEFAULT_KEEP_ALIVE_DELAY = 60 # in second
+    DEFAULT_USER_OCCUPATION = 120 # in second
     DEFAULT_APP_SCHEDULE_TIME = 15 # in minutes
     KEY_DAY_TABLE = 'frontage_day_table'
     CITY = 'data/bordeaux_user.sun'
@@ -33,8 +34,6 @@ class SchedulerState(object):
 
     KEY_SCHEDULED_APP_TIME = 'frontage_scheduler_app_time'
 
-    # Default planned apps
-    KEY_SCHEDULED_APP = 'frontage_scheduler_app'
     # admin override app
     KEY_FORCED_APP = 'frontage_forced_app'
     # App started by user, (queued)
@@ -130,18 +129,6 @@ class SchedulerState(object):
         return datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
 
     @staticmethod
-    def get_scheduled_apps():
-        return redis.lrange(SchedulerState.KEY_SCHEDULED_APP, 0, -1)
-
-
-    @staticmethod
-    def add_schedule_app(app_name):
-        apps = SchedulerState.get_scheduled_apps()
-        if app_name in apps:
-            return
-        redis.rpush(SchedulerState.KEY_SCHEDULED_APP, app_name)
-
-    @staticmethod
     def get_current_app():
         return json.loads(redis.get(SchedulerState.KEY_CURRENT_RUNNING_APP))
 
@@ -156,3 +143,25 @@ class SchedulerState(object):
     @staticmethod
     def app_started_at():
         redis.get(SchedulerState.KEY_APP_STARTED_AT)
+
+    @staticmethod
+    def get_user_app_queue(self):
+        from tasks.celery import app
+
+        return app.control.inspect(['celery@workerqueue']).reserved()['celery@workerqueue']
+
+    @staticmethod
+    def start_scheduled_app(username, app_name, params, expires):
+        from tasks.tasks import start_fap
+        queue = json.loads(redis_get(SchedulerState.KEY_USERS_Q, '[]'))
+        t = start_fap.apply_async(args=[app_name, username, params], expires=expires)
+        if next((x for x in queue if x['username'] == username), False):
+            raise Exception('User already in queue')
+        queue.append({'username': username, 'task_id': t.task_id})
+        redis.set(SchedulerState.KEY_USERS_Q, json.dumps(queue))
+
+        return {'keep_alive_delay': SchedulerState.DEFAULT_KEEP_ALIVE_DELAY, 'queued': True}
+
+
+    # redis.rpush(SchedulerState.KEY_SCHEDULED_APP, app_name)
+    # return redis.lrange(SchedulerState.KEY_SCHEDULED_APP, 0, -1)

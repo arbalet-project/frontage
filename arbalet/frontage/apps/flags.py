@@ -8,7 +8,7 @@ class Flags(Fap):
     ITALY = 'italy'
 
     PLAYABLE = False
-    ACTIVATED = False
+    ACTIVATED = True
 
     PARAMS_LIST = {'uapp' : [FRENCH, GERMANY, SPAIN, ITALY ]}
 
@@ -58,5 +58,5 @@ class Flags(Fap):
 
     def run(self, params):
         self.params = params
-        if params in self.PARAMS_LIST['uapp']:
-            getattr(self, params)()
+        if params and params.get('uapp', False) in self.PARAMS_LIST['uapp']:
+            getattr(self, params.get('uapp'))()

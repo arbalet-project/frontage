@@ -29,6 +29,7 @@ class Scheduler(object):
 
         redis.set(SchedulerState.KEY_SUNRISE, SchedulerState.DEFAULT_RISE)
         redis.set(SchedulerState.KEY_SUNDOWN, SchedulerState.DEFAULT_DOWN)
+        redis.set(SchedulerState.KEY_USERS_Q, '[]')
         redis.set(SchedulerState.KEY_FORCED_APP, False)
 
         SchedulerState.set_current_app({})
@@ -70,15 +71,6 @@ class Scheduler(object):
     #             self.start_next_app()
     #         print(' BlaBLa Im running Bru` ')
 
-    def start_queued_app(self):
-        pass
-
-    def start_scheduled_app(self):
-        pass
-
-    def get_user_app_queue(self):
-        return app.control.inspect(['celery@workerqueue']).reserved()['celery@workerqueue']
-
     def get_current_user_app(self):
         try:
             a = app.control.inspect(['celery@workerqueue']).active()['celery@workerqueue']
@@ -92,7 +84,7 @@ class Scheduler(object):
             return
         if len(self.get_current_user_app()) >= 1:
             # there is One running task and ONE user waiting to play.
-            if len(self.get_user_app_queue()) >= 1:
+            if len(SchedulerState.get_user_app_queue()) >= 1:
                 pass
             else:
                 pass
@@ -103,10 +95,10 @@ class Scheduler(object):
         last_state = False
         usable = SchedulerState.usable()
         count = 0
-        print('[SCHEDULER] Entering loop')
+        print_flush('[SCHEDULER] Entering loop')
         # self.running_task = start_fap.apply_async(args=['app1'], queue='userapp')
         self.frontage.start()
-        self.running_task = start_fap.apply_async(args=['Flags', 'user', 'french'], queue='userapp', expires=2)
+        # self.running_task = start_fap.apply_async(args=['Flags', 'user', 'french'], queue='userapp', expires=2)
 
         while True:
             # Check if usable change
@@ -122,7 +114,7 @@ class Scheduler(object):
             # Ugly sleep to avoid CPU consuming, not really usefull but I pref use it ATM before advanced tests
             count += 1
             if (count % 500) == 0:
-                print('===== Scheduler still running =====')
+                print_flush('===== Scheduler still running =====')
             # if (count % 20) == 0:
             #     self.running_task = start_fap.apply_async(args=['Flags', 'user', 'french'], queue='userapp', expires=2)
             # if ((count+10) % 20) == 0:

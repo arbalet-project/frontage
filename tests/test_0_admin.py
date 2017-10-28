@@ -27,14 +27,14 @@ def test_admin_login():
     assert res['login']
     assert len(res['token']) > 32
 
-def test_admin_is_on_status(login):
-    res = utils.call('GET',
-                        url='/b/admin/is_on',
-                        headers={'Authorization': 'Bearer '+login})
-    assert utils.is_status_ok(res.status_code)
+# def test_admin_is_on_status(login):
+#     res = utils.call('GET',
+#                         url='/b/admin/is_on',
+#                         headers={'Authorization': 'Bearer '+login})
+#     assert utils.is_status_ok(res.status_code)
 
-    res = res.json()
-    assert isinstance(res['on'], bool)
+#     res = res.json()
+#     assert isinstance(res['on'], bool)
 
 
 def test_admin_set_enabled_true(login):
@@ -106,17 +106,17 @@ def test_admin_set_cal_at(login):
 
 def test_admin_apps_list(login):
     res = utils.call('GET',
-                        url='/b/admin/apps',
+                        url='/b/apps',
                         headers={'Authorization': 'Bearer '+login})
     assert utils.is_status_ok(res.status_code)
 
     res = res.json()
-    assert isinstance(res, dict)
+    assert isinstance(res, list)
 
 
 def test_admin_current_app(login):
     res = utils.call('GET',
-                        url='/b/admin/apps/running',
+                        url='/b/apps/running',
                         headers={'Authorization': 'Bearer '+login})
     assert utils.is_status_ok(res.status_code)
     res = res.json()
@@ -138,7 +138,7 @@ def test_admin_force_app_set(login):
     sleep(2)
     params = {'uapp': 'swipe'}
     res = utils.call('POST',
-                        url='/b/admin/apps/running',
+                        url='/b/apps/running',
                         json={'name': 'SweepAsync', 'params': params},
                         headers={'Authorization': 'Bearer '+login})
     assert utils.is_status_ok(res.status_code)

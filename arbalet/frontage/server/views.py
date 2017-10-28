@@ -6,7 +6,7 @@ import datetime
 
 from server import app
 from flask import request, jsonify, abort
-from flask_restful import reqparse, abort, Api, Resource
+from flask_restful import reqparse, Api, Resource
 from utils.security import authentication_required, generate_user_token, is_admin
 from utils.red import redis, redis_get
 from scheduler import Scheduler
@@ -41,11 +41,6 @@ def login():
 
 ADMIN_BASE = '/b/admin'
 
-@app.route(ADMIN_BASE+'/is_on', methods=['GET'])
-@authentication_required
-def admin_is_on(user):
-    return jsonify(on=SchedulerState.usable())
-
 
 @app.route(ADMIN_BASE+'/enabled', methods=['POST'])
 @authentication_required
@@ -58,8 +53,7 @@ def admin_enabled_scheduler(user):
 
 @app.route('/b/admin/cal', methods=['GET'])
 @app.route('/b/admin/cal/<at>', methods=['GET'])
-@authentication_required
-def admin_cal_at(user, at=None):
+def admin_cal_at(at=None):
     return jsonify( on=SchedulerState.get_sundown(at).strftime('%H:%M'),
                     off=SchedulerState.get_sunrise(at).strftime('%H:%M'),
                     default="",
@@ -78,15 +72,6 @@ def admin_set_cal_at(user, at):
                     off=SchedulerState.get_sunrise(at).strftime('%H:%M'),
                     default="",
                     params={})
-
-@app.route('/b/admin/flag/<country>', methods=['GET'])
-def set_color(country):
-
-    state = SchedulerState.usable()
-    if state:
-        pass
-    return True
-
 
 ########### APP ###########
 
@@ -109,9 +94,14 @@ class AppRuningView(Resource):
         name = request.get_json()['name']
         params = request.get_json()['params']
         expires = request.get_json().get('expire', 600)
-        SchedulerState.set_forced_app(name, params, expires)
-
-        return True
+        if is_admin(user):
+            SchedulerState.set_forced_app(name, params, expires)
+        else:
+            try:
+                return SchedulerState.start_scheduled_app(user['username'], name, params, params.get('expires', (60*5)))
+            except Exception, e:
+                abort(403, str(e))
+            # SchedulerState.set_forced_app(name, params, expires)
 
 
 class AppListView(Resource):
@@ -119,11 +109,20 @@ class AppListView(Resource):
     def get(self, user):
         apps = SchedulerState.get_available_apps()
         if is_admin(user):
-            return SchedulerState.get_available_apps()
+            apps = SchedulerState.get_available_apps()
         else:
-            return {k: v for k, v in apps.items() if v['activated']}
+            apps = {k: v for k, v in apps.items() if v['activated']}
+
+        formated = []
+        for x in apps:
+            formated.append(apps[x])
+        return formated
 
 ########### PUBLIC ###########
+@app.route('/b/apps/position', methods=['GET'])
+@authentication_required
+def app_position(user):
+    return jsonify(position=42)
 
 @app.route('/frontage/status', methods=['GET'])
 def status():
@@ -138,5 +137,5 @@ def next_date():
     return jsonify(is_usable=state)
 
 
-api.add_resource(AppRuningView, '/b/admin/apps/running')
-api.add_resource(AppListView, '/b/admin/apps')
+api.add_resource(AppRuningView, '/b/apps/running')
+api.add_resource(AppListView, '/b/apps')
