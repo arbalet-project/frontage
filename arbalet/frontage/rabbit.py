@@ -13,4 +13,4 @@ PARAMS = pika.ConnectionParameters(  'rabbit',
                           CREDENTIALS)
 RABBIT_CONNECTION = pika.BlockingConnection(PARAMS)
 CHANNEL = RABBIT_CONNECTION.channel()
-CHANNEL.queue_declare(queue=SchedulerState.KEY_MODEL)
+QUEUE_OBJ = CHANNEL.queue_declare(queue=SchedulerState.KEY_MODEL, arguments={"x-max-length":5})

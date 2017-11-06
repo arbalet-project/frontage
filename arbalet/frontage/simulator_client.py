@@ -108,7 +108,7 @@ class Simulator(object):
                 raw = struct.unpack("!{}B".format(76*4), resp)
                 self.raw_to_model(raw)
                 self.update()
-            sleep(0.005)
+            # sleep(0.005)
 
 
     def close(self):

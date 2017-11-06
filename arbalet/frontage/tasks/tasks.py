@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import datetime
 import sys
+import json
 
 from time import sleep
 
@@ -35,17 +36,19 @@ def clear_all_task():
 
 
 @app.task
-def start_fap(fap_name=None, user_name='Anonymous', params=None):
+def start_fap(app):
     SchedulerState.set_app_started_at()
-    app_struct = {'name': fap_name, 'username': user_name, 'params': params, 'started_at': datetime.datetime.now().isoformat() }
-    SchedulerState.set_current_app(app_struct)
-    if fap_name:
-        try:
-            fap = globals()[fap_name]()
-            fap.run(params=params)
-        except Exception, e:
-            print('Error when starting task'+str(e))
-            return 'Error when starting task'+str(e)
+    app['expire_at'] = str(datetime.datetime.now() + datetime.timedelta(seconds=app['expires']))
+    app['task_id'] = start_fap.request.id
+    app['started_at'] = datetime.datetime.now().isoformat()
+
+    SchedulerState.set_current_app(app)
+    try:
+        fap = globals()[app['name']]()
+        fap.run(params=app['params'])
+    except Exception, e:
+        print('Error when starting task'+str(e))
+        return 'Error when starting task'+str(e)
 
 
 @app.task

@@ -46,14 +46,14 @@ def test_admin_set_enabled_true(login):
     res = res.json()
     assert res['enabled'] == True
 
-def test_admin_set_enabled_false(login):
-    res = utils.call('POST',
-                        url='/b/admin/enabled',
-                        json={'enabled': False},
-                        headers={'Authorization': 'Bearer '+login})
-    assert utils.is_status_ok(res.status_code)
-    res = res.json()
-    assert res['enabled'] == False
+# def test_admin_set_enabled_false(login):
+#     res = utils.call('POST',
+#                         url='/b/admin/enabled',
+#                         json={'enabled': False},
+#                         headers={'Authorization': 'Bearer '+login})
+#     assert utils.is_status_ok(res.status_code)
+#     res = res.json()
+#     assert res['enabled'] == False
 
 
 def test_admin_cal(login):
@@ -134,15 +134,33 @@ def test_admin_current_app(login):
 #                         headers={'Authorization': 'Bearer '+login})
 #     assert utils.is_status_ok(res.status_code)
 
-def test_admin_force_app_set(login):
-    sleep(2)
+# def test_admin_force_app_set(login):
+#     sleep(2)
+#     params = {'uapp': 'swipe'}
+#     res = utils.call('POST',
+#                         url='/b/apps/running',
+#                         json={'name': 'SweepAsync', 'params': params},
+#                         headers={'Authorization': 'Bearer '+login})
+#     assert utils.is_status_ok(res.status_code)
+
+
+def test_user_app_set():
+    login = utils.call('POST', url='/b/login', json=Settings.USER).json()['token']
     params = {'uapp': 'swipe'}
     res = utils.call('POST',
                         url='/b/apps/running',
-                        json={'name': 'SweepAsync', 'params': params},
+                        json={'name': 'SweepAsync', 'params': params, 'expires':20},
                         headers={'Authorization': 'Bearer '+login})
     assert utils.is_status_ok(res.status_code)
 
+def test_user_app_position():
+    login = utils.call('POST', url='/b/login', json=Settings.USER).json()['token']
+    params = {'uapp': 'swipe'}
+    res = utils.call('GET',
+                        url='/b/apps/position',
+                        headers={'Authorization': 'Bearer '+login})
+    assert utils.is_status_ok(res.status_code)
+    print(res.json())
 
 # def test_admin_force_app_set_2(login):
 #     sleep(2)

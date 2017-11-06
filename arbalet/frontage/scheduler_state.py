@@ -3,8 +3,10 @@ from __future__ import print_function
 import json
 import datetime
 import sys
+import time
 
 from time import sleep
+from celery.task.control import revoke
 from utils.red import redis, redis_get
 
 def flask_log(msg):
@@ -16,9 +18,9 @@ class SchedulerState(object):
 
     DEFAULT_RISE = '2017-07-07T01:00:00'
     DEFAULT_DOWN = '2017-07-07T22:00:00'
-    DEFAULT_KEEP_ALIVE_DELAY = 60 # in second
-    DEFAULT_USER_OCCUPATION = 120 # in second
-    DEFAULT_APP_SCHEDULE_TIME = 15 # in minutes
+    DEFAULT_KEEP_ALIVE_DELAY = 60  # in second
+    DEFAULT_USER_OCCUPATION = 120  # in second
+    DEFAULT_APP_SCHEDULE_TIME = 15  # in minutes
     KEY_DAY_TABLE = 'frontage_day_table'
     CITY = 'data/bordeaux_user.sun'
 
@@ -45,7 +47,7 @@ class SchedulerState(object):
     @staticmethod
     def get_forced_app():
         # add callback on frocer_app_task_launcher to set variable to false when done
-        return redis_get(SchedulerState.KEY_FORCED_APP, False)
+        return redis_get(SchedulerState.KEY_FORCED_APP, False) == 'True'
 
     @staticmethod
     def set_forced_app(app_name, params, expires=600):
@@ -145,19 +147,62 @@ class SchedulerState(object):
         redis.get(SchedulerState.KEY_APP_STARTED_AT)
 
     @staticmethod
-    def get_user_app_queue(self):
-        from tasks.celery import app
+    def stop_current_running_app(c_app):
+        # Stop and clear current app
+        SchedulerState.set_current_app({})
+        revoke(c_app['task_id'], terminate=True)
+        sleep(0.05)
 
-        return app.control.inspect(['celery@workerqueue']).reserved()['celery@workerqueue']
+    @staticmethod
+    def pop_user_app_queue(queue=None):
+        if not queue:
+            queue = SchedulerState.get_user_app_queue()
+        p = queue.pop(0)
+        redis.set(SchedulerState.KEY_USERS_Q, json.dumps(queue))
+        return p
+
+    @staticmethod
+    def get_user_app_queue():
+        return SchedulerState.get_user_queue()
+        # from tasks.celery import app
+        # return app.control.inspect(['celery@workerqueue']).reserved()['celery@workerqueue']
+
+    @staticmethod
+    def get_user_position(user):
+        queue = SchedulerState.get_user_queue()
+        i = 1
+        username = user['username']
+        for u in queue:
+            if u['username'] == username:
+                return i
+            i += 1
+        return -1
+
+
+    @staticmethod
+    def get_user_queue():
+        return json.loads(redis_get(SchedulerState.KEY_USERS_Q, '[]'))
 
     @staticmethod
     def start_scheduled_app(username, app_name, params, expires):
-        from tasks.tasks import start_fap
-        queue = json.loads(redis_get(SchedulerState.KEY_USERS_Q, '[]'))
-        t = start_fap.apply_async(args=[app_name, username, params], expires=expires)
+        # from tasks.tasks import start_fap
+        # Check Queue
+        queue = SchedulerState.get_user_queue()
         if next((x for x in queue if x['username'] == username), False):
             raise Exception('User already in queue')
-        queue.append({'username': username, 'task_id': t.task_id})
+
+        app_struct = {  'name': app_name,
+                    'username': username,
+                    'params': params,
+                    'started_wait_at': datetime.datetime.now().isoformat(),
+                    'expires': expires,
+                    'task_id': None,
+                    'last_alive': time.time(),
+                    'expire_at': None}
+        # Actually starting app
+        # t = start_fap.apply_async(args=[app_name, username, params, expires], queue='userapp', potato='fghbjndfghj')
+        # Add to queue starting app
+        queue.append(app_struct)
         redis.set(SchedulerState.KEY_USERS_Q, json.dumps(queue))
 
         return {'keep_alive_delay': SchedulerState.DEFAULT_KEEP_ALIVE_DELAY, 'queued': True}

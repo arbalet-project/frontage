@@ -83,7 +83,7 @@ parser.add_argument('comment')
 class AppRuningView(Resource):
     @authentication_required
     def get(self, user):
-        return jsonify( SchedulerState.get_current_app() )
+        return jsonify(SchedulerState.get_current_app())
 
     @authentication_required
     def delete(self, user):
@@ -93,13 +93,17 @@ class AppRuningView(Resource):
     def post(self, user):
         name = request.get_json()['name']
         params = request.get_json()['params']
-        expires = request.get_json().get('expire', 600)
+        expires = request.get_json().get('expires', 600)
+        if not SchedulerState.usable():
+            flask_log("Frontage is not started")
+            abort(400, "Frontage is not started")
         if is_admin(user):
             SchedulerState.set_forced_app(name, params, expires)
         else:
             try:
-                return SchedulerState.start_scheduled_app(user['username'], name, params, params.get('expires', (60*5)))
+                return SchedulerState.start_scheduled_app(user['username'], name, params, expires)
             except Exception, e:
+                flask_log(str(e))
                 abort(403, str(e))
             # SchedulerState.set_forced_app(name, params, expires)
 
@@ -122,7 +126,7 @@ class AppListView(Resource):
 @app.route('/b/apps/position', methods=['GET'])
 @authentication_required
 def app_position(user):
-    return jsonify(position=42)
+    return jsonify(position=SchedulerState.get_user_position(user))
 
 @app.route('/frontage/status', methods=['GET'])
 def status():

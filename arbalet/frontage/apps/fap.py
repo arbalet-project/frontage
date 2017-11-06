@@ -1,14 +1,15 @@
-
+import time
 from utils.red import redis, redis_get
 from scheduler_state import SchedulerState
 from model import Model
-from rabbit import CHANNEL
+from rabbit import CHANNEL, RABBIT_CONNECTION
 
 class Fap(object):
     PARAMS_LIST = []
     PLAYABLE = False
     ACTIVATED = True
     ENABLE = True
+    CNT = 0
 
     def __init__(self, model=None):
         self.username = None
@@ -24,6 +25,8 @@ class Fap(object):
         raise NotImplementedError("Fap.run() must be overidden")
 
     def send_model(self):
+        # self.CNT += 1
+        # print(self.CNT)
         CHANNEL.basic_publish(exchange='',
             routing_key=SchedulerState.KEY_MODEL,
             body=self.model.json())
@@ -39,3 +42,9 @@ class Fap(object):
         struct['activated'] = self.ACTIVATED
         struct['max_time'] = self.max_time
         return struct
+
+    def __del__(self):
+        print('----------CLOSE-')
+        time.sleep(0.1)
+        # CHANNEL.queue_delete(queue=SchedulerState.KEY_MODEL)
+        # RABBIT_CONNECTION.close()

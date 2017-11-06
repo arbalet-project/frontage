@@ -10,7 +10,7 @@ from socket import *
 from struct import pack
 from numpy import array
 from pygame.time import Clock
-from rabbit import CHANNEL
+from rabbit import CHANNEL, QUEUE_OBJ
 
 
 __all__ = ['Frontage']
@@ -21,6 +21,7 @@ def print_flush(s):
 
 
 class Frontage(Thread):
+    CNT = 0
     def __init__(self, hardware_port=33640, hardware=True):
         Thread.__init__(self)
         self.model = Model(4, 19)
@@ -73,6 +74,11 @@ class Frontage(Thread):
 
     def handle_model_msg(self, channel, method, properties, body):
         # print('[MODEL-QUEUE] Received data')
+        # self.CNT += 1
+        # print('--->'+str(self.CNT))
+        # print("---")
+        # print(QUEUE_OBJ.method.message_count)
+
         self.model.set_from_json(body)
         self.update()
 

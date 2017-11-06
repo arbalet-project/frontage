@@ -1,5 +1,7 @@
+
 import json
 import datetime
+import time
 import sys
 
 from time import sleep
@@ -14,11 +16,13 @@ from apps.random_flashing import RandomFlashing
 from apps.sweep_async import SweepAsync
 from apps.sweep_rand import SweepRand
 
+
 def print_flush(s):
     print(s)
     sys.stdout.flush()
 
-TASK_EXPIRATION=1800
+TASK_EXPIRATION = 1800
+
 
 class Scheduler(object):
 
@@ -39,16 +43,14 @@ class Scheduler(object):
         self.queue = None
         # Struct { ClassName : Instance, ClassName: Instance }
         # app.__class__.__name__
-        self.apps = {   Flags.__name__: Flags(),
-                        SweepAsync.__name__: SweepAsync(),
-                        SweepRand.__name__: SweepRand(),
-                        RandomFlashing.__name__: RandomFlashing()}
+        self.apps = {Flags.__name__: Flags(),
+                    SweepAsync.__name__: SweepAsync(),
+                    SweepRand.__name__: SweepRand(),
+                    RandomFlashing.__name__: RandomFlashing()}
 
         SchedulerState.set_registered_apps(self.apps)
         # Set schduled time for app, in minutes
         redis.set(SchedulerState.KEY_SCHEDULED_APP_TIME, SchedulerState.DEFAULT_APP_SCHEDULE_TIME)
-
-
     # def start_next_app(self):
     #     app = {}
     #     app['name'] = redis.lindex(SchedulerState.KEY_SCHEDULED_APP, 0)
@@ -70,8 +72,8 @@ class Scheduler(object):
     #             redis.rpush(SchedulerState.KEY_SCHEDULED_APP, old_current)
     #             self.start_next_app()
     #         print(' BlaBLa Im running Bru` ')
-
     def get_current_user_app(self):
+        # Deprecated
         try:
             a = app.control.inspect(['celery@workerqueue']).active()['celery@workerqueue']
             return a
@@ -79,17 +81,60 @@ class Scheduler(object):
             print_flush(str(e))
             return []
 
+    def keep_alive_waiting_app(self):
+        queue = SchedulerState.get_user_app_queue()
+        to_remove = []
+        i = 0
+        for app in queue:
+            # Not alive since last check ?
+            if time.time() > (app['last_alive'] + SchedulerState.DEFAULT_KEEP_ALIVE_DELAY):
+                to_remove.append(i)
+            i += 1
+        for rm_app in to_remove:
+            queue.pop(rm_app)
+
     def check_scheduler(self):
         if SchedulerState.get_forced_app():
             return
-        if len(self.get_current_user_app()) >= 1:
-            # there is One running task and ONE user waiting to play.
-            if len(SchedulerState.get_user_app_queue()) >= 1:
-                pass
-            else:
-                pass
+
+        self.keep_alive_waiting_app()
+        queue = SchedulerState.get_user_app_queue()
+        c_app = SchedulerState.get_current_app()
+        # one task already running
+        if c_app:
+            # Someone wait for his own task ?
+            if len(queue) > 0:
+                next_app = queue[0]
+                if datetime.datetime.now() > datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f"):
+                    print_flush('===> REVOKING APP, someone else turn')
+                    SchedulerState.stop_current_running_app(c_app)
+                    # Start app
+                    t = start_fap.apply_async(args=[next_app], queue='userapp')
+                    # Remove app form waiting Q
+                    SchedulerState.pop_user_app_queue(queue)
         else:
-            pass
+            if len(queue) > 0:
+                start_fap.apply_async(args=[queue[0]], queue='userapp')
+                SchedulerState.pop_user_app_queue(queue)
+
+        # if SchedulerState.get_forced_app():
+        #     return
+        # if len(self.get_current_user_app()) > 0:
+        #     app = SchedulerState.get_current_app()
+        #     if datetime.datetime.now() > datetime.datetime.strptime(app['expire_at'], "%Y-%m-%d %H:%M:%S.%f"):
+        #         print_flush("-------")
+        #         print_flush(self.get_current_user_app()[0])
+        #         print_flush("-------")
+        #         print_flush('===> REVOKING APP, someone else turn')
+        #         revoke(app['task_id'], terminate=True)
+        # if len(self.get_current_user_app()) >= 1:
+        #     # there is One running task and ONE user waiting to play.
+        #     if len(SchedulerState.get_user_app_queue()) >= 1:
+        #         pass
+        #     else:
+        #         pass
+        # else:
+        #     pass
 
     def run(self):
         last_state = False
@@ -102,29 +147,19 @@ class Scheduler(object):
 
         while True:
             # Check if usable change
-            if (usable != last_state) and last_state == True:
+            if (usable != last_state) and last_state is True:
                 self.frontage.erase_all()
                 self.frontage.update()
                 last_state = usable
             # Available, play machine state
             elif SchedulerState.usable():
                 self.check_scheduler()
-            ## self.running_task = start_fap.apply_async(args=['Flags'], queue='userapp', expires=TASK_EXPIRATION)
 
             # Ugly sleep to avoid CPU consuming, not really usefull but I pref use it ATM before advanced tests
             count += 1
             if (count % 500) == 0:
                 print_flush('===== Scheduler still running =====')
-            # if (count % 20) == 0:
-            #     self.running_task = start_fap.apply_async(args=['Flags', 'user', 'french'], queue='userapp', expires=2)
-            # if ((count+10) % 20) == 0:
-            #     self.running_task = start_fap.apply_async(args=['Flags', 'user', 'spain'], queue='userapp', expires=2)
-            # if ((count+5) % 20) == 0:
-            #     self.running_task = start_fap.apply_async(args=['Flags', 'user', 'germany'], queue='userapp', expires=2)
-            # if ((count+15) % 20) == 0:
-            #     self.running_task = start_fap.apply_async(args=['Flags', 'user', 'italy'], queue='userapp', expires=2)
-            sleep(0.02)
-
+            sleep(0.5)
 
 
 def load_day_table(file_name):
