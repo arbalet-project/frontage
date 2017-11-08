@@ -190,6 +190,10 @@ class SchedulerState(object):
         queue = SchedulerState.get_user_queue()
         if next((x for x in queue if x['username'] == username), False):
             raise Exception('User already in queue')
+        c_app = SchedulerState.get_current_app()
+        if c_app and c_app.get('username', False) == username:
+            if datetime.datetime.now() <= datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f"):
+                raise Exception('User is already the owner of the current app')
 
         app_struct = {  'name': app_name,
                     'username': username,

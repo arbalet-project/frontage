@@ -45,6 +45,6 @@ class Fap(object):
 
     def __del__(self):
         print('----------CLOSE-')
-        time.sleep(0.1)
+        time.sleep(0.2)
         # CHANNEL.queue_delete(queue=SchedulerState.KEY_MODEL)
         # RABBIT_CONNECTION.close()

@@ -24,16 +24,29 @@ def check_sunrise_sunset():
     print('[CELERY] {PERIODIC} Check Sunrise & Sunset}')
 
     state = redis_get(SchedulerState.KEY_SUN_STATE)
-    now = datetime.datetime.now()
+    now = datetime.datetime.now().time()
 
-    if state == SchedulerState.KEY_SUNRISE:
-        if now.time() > SchedulerState.get_sundown().time():
-            state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNDOWN)
-            SchedulerState.set_usable(True)
-    else:
-        if now.time() > SchedulerState.get_sunrise().time():
-            state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNRISE)
-            SchedulerState.set_usable(False)
+    on_at = SchedulerState.get_sundown().time()
+    off_at = SchedulerState.get_sunrise().time()
+
+    if now < off_at:
+        state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNDOWN)
+        SchedulerState.set_usable(True)
+    elif now > off_at and now < on_at:
+        state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNRISE)
+        SchedulerState.set_usable(False)
+    elif now > off_at  and now > on_at:
+        state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNDOWN)
+        SchedulerState.set_usable(True)
+
+    # if state == SchedulerState.KEY_SUNRISE:
+    #     if now.time() > SchedulerState.get_sundown().time():
+    #         state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNDOWN)
+    #         SchedulerState.set_usable(True)
+    # else:
+    #     if now.time() > SchedulerState.get_sunrise().time():
+    #         state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNRISE)
+    #         SchedulerState.set_usable(False)
     return True
 
 

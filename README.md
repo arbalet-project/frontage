@@ -25,3 +25,22 @@ To check state, go there:
 
 http://localhost:8123/frontage/status
 
+
+
+# Example with python CLI
+
+move to frontage/test, then open a python shell
+
+login as user:
+`login = utils.call('POST', url='/b/login', json=Settings.USER).json()['token']`
+
+login as admin:
+`admin = utils.call('POST', url='/b/login', json=Settings.ADMIN).json()['token']`
+
+Enable frontage:
+`utils.call('POST', url='/b/admin/enabled',json={'enabled': True}, headers={'Authorization': 'Bearer '+admin})`
+
+Start apps:
+
+`utils.call('POST', url='/b/apps/running',json={'name': 'SweepAsync', 'params': {'uapp': 'swipe'}, 'expires':20},headers={'Authorization': 'Bearer '+login}).json()
+utils.call('POST', url='/b/apps/running',json={'name': 'Flags', 'params': {'uapp': 'french'}, 'expires':20},headers={'Authorization': 'Bearer '+login}).json()`
