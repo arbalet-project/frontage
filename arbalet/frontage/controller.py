@@ -3,15 +3,16 @@ from __future__ import print_function
 import sys
 import pika, os
 
-from model import Model
-from scheduler_state import SchedulerState
-from threading import Thread
 from socket import *
 from struct import pack
 from numpy import array
+from model import Model
 from pygame.time import Clock
-from rabbit import CHANNEL, QUEUE_OBJ
+from threading import Thread
 
+from scheduler_state import SchedulerState
+# from rabbit import CHANNEL, QUEUE_OBJ
+from utils.red import redis
 
 __all__ = ['Frontage']
 
@@ -84,13 +85,22 @@ class Frontage(Thread):
 
     def run(self):
         print("==> Frontage Controler Started")
-        try:
-            CHANNEL.basic_consume(self.handle_model_msg,
-              queue=SchedulerState.KEY_MODEL,
-              no_ack=True)
+        self.pubsub = redis.pubsub()
+        self.pubsub.subscribe([SchedulerState.KEY_MODEL])
 
-            # start consuming (blocks)
-            CHANNEL.start_consuming()
+        try:
+            # CHANNEL.basic_qos(prefetch_count=1)
+            # CHANNEL.basic_consume(self.handle_model_msg,
+            #   queue=SchedulerState.KEY_MODEL,
+            #   no_ack=True)
+
+            # # start consuming (blocks)
+            # CHANNEL.start_consuming()
+
+            for item in self.pubsub.listen():
+                if item['type'] == 'message' and item['data']:
+                    self.model.set_from_json(item['data'])
+                    self.update()
         finally:
             self.close()
 

@@ -9,6 +9,7 @@
 import random
 
 from utils.tools import Rate
+from utils.colors import name_to_hsv, cnames, rgb_to_hsv
 from .fap import Fap
 from ._generator import animations
 
@@ -21,7 +22,8 @@ class Colors(Fap):
     PARAMS_LIST = { 'uapp': [],
                     'dur_min': 5,
                     'dur_max': 20 ,
-                    'refresh_rate': 50}
+                    'refresh_rate': 50,
+                    'colors': []}
 
     def __init__(self, gen):
         Fap.__init__(self)
@@ -30,15 +32,22 @@ class Colors(Fap):
     def run(self, params):
         if not self.generator:
             print('GENERATOR NOT DEFINED. ABORDED')
+        c_params = None
+        if params and (params.get('uapp', False) in self.PARAMS_LIST['uapp']):
+            c_params = animations[params['uapp']]
 
-        if params and params.get('uapp', False) in self.PARAMS_LIST['uapp']:
-            params = animations[params['uapp']]
+        self.durations_min = params.get('dur_min', c_params.get('dur_min'))
+        self.durations_max = params.get('dur_max', c_params.get('dur_max'))
+        self.rate = Rate(params.get('refresh_rate', c_params.get('rate')))
 
-        self.durations_min = params.get('dur_min', self.PARAMS_LIST.get('dur_min'))
-        self.durations_max = params.get('dur_max', self.PARAMS_LIST.get('dur_max'))
-        self.rate = Rate(params.get('refresh_rate', self.PARAMS_LIST.get('refresh_rate')))
-        self.colors = params['colors']
-
+        self.colors = []
+        for c in params['colors']:
+            if isinstance(c, (tuple, list, set)):
+                self.colors.append(rgb_to_hsv(c))
+            elif c in cnames:
+                self.colors.append(name_to_hsv(c))
+            else:
+                print(str(c)+' is not a valid color')
 
         # Construct all pixel generators
         generators = []

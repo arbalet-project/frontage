@@ -84,14 +84,15 @@ class Scheduler(object):
     def keep_alive_waiting_app(self):
         queue = SchedulerState.get_user_app_queue()
         to_remove = []
-        i = 0
-        for app in queue:
+        # i = 0
+        for app in list(queue):
             # Not alive since last check ?
             if time.time() > (app['last_alive'] + SchedulerState.DEFAULT_KEEP_ALIVE_DELAY):
-                to_remove.append(i)
-            i += 1
-        for rm_app in to_remove:
-            queue.pop(rm_app)
+                # to_remove.append(i)
+                queue.remove(app)
+            # i += 1
+        # for rm_app in to_remove:
+        #     queue.pop(rm_app)
 
     def check_scheduler(self):
         if SchedulerState.get_forced_app():

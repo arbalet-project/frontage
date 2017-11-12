@@ -49,3 +49,9 @@ services:
       - rabbit:rabbit
       - redis:redis
     command: ["worker"]
+  postgres:
+    image: postgres
+    env_file: .env-dev
+    restart: always
+    ports:
+      - 5544:5544

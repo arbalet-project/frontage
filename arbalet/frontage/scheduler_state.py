@@ -71,12 +71,16 @@ class SchedulerState(object):
     """ Is scheduller on or off ATM ?"""
     @staticmethod
     def usable():
+
+        return True
+
         val = redis_get(SchedulerState.KEY_USABLE)
         return val == "True"
 
     @staticmethod
     def set_usable(value):
-        redis.set(SchedulerState.KEY_USABLE, str(value))
+        ##### redis.set(SchedulerState.KEY_USABLE, str(value))
+        redis.set(SchedulerState.KEY_USABLE, str('True'))
 
     @staticmethod
     def default_scheduled_time():
@@ -174,6 +178,8 @@ class SchedulerState(object):
         username = user['username']
         for u in queue:
             if u['username'] == username:
+                u['last_alive'] = time.time()
+                redis.set(SchedulerState.KEY_USERS_Q, json.dumps(queue))
                 return i
             i += 1
         return -1

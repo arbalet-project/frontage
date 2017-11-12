@@ -93,7 +93,7 @@ class AppRuningView(Resource):
     def post(self, user):
         name = request.get_json()['name']
         params = request.get_json()['params']
-        expires = request.get_json().get('expires', 600)
+        expires = request.get_json().get('expires', 20)
         if not SchedulerState.usable():
             flask_log("Frontage is not started")
             abort(400, "Frontage is not started")

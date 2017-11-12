@@ -2,7 +2,8 @@ import time
 from utils.red import redis, redis_get
 from scheduler_state import SchedulerState
 from model import Model
-from rabbit import CHANNEL, RABBIT_CONNECTION
+# from rabbit import CHANNEL, RABBIT_CONNECTION
+from utils.lock import RWLock
 
 class Fap(object):
     PARAMS_LIST = []
@@ -10,6 +11,7 @@ class Fap(object):
     ACTIVATED = True
     ENABLE = True
     CNT = 0
+    LOCK = RWLock()
 
     def __init__(self, model=None):
         self.username = None
@@ -27,10 +29,17 @@ class Fap(object):
     def send_model(self):
         # self.CNT += 1
         # print(self.CNT)
-        CHANNEL.basic_publish(exchange='',
-            routing_key=SchedulerState.KEY_MODEL,
-            body=self.model.json())
+        if not self.LOCK.acquire_write(2):
+            print('Wait for RWLock for too long in Bufferize...Stopping')
+            return
+        redis.publish(SchedulerState.KEY_MODEL, self.model.json())
+
+        # CHANNEL.basic_publish(exchange='',
+        #     routing_key=SchedulerState.KEY_MODEL,
+        #     body=self.model.json())
         # redis.set(SchedulerState.KEY_MODEL, self.model.json())
+
+        self.LOCK.release()
 
     def jsonify(self):
         struct = {}
@@ -44,7 +53,7 @@ class Fap(object):
         return struct
 
     def __del__(self):
-        print('----------CLOSE-')
+        print('----CLOSE----')
         time.sleep(0.2)
         # CHANNEL.queue_delete(queue=SchedulerState.KEY_MODEL)
         # RABBIT_CONNECTION.close()

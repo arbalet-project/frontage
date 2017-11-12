@@ -47,8 +47,11 @@ def start_fap(app):
         fap = globals()[app['name']]()
         fap.run(params=app['params'])
     except Exception, e:
-        print('Error when starting task'+str(e))
-        return 'Error when starting task'+str(e)
+        print('--->APP>>')
+        print(app)
+        raise e
+        print('Error when starting task '+str(e))
+        return 'Error when starting task '+str(e)
 
 
 @app.task
