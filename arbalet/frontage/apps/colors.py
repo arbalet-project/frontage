@@ -19,13 +19,13 @@ class Colors(Fap):
     # GENERATORS_DICT = { 'random_flashing': gen_random_flashing,
     #                     'sweep_async': gen_sweep_async,
     #                     'sweep_rand': gen_sweep_rand }
-    PARAMS_LIST = { 'uapp': [],
+
+    def __init__(self, gen):
+        self.PARAMS_LIST = { 'uapp': None,
                     'dur_min': 5,
                     'dur_max': 20 ,
                     'refresh_rate': 50,
                     'colors': []}
-
-    def __init__(self, gen):
         Fap.__init__(self)
         self.generator = gen
 
@@ -35,11 +35,11 @@ class Colors(Fap):
         c_params = None
         if params and (params.get('uapp', False) in self.PARAMS_LIST['uapp']):
             c_params = animations[params['uapp']]
-
+        else:
+            raise NameError('uapp not found')
         self.durations_min = params.get('dur_min', c_params.get('dur_min'))
         self.durations_max = params.get('dur_max', c_params.get('dur_max'))
         self.rate = Rate(params.get('refresh_rate', c_params.get('rate')))
-
         self.colors = []
         for c in params['colors']:
             if isinstance(c, (tuple, list, set)):

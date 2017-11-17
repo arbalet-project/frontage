@@ -49,6 +49,7 @@ def start_fap(app):
     except Exception, e:
         print('--->APP>>')
         print('Error when starting task '+str(e))
+        raise e
         return 'Error when starting task '+str(e)
     finally:
         SchedulerState.set_current_app({})
