@@ -110,7 +110,7 @@ class AppRuningView(Resource):
         else:
             try:
                 return SchedulerState.start_scheduled_app(user['username'], name, params, expires)
-            except Exception, e:
+            except Exception as e:
                 flask_log(str(e))
                 abort(403, str(e))
             # SchedulerState.set_forced_app(name, params, expires)
@@ -150,7 +150,7 @@ def status():
     state = SchedulerState.usable()
     return jsonify( is_usable=state,
                     scheduled_time=SchedulerState.default_scheduled_time(),
-                    current_time=datetime.datetime.now())
+                    current_time=datetime.datetime.now().isoformat())
 
 @blueprint.route('/frontage/next_date', methods=['GET'])
 def next_date():

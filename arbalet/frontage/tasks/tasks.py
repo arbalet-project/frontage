@@ -46,7 +46,7 @@ def start_fap(app):
     try:
         fap = globals()[app['name']]()
         fap.run(params=app['params'])
-    except Exception, e:
+    except Exception as e:
         print('--->APP>>')
         print('Error when starting task '+str(e))
         raise e
@@ -72,7 +72,7 @@ def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
             redis.set(SchedulerState.KEY_FORCED_APP, True)
             fap.run(params=params)
             return True
-        except Exception, e:
+        except Exception as e:
             print('Error when starting task '+str(e))
             raise
         finally:

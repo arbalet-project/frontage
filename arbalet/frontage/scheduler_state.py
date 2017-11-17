@@ -60,10 +60,6 @@ class SchedulerState(object):
     def set_registered_apps(apps):
         struct = {}
         for fap in apps:
-            print('*******************+++')
-            print(apps[fap].PARAMS_LIST)
-            print(apps[fap].jsonify())
-            print('*******************')
             struct[fap] = apps[fap].jsonify()
         redis.set(SchedulerState.KEY_REGISTERED_APP, json.dumps(struct))
 

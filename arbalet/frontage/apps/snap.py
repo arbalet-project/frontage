@@ -56,7 +56,7 @@ def requires_auth(f):
 
 class Snap(Fap):
     PLAYABLE = True
-    def __init__(self, port, hardware=True, simulator=True):
+    def __init__(self, port=33450, hardware=True, simulator=True):
         Fap.__init__(self)
 
         self.flask = Flask(__name__)
@@ -84,7 +84,7 @@ class Snap(Fap):
     def check_nicknames_validity(self):
         with self.lock:
             temp_dict = {}
-            for k, v in self.nicknames.iteritems():
+            for k, v in self.nicknames.items():
                 if time() - v < 20:
                     temp_dict[k] = v
                 else:

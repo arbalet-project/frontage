@@ -8,7 +8,7 @@ def redis_get(attr, default=0):
     return v
 
 try:
-	redis = redis.StrictRedis(host=os.environ['REDIS_HOST'])
+	redis = redis.StrictRedis(host=os.environ['REDIS_HOST'], decode_responses=True)
 	redis.ping()
 except Exception as e:
 	raise

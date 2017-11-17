@@ -1,6 +1,6 @@
 
 import time
-import thread
+import _thread
 import threading
 
 class RWLock:
@@ -126,6 +126,6 @@ class RWLock:
                     if not self.__readers:
                         self.__condition.notifyAll()
             else:
-                raise thread.error, "release unlocked lock"
+                raise _thread.error("release unlocked lock")
         finally:
             self.__condition.release()

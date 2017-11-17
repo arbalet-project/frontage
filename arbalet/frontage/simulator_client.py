@@ -9,6 +9,7 @@
 """
 import socket
 import struct
+import sys
 
 from time import sleep
 from os.path import dirname, join
@@ -19,6 +20,10 @@ from pygame.image import load_extended
 from model import Model
 
 __all__ = ['Simulator']
+
+def print_flush(s):
+    print(s)
+    sys.stdout.flush()
 
 
 class Simulator(object):
@@ -103,8 +108,12 @@ class Simulator(object):
     def run(self):
         while True:
 
+            print_flush("**SGKFDGKFDKGFDGFDKGKFD")
             resp = self.client.recv(304)
             if resp != "":
+                print_flush(resp)
+                print_flush("*****")
+                print_flush(len(resp))
                 raw = struct.unpack("!{}B".format(76*4), resp)
                 self.raw_to_model(raw)
                 self.update()

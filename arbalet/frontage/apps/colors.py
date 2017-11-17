@@ -51,9 +51,9 @@ class Colors(Fap):
 
         # Construct all pixel generators
         generators = []
-        for h in xrange(self.model.height):
+        for h in range(self.model.height):
             line = []
-            for w in xrange(self.model.width):
+            for w in range(self.model.width):
                 duration = random.randrange(0, self.durations_max-self.durations_min)
                 line.append(self.generator(self.durations_min, int((2.0/self.rate.sleep_dur)), duration, self.colors))
             generators.append(line)
@@ -61,8 +61,8 @@ class Colors(Fap):
         # Browse all pixel generators at each time
         while True:
             with self.model:
-                for h in xrange(self.model.height):
-                    for w in xrange(self.model.width):
+                for h in range(self.model.height):
+                    for w in range(self.model.width):
                         try:
                             color = next(generators[h][w])
                         except StopIteration:

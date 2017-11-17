@@ -96,7 +96,6 @@ class Frontage(Thread):
 
             # # start consuming (blocks)
             # CHANNEL.start_consuming()
-
             for item in self.pubsub.listen():
                 if item['type'] == 'message' and item['data']:
                     self.model.set_from_json(item['data'])
@@ -113,17 +112,17 @@ class Frontage(Thread):
                         for col in range(self.model.width):
                             led = self.mapping[row, col]
                             r, g, b = self.model[row, col]
-                            data_frame.append(led)
-                            data_frame.append(r*255)
-                            data_frame.append(g*255)
-                            data_frame.append(b*255)
-                command = pack("!{}B".format(self.num_pixels * 4), *data_frame)
+                            data_frame.append(int(led))
+                            data_frame.append(int(r*255))
+                            data_frame.append(int(g*255))
+                            data_frame.append(int(b*255))
                 try:
+                    command = pack("!{}B".format(self.num_pixels * 4), *data_frame)
                     self.client.send(command)
-                except Exception, e:
-                    print(str(e))
-                    print('=> Deconnected from client')
-                    print('=> Wait for new client connection')
+                except Exception as e:
+                    print_flush(str(e))
+                    print_flush('=> Deconnected from client')
+                    print_flush('=> Wait for new client connection')
                     self.start_server()
 
 

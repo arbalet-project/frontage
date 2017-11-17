@@ -15,6 +15,7 @@ from apps.flags import Flags
 from apps.random_flashing import RandomFlashing
 from apps.sweep_async import SweepAsync
 from apps.sweep_rand import SweepRand
+from apps.snap import Snap
 
 
 def print_flush(s):
@@ -46,6 +47,7 @@ class Scheduler(object):
         self.apps = {Flags.__name__: Flags(),
                     SweepAsync.__name__: SweepAsync(),
                     SweepRand.__name__: SweepRand(),
+                    Snap.__name__: Snap(),
                     RandomFlashing.__name__: RandomFlashing()}
 
         SchedulerState.set_registered_apps(self.apps)
@@ -77,7 +79,7 @@ class Scheduler(object):
         try:
             a = app.control.inspect(['celery@workerqueue']).active()['celery@workerqueue']
             return a
-        except Exception, e:
+        except Exception as e:
             print_flush(str(e))
             return []
 

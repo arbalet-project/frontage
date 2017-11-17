@@ -20,13 +20,13 @@ def extract_payload(token):
     try:
         payload = jwt.decode(token, PUBLIC_WEB_KEY, algorithm=TOKEN_ALGO)
         return payload
-    except jwt.ExpiredSignatureError, e:
+    except jwt.ExpiredSignatureError as e:
         print(str(e)+" ExpiredSignatureError")
         raise
-    except jwt.InvalidTokenError, e:
+    except jwt.InvalidTokenError as e:
         print(str(e)+" InvalidTokenError")
         raise
-    except Exception, e:
+    except Exception as e:
         print(str(e)+" Error")
         raise
     return False
@@ -46,7 +46,7 @@ def authentication_required(f):
             abort(403, 'Empty token')
         try:
             payload = extract_payload(token)
-        except Exception, e:
+        except Exception as e:
             abort(403, 'User not logged or session expired')
         else:
             return f(user=payload, *args, **kwargs)
@@ -68,7 +68,7 @@ def admin_required(f):
             abort(403, 'Empty token')
         try:
             payload = extract_payload(token)
-        except Exception, e:
+        except Exception as e:
             abort(403, 'User not logged or session expired')
         else:
             if payload['is_admin'] == True:
@@ -96,7 +96,7 @@ def generate_user_token(username, is_admin=False):
     payload['username'] = username
     payload['is_admin'] = is_admin
 
-    return jwt.encode(payload, PRIVATE_WEB_KEY, algorithm=TOKEN_ALGO)
+    return jwt.encode(payload, PRIVATE_WEB_KEY, algorithm=TOKEN_ALGO).decode('utf-8')
 
 """
     Utilities function for psw/token generation. fuck yeah love cosmic algo
