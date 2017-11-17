@@ -17,3 +17,4 @@ gunicorn
 pika
 numpy
 pygame
+click

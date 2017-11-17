@@ -20,6 +20,7 @@ services:
     links:
       - redis:redis
       - rabbit:rabbit
+      - postgres:postgres
   scheduler:
     build: .
     volumes:

@@ -6,7 +6,7 @@ case "$1" in
         echo "---> Starting in PRODUCTION mode"
         cd /usr/src/app/
         /wait-for-it.sh rabbit:5672
-        exec /usr/local/bin/gunicorn server:app -w 5 -b :8123
+        exec /usr/local/bin/gunicorn server_app:app -w 5 -b :8123
         ;;
     dev)
         echo "---> Starting in DEV mode"
@@ -14,7 +14,8 @@ case "$1" in
         export FLASK_DEBUG=1
         /wait-for-it.sh rabbit:5672
         echo "---> Start EXEC"
-        exec /usr/local/bin/python server.py port 8123
+        # exec /usr/local/bin/python server.py port 8123
+        FLASK_APP=server_app.py flask run --port 8123  --with-threads --host '0.0.0.0'
         echo "---> END"
         ;;
     worker)

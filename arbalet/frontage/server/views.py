@@ -4,28 +4,27 @@ import json
 import sys
 import datetime
 
-from server import app
-from flask import request, jsonify, abort
+from flask import request, jsonify, abort, Blueprint
 from flask_restful import reqparse, Api, Resource
 from utils.security import authentication_required, generate_user_token, is_admin
 from utils.red import redis, redis_get
 from scheduler import Scheduler
 from scheduler_state import SchedulerState
+from server.extensions import rest_api
 
 def flask_log(msg):
     print(msg, file=sys.stderr)
 
 
+blueprint = Blueprint('views', __name__)
 
-api = Api(app)
-
-@app.route('/status/is_up', methods=['GET'])
+@blueprint.route('/status/is_up', methods=['GET'])
 def is_up():
     return jsonify(is_up=True)
 
 ########### AUTH ###########
 
-@app.route('/b/login', methods=['POST'])
+@blueprint.route('/b/login', methods=['POST'])
 def login():
     username = request.get_json().get('username', False)
     password = request.get_json().get('password', False)
@@ -42,7 +41,7 @@ def login():
 ADMIN_BASE = '/b/admin'
 
 
-@app.route(ADMIN_BASE+'/enabled', methods=['POST'])
+@blueprint.route(ADMIN_BASE+'/enabled', methods=['POST'])
 @authentication_required
 def admin_enabled_scheduler(user):
     SchedulerState.set_usable(request.get_json().get('enabled', False))
@@ -51,8 +50,8 @@ def admin_enabled_scheduler(user):
 
 
 
-@app.route('/b/admin/cal', methods=['GET'])
-@app.route('/b/admin/cal/<at>', methods=['GET'])
+@blueprint.route('/b/admin/cal', methods=['GET'])
+@blueprint.route('/b/admin/cal/<at>', methods=['GET'])
 def admin_cal_at(at=None):
     return jsonify( on=SchedulerState.get_sundown(at).strftime('%H:%M'),
                     off=SchedulerState.get_sunrise(at).strftime('%H:%M'),
@@ -60,7 +59,7 @@ def admin_cal_at(at=None):
                     params={})
 
 # format .strftime('%Y-%m-%d')
-@app.route('/b/admin/cal/<at>', methods=['PATCH'])
+@blueprint.route('/b/admin/cal/<at>', methods=['PATCH'])
 @authentication_required
 def admin_set_cal_at(user, at):
     if request.get_json().get('on'):
@@ -132,12 +131,12 @@ class AppListView(Resource):
         return formated
 
 ########### PUBLIC ###########
-@app.route('/b/apps/position', methods=['GET'])
+@blueprint.route('/b/apps/position', methods=['GET'])
 @authentication_required
 def app_position(user):
     return jsonify(position=SchedulerState.get_user_position(user))
 
-@app.route('/b/apps/position', methods=['DELETE'])
+@blueprint.route('/b/apps/position', methods=['DELETE'])
 @authentication_required
 def remove_from_queue(user):
     if SchedulerState.remove_user_position(user):
@@ -146,18 +145,18 @@ def remove_from_queue(user):
         abort(404, "I can't find any app for you")
     return True
 
-@app.route('/frontage/status', methods=['GET'])
+@blueprint.route('/frontage/status', methods=['GET'])
 def status():
     state = SchedulerState.usable()
     return jsonify( is_usable=state,
                     scheduled_time=SchedulerState.default_scheduled_time(),
                     current_time=datetime.datetime.now())
 
-@app.route('/frontage/next_date', methods=['GET'])
+@blueprint.route('/frontage/next_date', methods=['GET'])
 def next_date():
     state = SchedulerState.usable()
     return jsonify(is_usable=state)
 
 
-api.add_resource(AppRuningView, '/b/apps/running')
-api.add_resource(AppListView, '/b/apps')
+rest_api.add_resource(AppRuningView, '/b/apps/running')
+rest_api.add_resource(AppListView, '/b/apps')
