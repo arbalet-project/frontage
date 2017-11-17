@@ -151,9 +151,7 @@ class SchedulerState(object):
         redis.get(SchedulerState.KEY_APP_STARTED_AT)
 
     @staticmethod
-    def stop_current_running_app(c_app):
-        # Stop and clear current app
-        SchedulerState.set_current_app({})
+    def stop_app(c_app):
         revoke(c_app['task_id'], terminate=True)
         sleep(0.05)
 
@@ -183,6 +181,17 @@ class SchedulerState(object):
                 return i
             i += 1
         return -1
+
+    @staticmethod
+    def remove_user_position(user):
+        queue = SchedulerState.get_user_queue()
+        username = user['username']
+        for u in list(queue):
+            if u['username'] == username:
+                queue.remove(u)
+                redis.set(SchedulerState.KEY_USERS_Q, json.dumps(queue))
+                return True
+        return False
 
 
     @staticmethod

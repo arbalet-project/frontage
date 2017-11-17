@@ -87,6 +87,15 @@ class AppRuningView(Resource):
 
     @authentication_required
     def delete(self, user):
+        c_app = SchedulerState.get_current_app()
+        if is_admin(user):
+            SchedulerState.stop_app(c_app)
+        else:
+            if c_app['username'] == user['username']:
+                SchedulerState.stop_app(c_app)
+            else:
+                abort(400, "You are not the owner of the current app")
+
         return '', 204
 
     @authentication_required
@@ -127,6 +136,15 @@ class AppListView(Resource):
 @authentication_required
 def app_position(user):
     return jsonify(position=SchedulerState.get_user_position(user))
+
+@app.route('/b/apps/position', methods=['DELETE'])
+@authentication_required
+def remove_from_queue(user):
+    if SchedulerState.remove_user_position(user):
+        return True
+    else:
+        abort(404, "I can't find any app for you")
+    return True
 
 @app.route('/frontage/status', methods=['GET'])
 def status():

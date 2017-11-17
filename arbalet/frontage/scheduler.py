@@ -108,7 +108,8 @@ class Scheduler(object):
                 next_app = queue[0]
                 if datetime.datetime.now() > datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f"):
                     print_flush('===> REVOKING APP, someone else turn')
-                    SchedulerState.stop_current_running_app(c_app)
+                    # !!!! NOT TESTED WITHOUT SchedulerState.set_current_app({})
+                    SchedulerState.stop_app(c_app)
                     # Start app
                     t = start_fap.apply_async(args=[next_app], queue='userapp')
                     # Remove app form waiting Q
