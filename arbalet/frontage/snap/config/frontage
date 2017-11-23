@@ -5,7 +5,7 @@ server {
         root /var/www/snap;
         index index.html;
 
-        server_name frontage;
+        server_name _;
 
         location / {
                 try_files $uri $uri/ =404;
