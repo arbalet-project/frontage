@@ -2,6 +2,7 @@ from time import time, sleep
 
 __all__ = ['Rate']
 
+
 class Rate(object):
     """
     Convenience class for sleeping in a loop at a specified rate
@@ -13,7 +14,7 @@ class Rate(object):
         :param hz: hz rate to determine sleeping
         """
         self.last_time = float('inf')
-        self.sleep_dur = 1./hz
+        self.sleep_dur = 1. / hz
 
     def _remaining(self, curr_time):
         """
@@ -40,5 +41,3 @@ class Rate(object):
         # detect time jumping forwards, as well as loops that are inherently too slow
         if curr_time - self.last_time > self.sleep_dur * 2:
             self.last_time = curr_time
-
-

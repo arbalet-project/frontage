@@ -1,7 +1,3 @@
-import pika, os
-import logging
-
-from scheduler_state import SchedulerState
 
 # logging.basicConfig(level=logging.DEBUG)
 

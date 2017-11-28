@@ -2,7 +2,6 @@
 import os
 import click
 
-from flask import current_app
 from flask.cli import with_appcontext
 from server.extensions import db
 
@@ -15,6 +14,7 @@ TEST_PATH = os.path.join(PROJECT_ROOT, 'tests')
 @with_appcontext
 def create_all():
     db.create_all()
+
 
 @click.command()
 @with_appcontext
@@ -35,4 +35,3 @@ def clean():
                 full_pathname = os.path.join(dirpath, filename)
                 click.echo('Removing {}'.format(full_pathname))
                 os.remove(full_pathname)
-

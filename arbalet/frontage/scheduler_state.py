@@ -9,9 +9,9 @@ from time import sleep
 from celery.task.control import revoke
 from utils.red import redis, redis_get
 
+
 def flask_log(msg):
     print(msg, file=sys.stderr)
-
 
 
 class SchedulerState(object):
@@ -46,15 +46,16 @@ class SchedulerState(object):
 
     @staticmethod
     def get_forced_app():
-        # add callback on frocer_app_task_launcher to set variable to false when done
+        # add callback on frocer_app_task_launcher to set variable to false
+        # when done
         return redis_get(SchedulerState.KEY_FORCED_APP, False) == 'True'
 
     @staticmethod
     def set_forced_app(app_name, params, expires=600):
         from tasks.tasks import start_forced_fap, clear_all_task
         clear_all_task()
-        t = start_forced_fap.apply_async(args=[app_name, 'FORCED', params], expires=expires)
-
+        start_forced_fap.apply_async(
+            args=[app_name, 'FORCED', params], expires=expires)
 
     @staticmethod
     def set_registered_apps(apps):
@@ -67,7 +68,6 @@ class SchedulerState(object):
     def get_available_apps():
         return json.loads(redis.get(SchedulerState.KEY_REGISTERED_APP))
 
-
     """ Is scheduller on or off ATM ?"""
     @staticmethod
     def usable():
@@ -79,7 +79,7 @@ class SchedulerState(object):
 
     @staticmethod
     def set_usable(value):
-        ##### redis.set(SchedulerState.KEY_USABLE, str(value))
+        # redis.set(SchedulerState.KEY_USABLE, str(value))
         redis.set(SchedulerState.KEY_USABLE, str('True'))
 
     @staticmethod
@@ -100,7 +100,7 @@ class SchedulerState(object):
     @staticmethod
     def set_sundown(day, at):
         table = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
-        table[day][SchedulerState.KEY_NIGHT_START_AT] = day+'T'+at+':00'
+        table[day][SchedulerState.KEY_NIGHT_START_AT] = day + 'T' + at + ':00'
         dumped = json.dumps(table)
 
         with open(SchedulerState.CITY, 'w') as f:
@@ -110,7 +110,7 @@ class SchedulerState(object):
     @staticmethod
     def set_sunrise(day, at):
         table = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
-        table[day][SchedulerState.KEY_NIGHT_END_AT] = day+'T'+at+':00'
+        table[day][SchedulerState.KEY_NIGHT_END_AT] = day + 'T' + at + ':00'
         dumped = json.dumps(table)
 
         with open(SchedulerState.CITY, 'w') as f:
@@ -123,7 +123,8 @@ class SchedulerState(object):
         if not at:
             at = datetime.datetime.now().strftime('%Y-%m-%d')
 
-        v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(SchedulerState.KEY_NIGHT_END_AT, SchedulerState.DEFAULT_RISE)
+        v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(
+            SchedulerState.KEY_NIGHT_END_AT, SchedulerState.DEFAULT_RISE)
         return datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
 
     @staticmethod
@@ -131,7 +132,8 @@ class SchedulerState(object):
         if not at:
             at = datetime.datetime.now().strftime('%Y-%m-%d')
 
-        v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(SchedulerState.KEY_NIGHT_START_AT, SchedulerState.DEFAULT_DOWN)
+        v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(
+            SchedulerState.KEY_NIGHT_START_AT, SchedulerState.DEFAULT_DOWN)
         return datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
 
     @staticmethod
@@ -140,11 +142,15 @@ class SchedulerState(object):
 
     @staticmethod
     def set_current_app(app_struct):
-        redis.set(SchedulerState.KEY_CURRENT_RUNNING_APP, json.dumps(app_struct))
+        redis.set(
+            SchedulerState.KEY_CURRENT_RUNNING_APP,
+            json.dumps(app_struct))
 
     @staticmethod
     def set_app_started_at():
-        redis.set(SchedulerState.KEY_APP_STARTED_AT, datetime.datetime.now().isoformat())
+        redis.set(
+            SchedulerState.KEY_APP_STARTED_AT,
+            datetime.datetime.now().isoformat())
 
     @staticmethod
     def app_started_at():
@@ -167,7 +173,8 @@ class SchedulerState(object):
     def get_user_app_queue():
         return SchedulerState.get_user_queue()
         # from tasks.celery import app
-        # return app.control.inspect(['celery@workerqueue']).reserved()['celery@workerqueue']
+        # return
+        # app.control.inspect(['celery@workerqueue']).reserved()['celery@workerqueue']
 
     @staticmethod
     def get_user_position(user):
@@ -193,7 +200,6 @@ class SchedulerState(object):
                 return True
         return False
 
-
     @staticmethod
     def get_user_queue():
         return json.loads(redis_get(SchedulerState.KEY_USERS_Q, '[]'))
@@ -207,25 +213,27 @@ class SchedulerState(object):
             raise Exception('User already in queue')
         c_app = SchedulerState.get_current_app()
         if c_app and c_app.get('username', False) == username:
-            if datetime.datetime.now() <= datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f"):
+            if datetime.datetime.now() <= datetime.datetime.strptime(
+                    c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f"):
                 raise Exception('User is already the owner of the current app')
 
-        app_struct = {  'name': app_name,
-                    'username': username,
-                    'params': params,
-                    'started_wait_at': datetime.datetime.now().isoformat(),
-                    'expires': expires,
-                    'task_id': None,
-                    'last_alive': time.time(),
-                    'expire_at': None}
+        app_struct = {'name': app_name,
+                      'username': username,
+                      'params': params,
+                      'started_wait_at': datetime.datetime.now().isoformat(),
+                      'expires': expires,
+                      'task_id': None,
+                      'last_alive': time.time(),
+                      'expire_at': None}
         # Actually starting app
         # t = start_fap.apply_async(args=[app_name, username, params, expires], queue='userapp', potato='fghbjndfghj')
         # Add to queue starting app
         queue.append(app_struct)
         redis.set(SchedulerState.KEY_USERS_Q, json.dumps(queue))
 
-        return {'keep_alive_delay': SchedulerState.DEFAULT_KEEP_ALIVE_DELAY, 'queued': True}
-
+        return {
+            'keep_alive_delay': SchedulerState.DEFAULT_KEEP_ALIVE_DELAY,
+            'queued': True}
 
     # redis.rpush(SchedulerState.KEY_SCHEDULED_APP, app_name)
     # return redis.lrange(SchedulerState.KEY_SCHEDULED_APP, 0, -1)

@@ -5,7 +5,7 @@ import time
 import sys
 
 from time import sleep
-from utils.red import redis, redis_get
+from utils.red import redis
 from controller import Frontage
 from tasks.tasks import start_fap
 from tasks.celery import app
@@ -22,6 +22,7 @@ def print_flush(s):
     print(s)
     sys.stdout.flush()
 
+
 TASK_EXPIRATION = 1800
 
 
@@ -29,7 +30,8 @@ class Scheduler(object):
 
     def __init__(self, port=33460, hardware=True, simulator=True):
         print_flush('---> Waiting for frontage connection...')
-        self.frontage = Frontage(port, hardware)  # Blocking until the hardware client connects
+        # Blocking until the hardware client connects
+        self.frontage = Frontage(port, hardware)
         print_flush('---> Frontage connected')
 
         redis.set(SchedulerState.KEY_SUNRISE, SchedulerState.DEFAULT_RISE)
@@ -45,14 +47,15 @@ class Scheduler(object):
         # Struct { ClassName : Instance, ClassName: Instance }
         # app.__class__.__name__
         self.apps = {Flags.__name__: Flags(),
-                    SweepAsync.__name__: SweepAsync(),
-                    SweepRand.__name__: SweepRand(),
-                    Snap.__name__: Snap(),
-                    RandomFlashing.__name__: RandomFlashing()}
+                     SweepAsync.__name__: SweepAsync(),
+                     SweepRand.__name__: SweepRand(),
+                     Snap.__name__: Snap(),
+                     RandomFlashing.__name__: RandomFlashing()}
 
         SchedulerState.set_registered_apps(self.apps)
         # Set schduled time for app, in minutes
-        redis.set(SchedulerState.KEY_SCHEDULED_APP_TIME, SchedulerState.DEFAULT_APP_SCHEDULE_TIME)
+        redis.set(SchedulerState.KEY_SCHEDULED_APP_TIME,
+                  SchedulerState.DEFAULT_APP_SCHEDULE_TIME)
     # def start_next_app(self):
     #     app = {}
     #     app['name'] = redis.lindex(SchedulerState.KEY_SCHEDULED_APP, 0)
@@ -77,7 +80,8 @@ class Scheduler(object):
     def get_current_user_app(self):
         # Deprecated
         try:
-            a = app.control.inspect(['celery@workerqueue']).active()['celery@workerqueue']
+            a = app.control.inspect(['celery@workerqueue']).active()[
+                'celery@workerqueue']
             return a
         except Exception as e:
             print_flush(str(e))
@@ -85,13 +89,14 @@ class Scheduler(object):
 
     def keep_alive_waiting_app(self):
         queue = SchedulerState.get_user_app_queue()
-        to_remove = []
         # i = 0
-        for app in list(queue):
+        for c_app in list(queue):
             # Not alive since last check ?
-            if time.time() > (app['last_alive'] + SchedulerState.DEFAULT_KEEP_ALIVE_DELAY):
+            if time.time() > (
+                    c_app['last_alive'] +
+                    SchedulerState.DEFAULT_KEEP_ALIVE_DELAY):
                 # to_remove.append(i)
-                queue.remove(app)
+                queue.remove(c_app)
             # i += 1
         # for rm_app in to_remove:
         #     queue.pop(rm_app)
@@ -108,12 +113,13 @@ class Scheduler(object):
             # Someone wait for his own task ?
             if len(queue) > 0:
                 next_app = queue[0]
-                if datetime.datetime.now() > datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f"):
+                if datetime.datetime.now() > datetime.datetime.strptime(
+                        c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f"):
                     print_flush('===> REVOKING APP, someone else turn')
                     # !!!! NOT TESTED WITHOUT SchedulerState.set_current_app({})
                     SchedulerState.stop_app(c_app)
                     # Start app
-                    t = start_fap.apply_async(args=[next_app], queue='userapp')
+                    start_fap.apply_async(args=[next_app], queue='userapp')
                     # Remove app form waiting Q
                     SchedulerState.pop_user_app_queue(queue)
         else:
@@ -159,7 +165,8 @@ class Scheduler(object):
             elif SchedulerState.usable():
                 self.check_scheduler()
 
-            # Ugly sleep to avoid CPU consuming, not really usefull but I pref use it ATM before advanced tests
+            # Ugly sleep to avoid CPU consuming, not really usefull but I pref
+            # use it ATM before advanced tests
             count += 1
             if (count % 500) == 0:
                 print_flush('===== Scheduler still running =====')

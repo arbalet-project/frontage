@@ -11,7 +11,7 @@ import numpy as np
 import json
 
 from threading import RLock
-
+from utils.colors import name_to_rgb
 
 __all__ = ['Model']
 
@@ -77,7 +77,7 @@ class Model(object):
 
     def __mul__(self, scalar):
         m = Model(self.height, self.width)
-        m._model = scalar*self._model
+        m._model = scalar * self._model
         return m
 
     def json(self):

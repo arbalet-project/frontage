@@ -184,17 +184,17 @@ def rgb_to_hsv(r, g=None, b=None):
     v = maxc
     if minc == maxc:
         return 0.0, 0.0, v
-    s = (maxc-minc) / maxc
-    rc = (maxc-r) / (maxc-minc)
-    gc = (maxc-g) / (maxc-minc)
-    bc = (maxc-b) / (maxc-minc)
+    s = (maxc - minc) / maxc
+    rc = (maxc - r) / (maxc - minc)
+    gc = (maxc - g) / (maxc - minc)
+    bc = (maxc - b) / (maxc - minc)
     if r == maxc:
-        h = bc-gc
+        h = bc - gc
     elif g == maxc:
-        h = 2.0+rc-bc
+        h = 2.0 + rc - bc
     else:
-        h = 4.0+gc-rc
-    h = (h/6.0) % 1.0
+        h = 4.0 + gc - rc
+    h = (h / 6.0) % 1.0
     return h, s, v
 
 
@@ -203,12 +203,12 @@ def hsv_to_rgb(h, s=None, v=None):
         h, s, v = h
     if s == 0.0:
         return v, v, v
-    i = int(h*6.0) # XXX assume int() truncates!
-    f = (h*6.0) - i
-    p = v*(1.0 - s)
-    q = v*(1.0 - s*f)
-    t = v*(1.0 - s*(1.0-f))
-    i = i%6
+    i = int(h * 6.0)  # XXX assume int() truncates!
+    f = (h * 6.0) - i
+    p = v * (1.0 - s)
+    q = v * (1.0 - s * f)
+    t = v * (1.0 - s * (1.0 - f))
+    i = i % 6
     if i == 0:
         return v, t, p
     if i == 1:
@@ -253,8 +253,10 @@ def mul(pixel, scalar):
     pixel = __to_array(pixel)
 
     if not isscalar(scalar):
-        raise TypeError("Expected a scalar for pixel multiplication, got {}".format(type(scalar)))
-    return pixel*scalar
+        raise TypeError(
+            "Expected a scalar for pixel multiplication, got {}".format(
+                type(scalar)))
+    return pixel * scalar
 
 
 def equal(pixel_1, pixel_2):

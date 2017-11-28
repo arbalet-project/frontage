@@ -1,11 +1,9 @@
 import jwt
 import datetime
-import json
 
 from passlib.hash import pbkdf2_sha256
 from functools import wraps
 from flask import abort, request
-from calendar import timegm
 from utils.web_key import PRIVATE_WEB_KEY
 from utils.web_key_pub import PUBLIC_WEB_KEY
 
@@ -21,18 +19,22 @@ def extract_payload(token):
         payload = jwt.decode(token, PUBLIC_WEB_KEY, algorithm=TOKEN_ALGO)
         return payload
     except jwt.ExpiredSignatureError as e:
-        print(str(e)+" ExpiredSignatureError")
+        print(str(e) + " ExpiredSignatureError")
         raise
     except jwt.InvalidTokenError as e:
-        print(str(e)+" InvalidTokenError")
+        print(str(e) + " InvalidTokenError")
         raise
     except Exception as e:
-        print(str(e)+" Error")
+        print(str(e) + " Error")
         raise
     return False
+
+
 """
     Flask decorator for your sensitive API endpoint.
 """
+
+
 def authentication_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -46,14 +48,16 @@ def authentication_required(f):
             abort(403, 'Empty token')
         try:
             payload = extract_payload(token)
-        except Exception as e:
+        except Exception:
             abort(403, 'User not logged or session expired')
         else:
             return f(user=payload, *args, **kwargs)
     return decorated_function
 
+
 def is_admin(paylaod):
     return paylaod.get('is_admin', False)
+
 
 def admin_required(f):
     @wraps(f)
@@ -68,10 +72,10 @@ def admin_required(f):
             abort(403, 'Empty token')
         try:
             payload = extract_payload(token)
-        except Exception as e:
+        except Exception:
             abort(403, 'User not logged or session expired')
         else:
-            if payload['is_admin'] == True:
+            if payload['is_admin'] is True:
                 return f(user=payload, *args, **kwargs)
             else:
                 abort(403, 'User is not an admin')
@@ -81,6 +85,8 @@ def admin_required(f):
 """
     Generate a JWT token for the CLIENT SIDE. User can READ but nor modify the token
 """
+
+
 def generate_user_token(username, is_admin=False):
     now = datetime.datetime.utcnow()
     delta = datetime.timedelta(seconds=ONE_HOUR)
@@ -91,18 +97,22 @@ def generate_user_token(username, is_admin=False):
         'nbf': now,
         'exp': now + delta,
         'iss': 'ARBA',
-        #'aud': audience
+        # 'aud': audience
     }
     payload['username'] = username
     payload['is_admin'] = is_admin
 
     return jwt.encode(payload, PRIVATE_WEB_KEY, algorithm=TOKEN_ALGO).decode('utf-8')
 
+
 """
     Utilities function for psw/token generation. fuck yeah love cosmic algo
 """
+
+
 def hash_password(password):
     return pbkdf2_sha256.encrypt(password, rounds=1000000, salt_size=16)
+
 
 def verify_password(xhash, password):
     return pbkdf2_sha256.verify(password, xhash)

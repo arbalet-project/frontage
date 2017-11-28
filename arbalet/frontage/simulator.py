@@ -7,11 +7,9 @@
     Copyright 2015 Yoan Mollard - Arbalet project - http://github.com/arbalet-project
     License: GPL version 3 http://www.gnu.org/licenses/gpl.html
 """
-from os.path import dirname, join
-#from ...resources.img import __file__ as img_resources_path
+# from ...resources.img import __file__ as img_resources_path
 from os import environ
-from pygame import color, event, display, draw, Rect, error, QUIT
-from pygame.image import load_extended
+from pygame import color, event, display, draw, Rect, QUIT
 
 __all__ = ['Simulator']
 
@@ -20,8 +18,8 @@ class Simulator(object):
     def __init__(self, model):
         factor_sim = 40   # TODO autosize
         self.model = model
-        self.sim_width = self.model.width*factor_sim
-        self.sim_height = self.model.height*factor_sim
+        self.sim_width = self.model.width * factor_sim
+        self.sim_height = self.model.height * factor_sim
         self.border_thickness = 1
         self.cell_height = factor_sim
         self.cell_width = factor_sim
@@ -31,12 +29,13 @@ class Simulator(object):
         # Create the Window, load its title, icon
         environ['SDL_VIDEO_CENTERED'] = '1'
 
-        self.display = display.set_mode((self.sim_width, self.sim_height), 0, 32)
-        #try:
+        self.display = display.set_mode(
+            (self.sim_width, self.sim_height), 0, 32)
+        # try:
         #    self.icon = load_extended(join(dirname(img_resources_path), 'icon.png'))
-        #except error:
+        # except error:
         #    pass
-        #else:
+        # else:
         #    display.set_icon(self.icon)
         display.set_caption("Arbalet Frontage simulator", "Arbalet")
 
@@ -58,13 +57,30 @@ class Simulator(object):
 
                 # Draw vertical lines
                 for w in range(self.model.width):
-                    draw.line(self.display, color.Color(40, 40, 40), (w * self.cell_width, 0),
-                              (w * self.cell_width, self.sim_height), self.border_thickness)
+                    draw.line(
+                        self.display,
+                        color.Color(
+                            40,
+                            40,
+                            40),
+                        (w * self.cell_width,
+                         0),
+                        (w * self.cell_width,
+                         self.sim_height),
+                        self.border_thickness)
                 # Draw horizontal lines
                 for h in range(self.model.height):
-                    draw.line(self.display, color.Color(40, 40, 40), (0, h * self.cell_height),
-                              (self.sim_width, h * self.cell_height), self.border_thickness)
-
+                    draw.line(
+                        self.display,
+                        color.Color(
+                            40,
+                            40,
+                            40),
+                        (0,
+                         h * self.cell_height),
+                        (self.sim_width,
+                         h * self.cell_height),
+                        self.border_thickness)
 
                 display.update()
             finally:

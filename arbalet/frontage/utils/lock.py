@@ -3,6 +3,7 @@ import time
 import _thread
 import threading
 
+
 class RWLock:
     """
     Simple RWLock with timeouts, without promotion.
@@ -65,6 +66,7 @@ class RWLock:
                     self.__condition.wait()
         finally:
             self.__condition.release()
+
     def acquire_write(self, timeout=None):
         """
         Acquire a write lock for the current thread, waiting at most
@@ -105,6 +107,7 @@ class RWLock:
                     self.__condition.wait()
         finally:
             self.__condition.release()
+
     def release(self):
         """
         Release the currently held lock.
