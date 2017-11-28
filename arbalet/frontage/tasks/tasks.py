@@ -3,7 +3,6 @@ from __future__ import print_function
 
 import datetime
 import sys
-import json
 
 from time import sleep
 
@@ -17,6 +16,8 @@ from apps.flags import Flags
 from apps.random_flashing import RandomFlashing
 from apps.sweep_async import SweepAsync
 from apps.sweep_rand import SweepRand
+from apps.snake import Snake
+
 
 class TestApp():
     def run(self, params):
@@ -24,8 +25,10 @@ class TestApp():
         while True:
             pass
 
+
 def flask_log(msg):
     print(msg, file=sys.stderr)
+
 
 def clear_all_task():
     app.control.purge()
@@ -38,7 +41,10 @@ def clear_all_task():
 @app.task
 def start_fap(app):
     SchedulerState.set_app_started_at()
-    app['expire_at'] = str(datetime.datetime.now() + datetime.timedelta(seconds=app['expires']))
+    app['expire_at'] = str(
+        datetime.datetime.now() +
+        datetime.timedelta(
+            seconds=app['expires']))
     app['task_id'] = start_fap.request.id
     app['started_at'] = datetime.datetime.now().isoformat()
 
@@ -48,9 +54,9 @@ def start_fap(app):
         fap.run(params=app['params'])
     except Exception as e:
         print('--->APP>>')
-        print('Error when starting task '+str(e))
+        print('Error when starting task ' + str(e))
         raise e
-        return 'Error when starting task '+str(e)
+        return 'Error when starting task ' + str(e)
     finally:
         SchedulerState.set_current_app({})
 
@@ -64,7 +70,11 @@ def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
         return
 
     SchedulerState.set_app_started_at()
-    app_struct = {'name': fap_name, 'username': user_name, 'params': params, 'started_at': datetime.datetime.now().isoformat() }
+    app_struct = {
+        'name': fap_name,
+        'username': user_name,
+        'params': params,
+        'started_at': datetime.datetime.now().isoformat()}
     SchedulerState.set_current_app(app_struct)
     if fap_name:
         try:
@@ -73,11 +83,8 @@ def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
             fap.run(params=params)
             return True
         except Exception as e:
-            print('Error when starting task '+str(e))
+            print('Error when starting task ' + str(e))
             raise
         finally:
             redis.set(SchedulerState.KEY_FORCED_APP, False)
     return True
-
-
-

@@ -13,14 +13,14 @@ services:
     build: .
     volumes:
       - ./arbalet/frontage:/usr/src/app
-    ports:
-      - 8123:8123
     command: ["dev"]
     env_file: .env-dev
     links:
       - redis:redis
       - rabbit:rabbit
       - postgres:postgres
+    ports:
+      - 8123:8123
   scheduler:
     build: .
     volumes:
@@ -40,14 +40,14 @@ services:
     links:
       - rabbit:rabbit
       - redis:redis
+    ports:
+      - 8124:8124
     command: ["queue"]
   worker:
     build: .
     volumes:
       - ./arbalet/frontage:/usr/src/app
     env_file: .env-dev
-    ports:
-      - 8124:8124
     links:
       - rabbit:rabbit
       - redis:redis

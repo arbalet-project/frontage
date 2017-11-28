@@ -1,13 +1,6 @@
-import asyncio
-import websockets
 
 from apps.fap import Fap
 from utils.colors import name_to_rgb
-
-async def echo(websocket, path):
-    async for message in websocket:
-        print('---> GOT: '+message  )
-        await websocket.send(message)
 
 
 class Flags(Fap):
@@ -19,7 +12,7 @@ class Flags(Fap):
     PLAYABLE = False
     ACTIVATED = True
 
-    PARAMS_LIST = {'uapp' : [FRENCH, GERMANY, SPAIN, ITALY ]}
+    PARAMS_LIST = {'uapp': [FRENCH, GERMANY, SPAIN, ITALY]}
 
     def french(self):
         bleu = name_to_rgb('navy')
@@ -65,14 +58,7 @@ class Flags(Fap):
 
         self.send_model()
 
-
     def run(self, params):
         self.params = params
         if params and params.get('uapp', False) in self.PARAMS_LIST['uapp']:
             getattr(self, params.get('uapp'))()
-
-
-
-        # while True:
-        #     asyncio.get_event_loop().run_until_complete(websockets.serve(echo, '0.0.0.0', 8124))
-        #     asyncio.get_event_loop().run_forever()

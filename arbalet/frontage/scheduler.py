@@ -16,6 +16,7 @@ from apps.random_flashing import RandomFlashing
 from apps.sweep_async import SweepAsync
 from apps.sweep_rand import SweepRand
 from apps.snap import Snap
+from apps.snake import Snake
 
 
 def print_flush(s):
@@ -48,6 +49,7 @@ class Scheduler(object):
         # app.__class__.__name__
         self.apps = {Flags.__name__: Flags(),
                      SweepAsync.__name__: SweepAsync(),
+                     Snake.__name__: Snake(),
                      SweepRand.__name__: SweepRand(),
                      Snap.__name__: Snap(),
                      RandomFlashing.__name__: RandomFlashing()}
@@ -56,27 +58,8 @@ class Scheduler(object):
         # Set schduled time for app, in minutes
         redis.set(SchedulerState.KEY_SCHEDULED_APP_TIME,
                   SchedulerState.DEFAULT_APP_SCHEDULE_TIME)
-    # def start_next_app(self):
-    #     app = {}
-    #     app['name'] = redis.lindex(SchedulerState.KEY_SCHEDULED_APP, 0)
-    #     app['end_at'] = datetime.datetime.now() + datetime.timedelta(minutes=SchedulerState.DEFAULT_APP_SCHEDULE_TIME)
-    #     app['user'] = ""
+    # def start_ne
 
-    #     self.current_app_state = app
-    #     app_rdis = app.copy()
-    #     app_rdis['end_at'] = app['end_at'].strftime('%Y-%m-%d %H:%M:%S.%f')
-    #     redis.hmset(KEY_CURRENT_RUNNING_APP, app_rdis)
-
-    # def play_current_app(self):
-    #     if self.current_app_state:
-    #         # Shgoudl the app stop and let the other one play ?
-    #         if self.current_app_state.end_at < datetime.datetime.now():
-    #             print(' App end, go to next')
-    #             # Remove 1st item, and put it in the end (circular fifo)
-    #             old_current = redis.lpop(SchedulerState.KEY_SCHEDULED_APP)
-    #             redis.rpush(SchedulerState.KEY_SCHEDULED_APP, old_current)
-    #             self.start_next_app()
-    #         print(' BlaBLa Im running Bru` ')
     def get_current_user_app(self):
         # Deprecated
         try:
