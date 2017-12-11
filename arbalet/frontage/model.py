@@ -9,9 +9,11 @@
 """
 import numpy as np
 import json
+import time
 
 from threading import RLock
 from utils.colors import name_to_rgb
+from utils.tools import Rate
 
 __all__ = ['Model']
 
@@ -87,3 +89,23 @@ class Model(object):
         self._model = np.array(json.loads(json_data))
 
         return self._model
+
+    def flash(self, duration=4., speed=1.5):
+        """
+        Blocking and self-locking call flashing the current model on and off (mainly for game over)
+        :param duration: Approximate duration of flashing in seconds
+        :param rate: Rate of flashing in Hz
+        """
+        rate = Rate(speed)
+        t0 = time.time()
+        model_id = 0
+        with self._model_lock:
+            models = [np.zeros((self.height, self.width, 3)), self._model]
+
+        model_off = False
+        while time.time() - t0 < duration or model_off:
+            with self._model_lock:
+                self._model = models[model_id]
+            model_id = (model_id + 1) % 2
+            model_off = not model_off
+            rate.sleep()
