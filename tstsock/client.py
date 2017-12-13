@@ -4,7 +4,7 @@ import asyncio
 import websockets
 
 async def hello(): # noqa
-    async with websockets.connect('ws://127.0.0.1:8123') as websocket:
+    async with websockets.connect('ws://127.0.0.1:8124') as websocket:
         name = input("What's your name? ")
         await websocket.send(name)
         print("> {}".format(name))

@@ -13,6 +13,7 @@ from utils.colors import name_to_hsv, cnames, rgb_to_hsv
 from .fap import Fap
 from ._generator import animations
 
+
 class Colors(Fap):
     PLAYABLE = False
     ACTIVATED = True
@@ -47,15 +48,15 @@ class Colors(Fap):
             elif c in cnames:
                 self.colors.append(name_to_hsv(c))
             else:
-                print(str(c)+' is not a valid color')
+                print(str(c) + ' is not a valid color')
 
         # Construct all pixel generators
         generators = []
         for h in range(self.model.height):
             line = []
             for w in range(self.model.width):
-                duration = random.randrange(0, self.durations_max-self.durations_min)
-                line.append(self.generator(self.durations_min, int((2.0/self.rate.sleep_dur)), duration, self.colors))
+                duration = random.randrange(0, self.durations_max - self.durations_min)
+                line.append(self.generator(self.durations_min, int((2.0 / self.rate.sleep_dur)), duration, self.colors))
             generators.append(line)
 
         # Browse all pixel generators at each time

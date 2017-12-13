@@ -24,6 +24,7 @@ class SchedulerState(object):
     KEY_DAY_TABLE = 'frontage_day_table'
     CITY = 'data/bordeaux_user.sun'
 
+    KEY_CONNECTED = 'frontage_connected'
     KEY_USABLE = 'frontage_usable'
     KEY_MODEL = 'frontage_model'
     KEY_SUNRISE = 'frontage_sunrise'
@@ -51,6 +52,14 @@ class SchedulerState(object):
         return redis_get(SchedulerState.KEY_FORCED_APP, False) == 'True'
 
     @staticmethod
+    def get_frontage_connected():
+        return redis_get(SchedulerState.KEY_CONNECTED, False) == 'True'
+
+    @staticmethod
+    def set_frontage_connected(state):
+        return redis.set(SchedulerState.KEY_CONNECTED, str(state))
+
+    @staticmethod
     def set_forced_app(app_name, params, expires=600):
         from tasks.tasks import start_forced_fap, clear_all_task
         clear_all_task()
@@ -71,6 +80,8 @@ class SchedulerState(object):
     """ Is scheduller on or off ATM ?"""
     @staticmethod
     def usable():
+        if not SchedulerState.get_frontage_connected():
+            return False
 
         return True
 

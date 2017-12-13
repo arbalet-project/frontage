@@ -43,6 +43,8 @@ class Model(object):
             self._model[h, w] = color
 
     def set_all(self, color):
+        if isinstance(color, str):
+            color = name_to_rgb(color)
         for w in range(self.width):
             for h in range(self.height):
                 self._model[h, w] = color

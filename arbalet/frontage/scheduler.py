@@ -151,8 +151,9 @@ class Scheduler(object):
             # Ugly sleep to avoid CPU consuming, not really usefull but I pref
             # use it ATM before advanced tests
             count += 1
-            if (count % 500) == 0:
+            if (count % 2) == 0:
                 print_flush('===== Scheduler still running =====')
+                print_flush(SchedulerState.get_user_app_queue())
             sleep(0.5)
 
 

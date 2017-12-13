@@ -19,6 +19,7 @@ import websockets
 from apps.fap import Fap
 from apps.actions import Actions
 from utils.colors import name_to_rgb
+from utils.tools import Rate
 
 
 # from arbalet.core import Application, Rate
@@ -41,19 +42,23 @@ class Snake(Fap):
     PARAMS_LIST = {}
 
     def __init__(self):
+        self.PARAMS_LIST = {'speed': 0.15,
+                            'food': 3}
+
         Fap.__init__(self)
 
         self.DIRECTION = DOWN
-        self.HEAD = (5, 5)
+        self.HEAD = (2, 2)
         self.queue = [self.HEAD]
         self.FOOD_POSITIONS = {}
         self.rate = 2
-        self.rate_increase = self.args.speed
-        self.start_food = self.args.food
 
     async def handle_message(self, data, path=None): # noqa
         new_dir = None
-        if path in [Actions.KEYDOWN, Actions.KEYUP]:
+        print('--- data ---')
+        print(data)
+        print('------------')
+        if path.to in [Actions.KEYDOWN, Actions.KEYUP]:
             if data == Actions.K_UP:
                 new_dir = UP
             elif data == Actions.K_DOWN:
@@ -75,9 +80,6 @@ class Snake(Fap):
         if new_dir is not None:
             self.DIRECTION = new_dir
 
-    def run(self, params):
-        self.start_socket(handle_message)
-
     def game_over(self):
         print("Game OVER")
         self.model.flash()
@@ -96,7 +98,15 @@ class Snake(Fap):
 
             self.model.set_pixel(f[0], f[1], self.FOOD_COLOR)
 
-    def run(self):
+    def run(self, params):
+        self.start_socket()
+
+        if not params:
+            params = {}
+        self.params = params
+        self.rate_increase = params.get('speed', self.PARAMS_LIST.get('speed'))
+        self.start_food = params.get('food', self.PARAMS_LIST.get('food'))
+
         rate = Rate(self.rate)
 
         self.model.set_all(self.BG_COLOR)

@@ -35,9 +35,9 @@ class Fap(object):
             data = await websocket.recv()
             self.handle_message(data, path)
 
-    def start_socket(self, fct):
+    def start_socket(self):
         start_server = websockets.serve(self._handle_message, '0.0.0.0', 8124)
-        print('====> Start WeSocket')
+        print('====> Start WebSocket')
         while True:
             asyncio.get_event_loop().run_until_complete(start_server)
             asyncio.get_event_loop().run_forever()

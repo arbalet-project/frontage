@@ -147,10 +147,10 @@ def app_position(user):
 @authentication_required
 def remove_from_queue(user):
     if SchedulerState.remove_user_position(user):
-        return True
+        return jsonify(removed=True)
     else:
         abort(404, "I can't find any app for you")
-    return True
+    return jsonify(removed=False)
 
 
 @blueprint.route('/frontage/status', methods=['GET'])

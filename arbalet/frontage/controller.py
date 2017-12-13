@@ -30,6 +30,7 @@ class Frontage(Thread):
         self.hardware_port = hardware_port
         self.hardware = hardware
         self.clock = Clock()
+        SchedulerState.set_frontage_connected(False)
 
         # row, column -> DMX address
         self.mapping = array([[19,
@@ -130,6 +131,9 @@ class Frontage(Thread):
                     self.address[1]))
         else:
             self.client, self.address = None, None
+
+        print_flush("====> START STATE")
+        SchedulerState.set_frontage_connected(True)
 
     def map(self, row, column):
         return self.mapping[row][column]
