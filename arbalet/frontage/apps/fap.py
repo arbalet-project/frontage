@@ -1,12 +1,11 @@
 import time
-import asyncio
-import websockets
 
 from utils.red import redis
 from scheduler_state import SchedulerState
 from model import Model
 # from rabbit import CHANNEL, RABBIT_CONNECTION
 from utils.lock import RWLock
+from utils.websock import Websock
 
 
 class Fap(object):
@@ -30,17 +29,14 @@ class Fap(object):
     def run(self):
         raise NotImplementedError("Fap.run() must be overidden")
 
-    async def _handle_message(self, websocket, path): # noqa
-        while True:
-            data = await websocket.recv()
-            self.handle_message(data, path)
-
     def start_socket(self):
-        start_server = websockets.serve(self._handle_message, '0.0.0.0', 8124)
-        print('====> Start WebSocket')
-        while True:
-            asyncio.get_event_loop().run_until_complete(start_server)
-            asyncio.get_event_loop().run_forever()
+        self.ws = Websock(self, '0.0.0.0', 8124)
+        self.ws.start()
+        # start_server = websockets.serve(self._handle_message, '0.0.0.0', 8124)
+        # print('====> Start WebSocket')
+        # while True:
+        #     asyncio.get_event_loop().run_until_complete(start_server)
+        #     asyncio.get_event_loop().run_forever()
 
     def send_model(self):
         # self.CNT += 1

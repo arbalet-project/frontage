@@ -12,13 +12,10 @@
     Copyright 2015 Yoan Mollard - Arbalet project - http://github.com/arbalet-project
     License: GPL version 3 http://www.gnu.org/licenses/gpl.html
 """
-import asyncio
 import random
-import websockets
 
 from apps.fap import Fap
 from apps.actions import Actions
-from utils.colors import name_to_rgb
 from utils.tools import Rate
 
 
@@ -53,12 +50,12 @@ class Snake(Fap):
         self.FOOD_POSITIONS = {}
         self.rate = 2
 
-    async def handle_message(self, data, path=None): # noqa
+    def handle_message(self, data, path=None): # noqa
         new_dir = None
         print('--- data ---')
         print(data)
         print('------------')
-        if path.to in [Actions.KEYDOWN, Actions.KEYUP]:
+        if path in [Actions.KEYDOWN, Actions.KEYUP]:
             if data == Actions.K_UP:
                 new_dir = UP
             elif data == Actions.K_DOWN:
@@ -66,15 +63,6 @@ class Snake(Fap):
             elif data == Actions.K_RIGHT:
                 new_dir = RIGHT
             elif data == Actions.K_LEFT:
-                new_dir = LEFT
-        elif path == Actions.KEYS:
-            if event['key'] == 'up':
-                new_dir = UP
-            elif event['key'] == 'down':
-                new_dir = DOWN
-            elif event['key'] == 'right':
-                new_dir = RIGHT
-            elif event['key'] == 'left':
                 new_dir = LEFT
 
         if new_dir is not None:
@@ -116,6 +104,7 @@ class Snake(Fap):
             self.model.set_pixel(x, y, self.FOOD_COLOR)
 
         while True:
+            print('---> Inside FAP')
             rate.sleep_dur = 1.0 / self.rate
             with self.model:
                 # No need anymore, thx to asyncio ;)
