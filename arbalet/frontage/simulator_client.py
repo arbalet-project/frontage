@@ -106,9 +106,9 @@ class Simulator(object):
         while True:
             resp = self.client.recv(304)
             if resp != "":
-                print_flush(resp)
-                print_flush("*****")
-                print_flush(len(resp))
+                # print_flush(resp)
+                # print_flush("*****")
+                # print_flush(len(resp))
                 raw = struct.unpack("!{}B".format(76 * 4), resp)
                 self.raw_to_model(raw)
                 self.update()

@@ -10,6 +10,7 @@ class Websock(Thread):
         self.fap = fap
         self.host = host
         self.port = port
+        self.web_socket = None
         Thread.__init__(self)
 
     async def handle_client_message(self, websocket, path): # noqa
@@ -23,8 +24,8 @@ class Websock(Thread):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
-        web_socket = websockets.serve(self.handle_client_message, self.host, self.port)
+        self.web_socket = websockets.serve(self.handle_client_message, self.host, self.port)
 
-        asyncio.get_event_loop().run_until_complete(web_socket)
+        asyncio.get_event_loop().run_until_complete(self.web_socket)
         asyncio.get_event_loop().run_forever()
         print('=====> Close Websock')

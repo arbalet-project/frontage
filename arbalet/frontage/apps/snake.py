@@ -17,7 +17,7 @@ import random
 from apps.fap import Fap
 from apps.actions import Actions
 from utils.tools import Rate
-
+from utils.colors import name_to_rgb
 
 # from arbalet.core import Application, Rate
 # import pygame
@@ -52,18 +52,15 @@ class Snake(Fap):
 
     def handle_message(self, data, path=None): # noqa
         new_dir = None
-        print('--- data ---')
-        print(data)
-        print('------------')
-        if path in [Actions.KEYDOWN, Actions.KEYUP]:
-            if data == Actions.K_UP:
-                new_dir = UP
-            elif data == Actions.K_DOWN:
-                new_dir = DOWN
-            elif data == Actions.K_RIGHT:
-                new_dir = RIGHT
-            elif data == Actions.K_LEFT:
-                new_dir = LEFT
+
+        if data == Actions.K_UP:
+            new_dir = UP
+        elif data == Actions.K_DOWN:
+            new_dir = DOWN
+        elif data == Actions.K_RIGHT:
+            new_dir = RIGHT
+        elif data == Actions.K_LEFT:
+            new_dir = LEFT
 
         if new_dir is not None:
             self.DIRECTION = new_dir
@@ -71,7 +68,8 @@ class Snake(Fap):
     def game_over(self):
         print("Game OVER")
         self.model.flash()
-        self.model.write("GAME OVER! Score: {}".format(len(self.queue)), 'deeppink')
+        # self.ws.send("GAME OVER! Score: {}".format(len(self.queue)), 'deeppink')
+        self.set_pink()
 
     def process_extras(self, x=None, y=None):
         pass
@@ -86,6 +84,12 @@ class Snake(Fap):
 
             self.model.set_pixel(f[0], f[1], self.FOOD_COLOR)
 
+    def set_pink(self):
+        rouge = name_to_rgb('deeppink')
+        for i in range(0, 19):
+            self.model.set_column(i, rouge)
+        self.send_model()
+
     def run(self, params):
         self.start_socket()
 
@@ -94,7 +98,6 @@ class Snake(Fap):
         self.params = params
         self.rate_increase = params.get('speed', self.PARAMS_LIST.get('speed'))
         self.start_food = params.get('food', self.PARAMS_LIST.get('food'))
-
         rate = Rate(self.rate)
 
         self.model.set_all(self.BG_COLOR)
@@ -102,6 +105,7 @@ class Snake(Fap):
         self.spawn_food(self.start_food)
         for x, y in self.FOOD_POSITIONS:
             self.model.set_pixel(x, y, self.FOOD_COLOR)
+        self.send_model()
 
         while True:
             print('---> Inside FAP')
@@ -128,6 +132,7 @@ class Snake(Fap):
                     self.spawn_food(1)
                     self.rate += self.rate_increase
                     self.process_extras()
+                self.send_model()
             rate.sleep()
         self.game_over()
         exit()
