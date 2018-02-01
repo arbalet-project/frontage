@@ -1,5 +1,7 @@
+import logging
+
 from flask import Flask
-from .extensions import db, cors, rest_api
+from .extensions import db, cors, rest_api, sentry
 from . import views
 # from server import views, commands
 from config.settings import settings
@@ -18,6 +20,9 @@ def create_app(config_object=None):
 
 
 def register_extensions(app):
+    sentry.init_app(app, dsn='http://100eb05747c745f5b1fc5ed28443c89c:d31295a98d6e473b81d9e173e6c8f8cd@127.0.0.1:9000/2',
+                    logging=True,
+                    level=logging.ERROR)
     db.init_app(app)
     cors.init_app(app)
     rest_api.init_app(app)

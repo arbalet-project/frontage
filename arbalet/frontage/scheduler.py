@@ -17,6 +17,8 @@ from apps.sweep_async import SweepAsync
 from apps.sweep_rand import SweepRand
 from apps.snap import Snap
 from apps.snake import Snake
+from apps.tetris import Tetris
+from utils.sentry_client import SENTRY
 
 
 def print_flush(s):
@@ -52,6 +54,7 @@ class Scheduler(object):
                      Snake.__name__: Snake(),
                      SweepRand.__name__: SweepRand(),
                      Snap.__name__: Snap(),
+                     Tetris.__name__: Tetris(),
                      RandomFlashing.__name__: RandomFlashing()}
 
         SchedulerState.set_registered_apps(self.apps)
@@ -68,6 +71,7 @@ class Scheduler(object):
             return a
         except Exception as e:
             print_flush(str(e))
+            SENTRY.captureException()
             return []
 
     def keep_alive_waiting_app(self):
@@ -164,6 +168,9 @@ def load_day_table(file_name):
 
 
 if __name__ == '__main__':
-    load_day_table(SchedulerState.CITY)
-    scheduler = Scheduler(hardware=True)
-    scheduler.run()
+    try:
+        load_day_table(SchedulerState.CITY)
+        scheduler = Scheduler(hardware=True)
+        scheduler.run()
+    except Exception:
+        SENTRY.captureException()

@@ -22,3 +22,5 @@ asyncio
 websockets
 petname
 tornado
+raven
+raven[flask]

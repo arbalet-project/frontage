@@ -9,11 +9,12 @@
 """
 import numpy as np
 import json
-import time
+# import time
 
 from threading import RLock
 from utils.colors import name_to_rgb
-from utils.tools import Rate
+# from utils.tools import Rate
+from copy import deepcopy
 
 __all__ = ['Model']
 
@@ -27,6 +28,18 @@ class Model(object):
 
         self._model_lock = RLock()
         self._model = np.tile(color, (height, width, 1)).astype(float)
+
+    def copy(self):
+        return deepcopy(self)
+
+    def get_width(self):
+        return self.width
+
+    def get_height(self):
+        return self.height
+
+    def get_pixel(self, h, w):
+        return self._model[h, w]
 
     def __getitem__(self, item):
         return self._model[item]
@@ -91,23 +104,3 @@ class Model(object):
         self._model = np.array(json.loads(json_data))
 
         return self._model
-
-    def flash(self, duration=4., speed=1.5):
-        """
-        Blocking and self-locking call flashing the current model on and off (mainly for game over)
-        :param duration: Approximate duration of flashing in seconds
-        :param rate: Rate of flashing in Hz
-        """
-        rate = Rate(speed)
-        t0 = time.time()
-        model_id = 0
-        with self._model_lock:
-            models = [np.zeros((self.height, self.width, 3)), self._model]
-
-        model_off = False
-        while time.time() - t0 < duration or model_off:
-            with self._model_lock:
-                self._model = models[model_id]
-            model_id = (model_id + 1) % 2
-            model_off = not model_off
-            rate.sleep()

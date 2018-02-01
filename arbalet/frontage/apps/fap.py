@@ -6,6 +6,7 @@ from model import Model
 # from rabbit import CHANNEL, RABBIT_CONNECTION
 from utils.lock import RWLock
 from utils.websock import Websock
+from utils.tools import Rate
 
 
 class Fap(object):
@@ -37,6 +38,37 @@ class Fap(object):
         # while True:
         #     asyncio.get_event_loop().run_until_complete(start_server)
         #     asyncio.get_event_loop().run_forever()
+
+    def flash(self, duration=4., speed=1.5):
+        """
+        Blocking and self-locking call flashing the current model on and off (mainly for game over)
+        :param duration: Approximate duration of flashing in seconds
+        :param rate: Rate of flashing in Hz
+        """
+        rate = Rate(speed)
+        t0 = time.time()
+        model_id = 0
+        # with self._model_lock:
+        models_bck = self.model._model.copy()
+
+        model_off = False
+        while time.time() - t0 < duration or model_off:
+            # with self._model_lock:
+            print('------+++STORED')
+            print(models_bck)
+            if model_id:
+                self.model.set_all('black')
+                print('------===black')
+                print(self.model._model)
+            else:
+                self.model._model = models_bck.copy()
+                print('------+++up')
+                print(self.model._model)
+
+            model_id = (model_id + 1) % 2
+            model_off = not model_off
+            self.send_model()
+            rate.sleep()
 
     def send_model(self):
         # self.CNT += 1

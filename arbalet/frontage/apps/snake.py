@@ -67,9 +67,10 @@ class Snake(Fap):
 
     def game_over(self):
         print("Game OVER")
-        self.model.flash()
+        self.flash()
         # self.ws.send("GAME OVER! Score: {}".format(len(self.queue)), 'deeppink')
         self.set_pink()
+        self.send_model()
 
     def process_extras(self, x=None, y=None):
         pass

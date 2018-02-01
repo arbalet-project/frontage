@@ -17,6 +17,7 @@ from apps.random_flashing import RandomFlashing
 from apps.sweep_async import SweepAsync
 from apps.sweep_rand import SweepRand
 from apps.snake import Snake
+from apps.tetris import Tetris
 
 
 class TestApp():
