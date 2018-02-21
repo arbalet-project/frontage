@@ -181,6 +181,10 @@ class SchedulerState(object):
         return p
 
     @staticmethod
+    def clear_user_app_queue():
+        redis.set(SchedulerState.KEY_USERS_Q, '[]')
+
+    @staticmethod
     def get_user_app_queue():
         return SchedulerState.get_user_queue()
         # from tasks.celery import app

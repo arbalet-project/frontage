@@ -96,6 +96,9 @@ class Tetris(Fap):
     def handle_message(self, data, path=None): # noqa
         new_dir = None
         self.command['rotate'] = False  # The rotate event cannot be extended
+        self.command['down'] = False  # The rotate event cannot be extended
+        self.command['right'] = False  # The rotate event cannot be extended
+        self.command['left'] = False  # The rotate event cannot be extended
 
         if data == Actions.K_UP:
             self.command['rotate'] = True
@@ -108,7 +111,6 @@ class Tetris(Fap):
 
         if new_dir is not None:
             self.DIRECTION = new_dir
-
         """
         Sleep until the next step and process user events: game commands + exit
         Previous commands are kept into account and extended events (i.e. a key stayed pressed) are propagated
@@ -117,7 +119,7 @@ class Tetris(Fap):
         changes_pending = self.command['left'] or self.command['right'] or self.command['rotate']
         if changes_pending:
             old_position = deepcopy(self.tetromino.position)
-            self.tetromino.update_position(0, -1 if self.command['left'] else 1 if self.command['right'] else 0)
+            self.tetromino.update_position(0, -1 if self.command['right'] else 1 if self.command['left'] else 0)
             if self.command['rotate']:
                 self.rotate_current_tetro()
 
@@ -170,13 +172,13 @@ class Tetris(Fap):
                 py = int(y + self.tetromino.position[1])  # y-position of the pixel we are about to draw
 
                 before_world = px < 0
-                print(self.h_size)
-                print(self.w_size)
-                print('----')
-                print(self.tetromino.position)
-                print('======')
-                in_world = not before_world and px < self.h_size
-                touchdown = not before_world and not in_world or in_world and self.grid[px][py] > 0 and v
+                in_world = not before_world and px < self.h_size  # and py < self.w_size
+
+                touchdown = False
+                if not before_world and not in_world:
+                    touchdown = True
+                elif in_world and self.grid[px][py] > 0 and v:
+                    touchdown = True
 
                 if touchdown:
                     self.touchdown = True
@@ -218,8 +220,9 @@ class Tetris(Fap):
         Brings a new tetromino in the scene and make it falling until touchdown
         :return: The number of steps before touchdown (1 step only = gameover)
         """
+        self.command['down'] = False
         self.touchdown = False
-        self.tetromino = Tetromino(0, self.w_size / 2, self.h_size, self.h_size)
+        self.tetromino = Tetromino(0, self.w_size / 2, self.h_size, self.w_size)
         steps = 0
         while not self.touchdown:
             self.old_grid_empty = deepcopy(self.grid)

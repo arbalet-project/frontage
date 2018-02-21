@@ -54,16 +54,10 @@ class Fap(object):
         model_off = False
         while time.time() - t0 < duration or model_off:
             # with self._model_lock:
-            print('------+++STORED')
-            print(models_bck)
             if model_id:
                 self.model.set_all('black')
-                print('------===black')
-                print(self.model._model)
             else:
                 self.model._model = models_bck.copy()
-                print('------+++up')
-                print(self.model._model)
 
             model_id = (model_id + 1) % 2
             model_off = not model_off

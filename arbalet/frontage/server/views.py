@@ -84,6 +84,17 @@ parser.add_argument('by')
 parser.add_argument('comment')
 
 
+class AppQueueView(Resource):
+    @authentication_required
+    def delete(self, user):
+        if is_admin(user):
+            SchedulerState.clear_user_app_queue()
+        else:
+            abort(400, "Forbidden Bru")
+
+        return '', 204
+
+
 class AppRuningView(Resource):
     @authentication_required
     def get(self, user):
@@ -168,4 +179,5 @@ def next_date():
 
 
 rest_api.add_resource(AppRuningView, '/b/apps/running')
+rest_api.add_resource(AppQueueView, '/b/apps/queue')
 rest_api.add_resource(AppListView, '/b/apps')
