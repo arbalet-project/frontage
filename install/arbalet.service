@@ -1,0 +1,19 @@
+[Unit]
+Description=Arbalet Autostart
+
+[Service]
+Type=simple
+WorkingDirectory=/home/arbalet/Arbalet/frontage
+ExecStart=/usr/bin/docker-compose up
+StandardOutput=journal
+KillSignal=SIGINT
+SuccessExitStatus=SIGINT
+RestartSec=10
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+# Keep a new line at EOF
+
+
