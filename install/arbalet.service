@@ -1,7 +1,5 @@
 [Unit]
 Description=Arbalet Autostart
-Wants=network-online.target
-After=network-online.target
 
 [Service]
 Type=simple
@@ -17,3 +15,5 @@ Restart=always
 WantedBy=multi-user.target
 
 # Keep a new line at EOF
+
+
