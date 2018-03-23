@@ -6,8 +6,10 @@ import sys
 import time
 
 from time import sleep
-from celery.task.control import revoke
 from utils.red import redis, redis_get
+from db.models import FappModel
+from db.base import session_factory
+from db.tools import to_dict, serialize
 
 
 def flask_log(msg):
@@ -34,6 +36,7 @@ class SchedulerState(object):
     KEY_APP_STARTED_AT = 'frontage_app_started_at'
     KEY_NIGHT_START_AT = 'astronomical_twilight_end'
     KEY_NIGHT_END_AT = 'astronomical_twilight_begin'
+    KEY_DEFAULT_APP_CURRENT_UUID = 'key_default_app_current_uuid'
 
     KEY_SCHEDULED_APP_TIME = 'frontage_scheduler_app_time'
 
@@ -61,8 +64,8 @@ class SchedulerState(object):
 
     @staticmethod
     def set_forced_app(app_name, params, expires=600):
-        from tasks.tasks import start_forced_fap, clear_all_task
-        clear_all_task()
+        from tasks.tasks import start_forced_fap
+        SchedulerState.stop_app(SchedulerState.get_current_app())
         start_forced_fap.apply_async(
             args=[app_name, 'FORCED', params], expires=expires)
 
@@ -96,17 +99,6 @@ class SchedulerState(object):
     @staticmethod
     def default_scheduled_time():
         return redis_get(SchedulerState.KEY_SCHEDULED_APP_TIME)
-
-    """ @staticmethod
-    def current_user():
-        return redis.hgetall(SchedulerState.KEY_CURRENT_USER)
-
-    @staticmethod
-    def set_current_user(user_name):
-        now = datetime.datetime.now()
-        return redis.hmset(SchedulerState.KEY_CURRENT_USER, {'user_name': user_name,
-                                                        'start_at':now,
-                                                        'end_at': now+timedelta(seconds=DEFAULT_USER_OCCUPATION)})"""
 
     @staticmethod
     def set_sundown(day, at):
@@ -157,6 +149,53 @@ class SchedulerState(object):
             SchedulerState.KEY_CURRENT_RUNNING_APP,
             json.dumps(app_struct))
 
+    # ============= DEFAULT SCHEDULED APP
+
+    @staticmethod
+    def get_next_default_app():
+        default_app = redis_get(SchedulerState.KEY_DEFAULT_APP_CURRENT_UUID, b"").decode('utf8')
+        select_next = True
+        apps = SchedulerState.get_default_scheduled_app()
+        if not apps:
+            return None
+        for app in apps:
+            if select_next:
+                redis.set(SchedulerState.KEY_DEFAULT_APP_CURRENT_UUID, app.uniqid)
+                return app
+            if app.uniqid == default_app:
+                select_next = True
+
+        redis.set(SchedulerState.KEY_DEFAULT_APP_CURRENT_UUID, apps[0].uniqid)
+        return apps[0]
+
+    @staticmethod
+    def set_default_scheduled_app_state(app_name, state):
+        if app_name not in SchedulerState.get_available_apps():
+            raise ValueError('Bad Name')
+
+        session = session_factory()
+        app = session.query(FappModel).filter_by(name=app_name).first()
+        if not app:
+            fap = FappModel(app_name, is_scheduled=state)
+            session.add(fap)
+            session.commit()
+        else:
+            app.is_scheduled = state
+            session.commit()
+
+    @staticmethod
+    def get_default_scheduled_app(serialized=False):
+        # Get model form DB
+        apps = []
+        session = session_factory()
+        for f in session.query(FappModel).filter_by(is_scheduled=True).all():
+            if serialized:
+                apps.append(serialize(to_dict(f)))
+            else:
+                apps.append(to_dict(f))
+        return apps
+
+    # =============
     @staticmethod
     def set_app_started_at():
         redis.set(
@@ -169,7 +208,12 @@ class SchedulerState(object):
 
     @staticmethod
     def stop_app(c_app):
-        revoke(c_app['task_id'], terminate=True)
+        if not c_app:
+            return
+
+        from tasks.celery import app
+        # revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
+        app.control.revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
         sleep(0.05)
 
     @staticmethod

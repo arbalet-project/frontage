@@ -1,3 +1,4 @@
+import time
 
 from apps.fap import Fap
 from utils.colors import name_to_rgb
@@ -58,7 +59,15 @@ class Flags(Fap):
 
         self.send_model()
 
+    def handle_message(self, data, path=None): # noqa
+        if data and data in self.PARAMS_LIST['uapp']:
+            getattr(self, data)()
+
     def run(self, params):
+        self.start_socket()
         self.params = params
         if params and params.get('uapp', False) in self.PARAMS_LIST['uapp']:
             getattr(self, params.get('uapp'))()
+
+        while True:
+            time.sleep(0.1)

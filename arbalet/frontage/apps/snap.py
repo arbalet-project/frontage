@@ -56,6 +56,8 @@ def requires_auth(f):
 
 class Snap(Fap):
     PLAYABLE = True
+    ACTIVATED = False
+
     def __init__(self, port=33450, hardware=True, simulator=True):
         Fap.__init__(self)
 

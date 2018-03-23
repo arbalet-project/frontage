@@ -6,7 +6,7 @@ import sys
 
 from time import sleep
 
-from .celery import app
+from server.extensions import celery
 from celery.task.control import revoke
 from celery import current_task
 
@@ -32,20 +32,47 @@ def flask_log(msg):
 
 
 def clear_all_task():
-    app.control.purge()
+    celery.control.purge()
     if current_task:
         revoke(current_task.request.id, terminate=True)
-    sleep(1)
+    sleep(0.5)
     SchedulerState.set_current_app({})
 
 
-@app.task
+@celery.task
+def start_default_fap(app):
+    SchedulerState.set_app_started_at()
+    # app['expire_at'] = str(
+    #     datetime.datetime.now())
+    app['expire_at'] = str(
+        datetime.datetime.now() +
+        datetime.timedelta(
+            seconds=app['expires']))
+    app['task_id'] = start_default_fap.request.id
+    app['scheduled_app'] = True
+    app['started_at'] = datetime.datetime.now().isoformat()
+
+    SchedulerState.set_current_app(app)
+    try:
+        fap = globals()[app['name']]()
+        fap.run(params=app['params'])
+    except Exception as e:
+        print('--->APP>>')
+        print('Error when starting task ' + str(e))
+        raise e
+        return 'Error when starting task ' + str(e)
+    finally:
+        SchedulerState.set_current_app({})
+
+
+@celery.task
 def start_fap(app):
     SchedulerState.set_app_started_at()
     app['expire_at'] = str(
         datetime.datetime.now() +
         datetime.timedelta(
             seconds=app['expires']))
+    app['scheduled_app'] = False
     app['task_id'] = start_fap.request.id
     app['started_at'] = datetime.datetime.now().isoformat()
 
@@ -62,9 +89,11 @@ def start_fap(app):
         SchedulerState.set_current_app({})
 
 
-@app.task
+@celery.task
 def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
     if redis_get(SchedulerState.KEY_FORCED_APP, False) == 'True':
+        print('-----------------------')
+        print(SchedulerState.get_current_app())
         print('-----------------------')
         print('A forced App is already running')
         print('-----------------------')
@@ -75,6 +104,7 @@ def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
         'name': fap_name,
         'username': user_name,
         'params': params,
+        'task_id': start_forced_fap.request.id,
         'started_at': datetime.datetime.now().isoformat()}
     SchedulerState.set_current_app(app_struct)
     if fap_name:
@@ -88,4 +118,5 @@ def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
             raise
         finally:
             redis.set(SchedulerState.KEY_FORCED_APP, False)
+            SchedulerState.set_current_app({})
     return True

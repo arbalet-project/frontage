@@ -7,7 +7,7 @@ import sys
 from time import sleep
 from utils.red import redis
 from controller import Frontage
-from tasks.tasks import start_fap
+from tasks.tasks import start_fap, start_default_fap
 from tasks.celery import app
 from scheduler_state import SchedulerState
 
@@ -101,7 +101,7 @@ class Scheduler(object):
             if len(queue) > 0:
                 next_app = queue[0]
                 if datetime.datetime.now() > datetime.datetime.strptime(
-                        c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f"):
+                        c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") or c_app['scheduled_app']:
                     print_flush('===> REVOKING APP, someone else turn')
                     # !!!! NOT TESTED WITHOUT SchedulerState.set_current_app({})
                     SchedulerState.stop_app(c_app)
@@ -110,28 +110,22 @@ class Scheduler(object):
                     # Remove app form waiting Q
                     SchedulerState.pop_user_app_queue(queue)
         else:
+            # no app runing, app are waiting in queue. We start one
             if len(queue) > 0:
                 start_fap.apply_async(args=[queue[0]], queue='userapp')
                 SchedulerState.pop_user_app_queue(queue)
-
-        # if SchedulerState.get_forced_app():
-        #     return
-        # if len(self.get_current_user_app()) > 0:
-        #     app = SchedulerState.get_current_app()
-        #     if datetime.datetime.now() > datetime.datetime.strptime(app['expire_at'], "%Y-%m-%d %H:%M:%S.%f"):
-        #         print_flush("-------")
-        #         print_flush(self.get_current_user_app()[0])
-        #         print_flush("-------")
-        #         print_flush('===> REVOKING APP, someone else turn')
-        #         revoke(app['task_id'], terminate=True)
-        # if len(self.get_current_user_app()) >= 1:
-        #     # there is One running task and ONE user waiting to play.
-        #     if len(SchedulerState.get_user_app_queue()) >= 1:
-        #         pass
-        #     else:
-        #         pass
-        # else:
-        #     pass
+                # No task waiting, start defautl scheduler
+            else:
+                default_scheduled_app = SchedulerState.get_next_default_app()
+                # defualt app are schedulled, and stopped auto when expire is outdated.
+                # any other app starrted by user has highter
+                if default_scheduled_app:
+                    next_app = {'name': default_scheduled_app.name, 'username': '>>>default<<<'}
+                    # expires => in seconde
+                    next_app['expires'] = default_scheduled_app.duration
+                    if not next_app['expires'] or next_app['expires'] == 0:
+                        next_app['expires'] = (15 * 60)
+                    start_default_fap.apply_async(args=[next_app], queue='userapp')
 
     def run(self):
         last_state = False

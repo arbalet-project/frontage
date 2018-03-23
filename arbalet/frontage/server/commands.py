@@ -3,7 +3,7 @@ import os
 import click
 
 from flask.cli import with_appcontext
-from server.extensions import db
+# from server.extensions import db
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 PROJECT_ROOT = os.path.join(HERE, os.pardir)
@@ -13,7 +13,8 @@ TEST_PATH = os.path.join(PROJECT_ROOT, 'tests')
 @click.command()
 @with_appcontext
 def create_all():
-    db.create_all()
+    pass
+    # db.create_all()
 
 
 @click.command()
@@ -21,7 +22,7 @@ def create_all():
 def drop_all():
     """Initialize the database."""
     click.echo('Drop the db')
-    db.drop_all()
+    # db.drop_all()
 
 
 @click.command()

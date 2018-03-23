@@ -95,6 +95,22 @@ class AppQueueView(Resource):
         return '', 204
 
 
+class AppAdminRuningView(Resource):
+    @authentication_required
+    def post(self, user):
+        name = request.get_json()['name']
+        params = request.get_json()['params']
+        expires = request.get_json().get('expires', 20)
+        if not SchedulerState.usable():
+            flask_log("Frontage is not started")
+            abort(400, "Frontage is not started")
+        if is_admin(user):
+            SchedulerState.set_forced_app(name, params, expires)
+            return True
+        else:
+            abort(403, "Forbidden Bru")
+
+
 class AppRuningView(Resource):
     @authentication_required
     def get(self, user):
@@ -121,16 +137,40 @@ class AppRuningView(Resource):
         if not SchedulerState.usable():
             flask_log("Frontage is not started")
             abort(400, "Frontage is not started")
-        if is_admin(user):
-            SchedulerState.set_forced_app(name, params, expires)
-        else:
-            try:
-                return SchedulerState.start_scheduled_app(
-                    user['username'], name, params, expires)
-            except Exception as e:
-                flask_log(str(e))
-                abort(403, str(e))
-            # SchedulerState.set_forced_app(name, params, expires)
+
+        try:
+            return SchedulerState.start_scheduled_app(
+                user['username'], name, params, expires)
+        except Exception as e:
+            flask_log(str(e))
+            abort(403, str(e))
+        # SchedulerState.set_forced_app(name, params, expires)
+
+
+class AppDefaultListView(Resource):
+    @authentication_required
+    def get(self, user):
+        return True
+
+    def post(self, user):
+        return True
+
+
+class AppDefaultView(Resource):
+    @authentication_required
+    def get(self, user):
+        return True
+    #     return SchedulerState.get_default_scheduled_app(serialized=True)
+
+    # def delete(self, user):
+    #     SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), False)
+
+    #     return SchedulerState.get_default_scheduled_app(serialized=True)
+
+    # def post(self, user):
+    #     SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), True)
+
+    #     return SchedulerState.get_default_scheduled_app(serialized=True)
 
 
 class AppListView(Resource):
@@ -178,6 +218,10 @@ def next_date():
     return jsonify(is_usable=state)
 
 
+rest_api.add_resource(AppDefaultView, '/b/apps/default/')
+rest_api.add_resource(AppDefaultListView, '/b/apps/default')
+
+rest_api.add_resource(AppAdminRuningView, '/b/apps/admin/running')
 rest_api.add_resource(AppRuningView, '/b/apps/running')
 rest_api.add_resource(AppQueueView, '/b/apps/queue')
 rest_api.add_resource(AppListView, '/b/apps')
