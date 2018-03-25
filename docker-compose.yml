@@ -29,6 +29,7 @@ services:
     links:
       - redis:redis
       - rabbit:rabbit
+      - postgres:postgres
     ports:
       - 33460:33460
     command: ["scheduler"]
@@ -40,6 +41,7 @@ services:
     links:
       - rabbit:rabbit
       - redis:redis
+      - postgres:postgres
     ports:
       - 8124:8124
     command: ["queue"]
@@ -51,10 +53,13 @@ services:
     links:
       - rabbit:rabbit
       - redis:redis
+      - postgres:postgres
     command: ["worker"]
   postgres:
     image: postgres
     env_file: .env-dev
     restart: always
     ports:
-      - 5544:5544
+      - 5544:5432
+    volumes:
+      - ./postgresdata:/var/lib/postgresql/data

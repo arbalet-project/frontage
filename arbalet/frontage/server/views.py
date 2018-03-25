@@ -159,18 +159,17 @@ class AppDefaultListView(Resource):
 class AppDefaultView(Resource):
     @authentication_required
     def get(self, user):
-        return True
-    #     return SchedulerState.get_default_scheduled_app(serialized=True)
+        return SchedulerState.get_default_scheduled_app(serialized=True)
 
-    # def delete(self, user):
-    #     SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), False)
+    def delete(self, user):
+        SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), False)
 
-    #     return SchedulerState.get_default_scheduled_app(serialized=True)
+        return SchedulerState.get_default_scheduled_app(serialized=True)
 
-    # def post(self, user):
-    #     SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), True)
+    def post(self, user):
+        SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), True)
 
-    #     return SchedulerState.get_default_scheduled_app(serialized=True)
+        return SchedulerState.get_default_scheduled_app(serialized=True)
 
 
 class AppListView(Resource):
@@ -183,8 +182,11 @@ class AppListView(Resource):
             apps = {k: v for k, v in apps.items() if v['activated']}
 
         formated = []
+        defaults_apps = SchedulerState.get_default_scheduled_app(serialized=False)
         for x in apps:
-            formated.append(apps[x])
+            ext_app = apps[x]
+            ext_app['scheduled'] = False if (x not in defaults_apps) else defaults_apps[x]
+            formated.append(ext_app)
         return formated
 
 

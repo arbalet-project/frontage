@@ -182,6 +182,7 @@ class SchedulerState(object):
         else:
             app.is_scheduled = state
             session.commit()
+        session.close()
 
     @staticmethod
     def get_default_scheduled_app(serialized=False):
@@ -193,6 +194,7 @@ class SchedulerState(object):
                 apps.append(serialize(to_dict(f)))
             else:
                 apps.append(to_dict(f))
+        session.close()
         return apps
 
     # =============

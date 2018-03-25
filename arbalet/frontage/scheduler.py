@@ -153,6 +153,7 @@ class Scheduler(object):
                 print_flush('===== Scheduler still running =====')
                 print_flush(SchedulerState.get_user_app_queue())
             sleep(0.5)
+        print_flush('===== Scheduler End =====')
 
 
 def load_day_table(file_name):
@@ -166,5 +167,9 @@ if __name__ == '__main__':
         load_day_table(SchedulerState.CITY)
         scheduler = Scheduler(hardware=True)
         scheduler.run()
-    except Exception:
+        print_flush('=== Scheduler Stop ===')
+    except Exception as e:
+        print_flush('=== Scheduler Exception ===')
+        print_flush(e)
+        print_flush('===========================')
         SENTRY.captureException()
