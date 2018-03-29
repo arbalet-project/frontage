@@ -167,7 +167,11 @@ class AppDefaultView(Resource):
         return SchedulerState.get_default_scheduled_app(serialized=True)
 
     def post(self, user):
-        SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), True)
+        app_state = request.get_json().get('app_state')
+        app_state_bool = False
+        if app_state == 'True':
+            app_state_bool = True
+        SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), app_state_bool)
 
         return SchedulerState.get_default_scheduled_app(serialized=True)
 
