@@ -7,6 +7,7 @@ from socket import *
 from struct import pack
 from numpy import array
 from pygame.time import Clock
+from artnet import dmx
 
 import sys
 
@@ -14,37 +15,102 @@ __all__ = ['Frontage']
 
 
 class Frontage(Thread):
-    def __init__(self, hardware_port, hardware=True, simulator=True):
-        super(Frontage, self).__init__()
-        self.model = Model(4, 19)
+    def __init__(self, hardware_port, artnet=True, simulator=True):
+        Thread.__init__(self)
         self.clock = Clock()
+        self.model = Model(4, 19)
 
-        # row, column -> DMX address
-        self.mapping = array([[19, 18, 17, 16, 15, 14, 13, 12, 11, 10,  9,  8,  7,  6,  5,  4,  3, 2,  1],
-                              [38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20],
-                              [57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39],
-                              [71, 70, 69, 68, 67, 66, 65,  0,  0,  0,  0,  0, 64, 63, 62, 61, 60, 59, 58]])
-
+        # row, column -> (DMX universe, DMX address)
+        self.mapping = array([[(6, 19),
+                               (6, 22),
+                               (6, 25),
+                               (6, 28),
+                               (6, 31),
+                               (6, 34),
+                               (6, 37),
+                               (6, 40),
+                               (6, 43),
+                               (7, 49),
+                               (7, 46),
+                               (7, 43),
+                               (7, 40),
+                               (7, 37),
+                               (7, 34),
+                               (7, 31),
+                               (7, 28),
+                               (7, 25),
+                               (7, 22)],
+                              [(4, 19),
+                               (4, 22),
+                               (4, 25),
+                               (4, 28),
+                               (4, 31),
+                               (4, 34),
+                               (4, 37),
+                               (4, 40),
+                               (4, 43),
+                               (5, 49),
+                               (5, 46),
+                               (5, 43),
+                               (5, 40),
+                               (5, 37),
+                               (5, 34),
+                               (5, 31),
+                               (5, 28),
+                               (5, 25),
+                               (5, 22)],
+                              [(2, 19),
+                               (2, 22),
+                               (2, 25),
+                               (2, 28),
+                               (2, 31),
+                               (2, 34),
+                               (2, 37),
+                               (2, 40),
+                               (2, 43),
+                               (3, 49),
+                               (3, 46),
+                               (3, 43),
+                               (3, 40),
+                               (3, 37),
+                               (3, 34),
+                               (3, 31),
+                               (3, 28),
+                               (3, 25),
+                               (3, 22)],
+                              [(0, 19),
+                               (0, 22),
+                               (0, 25),
+                               (0, 28),
+                               (0, 31),
+                               (0, 34),
+                               (0, 37),
+                               (0, 40),
+                               (0, 43),
+                               (1, 49),
+                               (1, 46),
+                               (1, 43),
+                               (1, 40),
+                               (1, 37),
+                               (1, 34),
+                               (1, 31),
+                               (1, 28),
+                               (1, 25),
+                               (1, 22)]])
 
         self.num_pixels = self.mapping.shape[0] * self.mapping.shape[1]
-        # Use asyncio or twisted?
-        self.hardware_server = socket(AF_INET, SOCK_STREAM)
-        #self.hardware_server.settimeout(10.0)  # Non-blocking requests
-        self.hardware_server.bind(("0.0.0.0", hardware_port))
-        self.hardware_server.listen(1)
-        self.running = False
+        self.num_universes = 8
+        self.dmx = None
+        self.simulator = None
 
         if simulator:
             self.simulator = Simulator(self.model)
-        else:
-            self.simulator = None
 
-        if hardware:
-            print("Waiting Hardware TCP client connection...", file=sys.stderr)
-            self.client, self.address = self.hardware_server.accept()
-            print("Client {}:{} connected!".format(self.address[0], self.address[1]), file=sys.stderr)
-        else:
-            self.client, self.address = None, None
+        if artnet:
+            # Broadcasting on all Arnet nodes network 2.0.0.0/8
+            self.dmx = dmx.Controller("2.255.255.255", universes=self.num_universes) 
+            self.data = [[0]*512]*self.num_universes  # self.data[universe][dmx_address] = dmx_value         
+            self.dmx.start()
 
     def map(self, row, column):
         return self.mapping[row][column]
@@ -62,20 +128,18 @@ class Frontage(Thread):
                 self.model[row, col] = r, g, b
 
     def update(self):
-        if self.client is not None:
+        if self.dmx is not None:
             with self.model:
-                data_frame = []
-                with self.model:
-                    for row in range(self.model.height):
-                        for col in range(self.model.width):
-                            led = self.mapping[row, col]
-                            r, g, b = self.model[row, col]
-                            data_frame.append(led)
-                            data_frame.append(r)
-                            data_frame.append(g)
-                            data_frame.append(b)
-                command = pack("!{}B".format(self.num_pixels * 4), *data_frame)
-                self.client.send(command)
+                for row in range(self.model.height):
+                    for col in range(self.model.width):
+                        universe, address = self.mapping[row, col]
+                        r, g, b = map(int, self.model[row, col])
+                        self.data[universe][address] = r
+                        self.data[universe][address+1] = g
+                        self.data[universe][address+2] = b
+            for universe in range(len(self.data)):
+                self.dmx.add(iter([self.data[universe]]), universe)
+
 
     def run(self):
         self.running = True
@@ -90,6 +154,6 @@ class Frontage(Thread):
     def close(self):
         if self.simulator is not None:
             self.simulator.close()
-        if self.hardware_server is not None:
-            self.hardware_server.close()
+        if self.dmx is not None:
+            self.dmx.close()
 
