@@ -14,6 +14,7 @@ import sys
 from time import sleep
 from os import environ
 from pygame import color, event, display, draw, Rect, QUIT
+from pygame.time import Clock
 from model import Model
 
 __all__ = ['Simulator']
@@ -27,6 +28,7 @@ def print_flush(s):
 class Simulator(object):
     def __init__(self, row=4, col=19, port=33460):
         factor_sim = 40
+        self.clock = Clock()
         self.model = Model(row, col)
         self.sim_width = self.model.width * factor_sim
         self.sim_height = self.model.height * factor_sim
@@ -58,6 +60,7 @@ class Simulator(object):
         try:
             self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.client.connect(("127.0.0.1", port))
+            self.client.settimeout(0.05)
         except socket.error, e:
             print(str(e))
             return False
@@ -104,15 +107,23 @@ class Simulator(object):
 
     def run(self):
         while True:
-            resp = self.client.recv(304)
-            if resp != "":
-                # print_flush(resp)
-                # print_flush("*****")
-                # print_flush(len(resp))
-                raw = struct.unpack("!{}B".format(76 * 4), resp)
-                self.raw_to_model(raw)
-                self.update()
-            # sleep(0.005)
+            try:
+                resp = self.client.recv(304)
+            except socket.timeout:
+                self.clock.tick(50)
+            else:
+                if resp != "":
+                    # print_flush(resp)
+                    # print_flush("*****")
+                    # print_flush(len(resp))
+                    raw = struct.unpack("!{}B".format(76 * 4), resp)
+                    self.raw_to_model(raw)
+                    self.update()
+            for e in event.get():
+                if e.type == QUIT:
+                    self.close()
+                    return None
+
 
     def close(self):
         if not self.closed:
