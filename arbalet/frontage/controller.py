@@ -109,8 +109,8 @@ class Frontage(Thread):
         if artnet:
             # Broadcasting on all Arnet nodes network 2.0.0.0/8
             self.dmx = dmx.Controller("2.255.255.255", universes=self.num_universes) 
-            self.data = [[0]*512]*self.num_universes  # self.data[universe][dmx_address] = dmx_value         
-            self.dmx.start()
+            self.data = [[0]*512 for u in range(self.num_universes)]  # self.data[universe][dmx_address] = dmx_value         
+            self.dmx.start()  # Peut lever Network is unreachable
 
     def map(self, row, column):
         return self.mapping[row][column]
@@ -133,6 +133,7 @@ class Frontage(Thread):
                 for row in range(self.model.height):
                     for col in range(self.model.width):
                         universe, address = self.mapping[row, col]
+
                         r, g, b = map(int, self.model[row, col])
                         self.data[universe][address] = r
                         self.data[universe][address+1] = g
@@ -154,6 +155,5 @@ class Frontage(Thread):
     def close(self):
         if self.simulator is not None:
             self.simulator.close()
-        if self.dmx is not None:
-            self.dmx.close()
+
 
