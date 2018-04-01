@@ -110,7 +110,7 @@ class Simulator(object):
             try:
                 resp = self.client.recv(304)
             except socket.timeout:
-                self.clock.tick(50)
+                pass
             else:
                 if resp != "":
                     # print_flush(resp)
@@ -123,6 +123,7 @@ class Simulator(object):
                 if e.type == QUIT:
                     self.close()
                     return None
+            self.clock.tick(50)
 
 
     def close(self):
