@@ -2,6 +2,7 @@ import time
 
 from apps.fap import Fap
 from utils.colors import name_to_rgb
+from json import loads
 
 
 class Flags(Fap):
@@ -60,9 +61,10 @@ class Flags(Fap):
         self.send_model()
 
     def handle_message(self, data, path=None): # noqa
-        print(" ########################################### TYPE :", type(data), data)
-        if data and data in self.PARAMS_LIST['uapp']:
-            getattr(self, data['flag'])()
+        if data is not None:
+            flag = loads(data)['flag']
+            if flag in self.PARAMS_LIST['uapp']:
+                getattr(self, flag)()
         
 
     def run(self, params):
