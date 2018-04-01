@@ -20,11 +20,11 @@ class Flags(Fap):
         bleu = name_to_rgb('navy')
         blanc = name_to_rgb('white')
         rouge = name_to_rgb('red')
-        for i in range(0, 5):
+        for i in range(0, 6):
             self.model.set_column(i, bleu)
-        for i in range(5, 12):
+        for i in range(6, 13):
             self.model.set_column(i, blanc)
-        for i in range(12, 19):
+        for i in range(13, 19):
             self.model.set_column(i, rouge)
         self.send_model()
 
@@ -32,11 +32,11 @@ class Flags(Fap):
         g = name_to_rgb('green')
         w = name_to_rgb('white')
         r = name_to_rgb('firebrick')
-        for i in range(0, 5):
+        for i in range(0, 6):
             self.model.set_column(i, g)
-        for i in range(5, 12):
+        for i in range(6, 13):
             self.model.set_column(i, w)
-        for i in range(12, 19):
+        for i in range(13, 19):
             self.model.set_column(i, r)
         self.send_model()
 
