@@ -60,8 +60,10 @@ class Flags(Fap):
         self.send_model()
 
     def handle_message(self, data, path=None): # noqa
+        print(" ########################################### TYPE :", type(data), data)
         if data and data in self.PARAMS_LIST['uapp']:
-            getattr(self, data)()
+            getattr(self, data['flag'])()
+        
 
     def run(self, params):
         self.start_socket()
