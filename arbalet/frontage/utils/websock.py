@@ -29,3 +29,7 @@ class Websock(Thread):
         asyncio.get_event_loop().run_until_complete(self.web_socket)
         asyncio.get_event_loop().run_forever()
         print('=====> Close Websock')
+
+    def close(self):
+        self.web_socket.ws_server.close()
+
