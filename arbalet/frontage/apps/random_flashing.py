@@ -10,7 +10,7 @@ from .colors import Colors
 class RandomFlashing(Colors):
 
     def __init__(self):
-        self.PARAMS_LIST['uapp'] = ['flashes']
         Colors.__init__(self, gen_random_flashing)
+        self.PARAMS_LIST['uapp'] = ['flashes']
 
 

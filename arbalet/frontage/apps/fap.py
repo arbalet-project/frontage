@@ -1,8 +1,13 @@
 import time
-from utils.red import redis, redis_get
+
+from utils.red import redis
 from scheduler_state import SchedulerState
 from model import Model
-from rabbit import CHANNEL, RABBIT_CONNECTION
+# from rabbit import CHANNEL, RABBIT_CONNECTION
+from utils.lock import RWLock
+from utils.websock import Websock
+from utils.tools import Rate
+
 
 class Fap(object):
     PARAMS_LIST = []
@@ -10,6 +15,7 @@ class Fap(object):
     ACTIVATED = True
     ENABLE = True
     CNT = 0
+    LOCK = RWLock()
 
     def __init__(self, model=None):
         self.username = None
@@ -24,13 +30,54 @@ class Fap(object):
     def run(self):
         raise NotImplementedError("Fap.run() must be overidden")
 
+    def start_socket(self):
+        self.ws = Websock(self, '0.0.0.0', 8124)
+        self.ws.start()
+        # start_server = websockets.serve(self._handle_message, '0.0.0.0', 8124)
+        # print('====> Start WebSocket')
+        # while True:
+        #     asyncio.get_event_loop().run_until_complete(start_server)
+        #     asyncio.get_event_loop().run_forever()
+
+    def flash(self, duration=4., speed=1.5):
+        """
+        Blocking and self-locking call flashing the current model on and off (mainly for game over)
+        :param duration: Approximate duration of flashing in seconds
+        :param rate: Rate of flashing in Hz
+        """
+        rate = Rate(speed)
+        t0 = time.time()
+        model_id = 0
+        # with self._model_lock:
+        models_bck = self.model._model.copy()
+
+        model_off = False
+        while time.time() - t0 < duration or model_off:
+            # with self._model_lock:
+            if model_id:
+                self.model.set_all('black')
+            else:
+                self.model._model = models_bck.copy()
+
+            model_id = (model_id + 1) % 2
+            model_off = not model_off
+            self.send_model()
+            rate.sleep()
+
     def send_model(self):
         # self.CNT += 1
         # print(self.CNT)
-        CHANNEL.basic_publish(exchange='',
-            routing_key=SchedulerState.KEY_MODEL,
-            body=self.model.json())
+        if not self.LOCK.acquire_write(2):
+            print('Wait for RWLock for too long in Bufferize...Stopping')
+            return
+        redis.publish(SchedulerState.KEY_MODEL, self.model.json())
+
+        # CHANNEL.basic_publish(exchange='',
+        #     routing_key=SchedulerState.KEY_MODEL,
+        #     body=self.model.json())
         # redis.set(SchedulerState.KEY_MODEL, self.model.json())
+
+        self.LOCK.release()
 
     def jsonify(self):
         struct = {}
@@ -44,7 +91,8 @@ class Fap(object):
         return struct
 
     def __del__(self):
-        print('----------CLOSE-')
+        print('----CLOSE----')
         time.sleep(0.2)
+        self.ws.close()
         # CHANNEL.queue_delete(queue=SchedulerState.KEY_MODEL)
         # RABBIT_CONNECTION.close()

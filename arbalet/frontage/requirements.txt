@@ -17,3 +17,11 @@ gunicorn
 pika
 numpy
 pygame
+click
+asyncio
+websockets
+petname
+tornado
+raven
+blinker
+SQLAlchemy

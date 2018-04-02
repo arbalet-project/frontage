@@ -9,24 +9,29 @@
 """
 import socket
 import struct
+import sys
 
 from time import sleep
-from os.path import dirname, join
-#from ...resources.img import __file__ as img_resources_path
 from os import environ
-from pygame import color, event, display, draw, Rect, error, QUIT
-from pygame.image import load_extended
+from pygame import color, event, display, draw, Rect, QUIT
+from pygame.time import Clock
 from model import Model
 
 __all__ = ['Simulator']
 
 
+def print_flush(s):
+    print(s)
+    sys.stdout.flush()
+
+
 class Simulator(object):
     def __init__(self, row=4, col=19, port=33460):
         factor_sim = 40
+        self.clock = Clock()
         self.model = Model(row, col)
-        self.sim_width = self.model.width*factor_sim
-        self.sim_height = self.model.height*factor_sim
+        self.sim_width = self.model.width * factor_sim
+        self.sim_height = self.model.height * factor_sim
         self.border_thickness = 1
         self.cell_height = factor_sim
         self.cell_width = factor_sim
@@ -41,20 +46,21 @@ class Simulator(object):
             sleep(3)
 
         self.display = display.set_mode((self.sim_width, self.sim_height), 0, 32)
-        #try:
+        # try:
         #    self.icon = load_extended(join(dirname(img_resources_path), 'icon.png'))
-        #except error:
+        # except error:
         #    pass
-        #else:
+        # else:
         #    display.set_icon(self.icon)
         display.set_caption("Arbalet Frontage simulator", "Arbalet")
 
     def start_socket(self, port):
         print('->Start Connecting...')
-        print('Port: '+str(port))
+        print('Port: ' + str(port))
         try:
             self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.client.connect(("127.0.0.1", port))
+            self.client.settimeout(0.05)
         except socket.error as e:
             print(str(e))
             return False
@@ -87,7 +93,6 @@ class Simulator(object):
                     draw.line(self.display, color.Color(40, 40, 40), (0, h * self.cell_height),
                               (self.sim_width, h * self.cell_height), self.border_thickness)
 
-
                 display.update()
             finally:
                 self.display.unlock()
@@ -96,19 +101,29 @@ class Simulator(object):
     def raw_to_model(self, raw):
         for row in range(self.model.height):
             for col in range(self.model.width):
-                current_cell = row*self.model.width+col
-                current_cell = current_cell*4
-                self.model[row, col] = raw[current_cell+1:current_cell+4]
+                current_cell = row * self.model.width + col
+                current_cell = current_cell * 4
+                self.model[row, col] = raw[current_cell + 1:current_cell + 4]
 
     def run(self):
         while True:
-
-            resp = self.client.recv(304)
-            if resp != "":
-                raw = struct.unpack("!{}B".format(76*4), resp)
-                self.raw_to_model(raw)
-                self.update()
-            # sleep(0.005)
+            try:
+                resp = self.client.recv(304)
+            except socket.timeout:
+                pass
+            else:
+                if resp != "":
+                    # print_flush(resp)
+                    # print_flush("*****")
+                    # print_flush(len(resp))
+                    raw = struct.unpack("!{}B".format(76 * 4), resp)
+                    self.raw_to_model(raw)
+                    self.update()
+            for e in event.get():
+                if e.type == QUIT:
+                    self.close()
+                    return None
+            self.clock.tick(50)
 
 
     def close(self):
@@ -119,6 +134,7 @@ class Simulator(object):
                 self.closed = True
             finally:
                 self.display.unlock()
+
 
 if __name__ == '__main__':
     simulator = Simulator()

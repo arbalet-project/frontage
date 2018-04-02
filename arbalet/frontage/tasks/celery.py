@@ -1,16 +1,17 @@
 from __future__ import absolute_import
 
-import json
 import datetime
-import os
 
-from celery import Celery
+from server.extensions import celery
+from server.app import create_app
 from scheduler_state import SchedulerState
 from utils.red import redis, redis_get
 
-app = Celery('tasks', backend='redis://'+os.environ['REDIS_HOST'], broker='redis://'+os.environ['REDIS_HOST'], include=['tasks.tasks', 'tasks'])
+app = celery
+app.init_app(create_app())
 
 SUNRISE = ''
+
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
@@ -18,6 +19,7 @@ def setup_periodic_tasks(sender, **kwargs):
         10.0,
         check_sunrise_sunset.s()
     )
+
 
 @app.task
 def check_sunrise_sunset():
@@ -35,7 +37,7 @@ def check_sunrise_sunset():
     elif now > off_at and now < on_at:
         state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNRISE)
         SchedulerState.set_usable(False)
-    elif now > off_at  and now > on_at:
+    elif now > off_at and now > on_at:
         state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNDOWN)
         SchedulerState.set_usable(True)
 
@@ -57,16 +59,17 @@ def get_celery_worker_status():
         insp = inspect()
         d = insp.stats()
         if not d:
-            d = { ERROR_KEY: 'No running Celery workers were found.' }
+            d = {ERROR_KEY: 'No running Celery workers were found.'}
     except IOError as e:
         from errno import errorcode
         msg = "Error connecting to the backend: " + str(e)
         if len(e.args) > 0 and errorcode.get(e.args[0]) == 'ECONNREFUSED':
             msg += ' Check that the backend server is running.'
-        d = { ERROR_KEY: msg }
+        d = {ERROR_KEY: msg}
     except ImportError as e:
-        d = { ERROR_KEY: str(e)}
+        d = {ERROR_KEY: str(e)}
     return d
+
 
 if __name__ == '__main__':
     print('=========== STARTED CELERY IN MAIN MODE ===========')

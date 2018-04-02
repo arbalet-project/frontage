@@ -146,21 +146,21 @@ def test_admin_current_app(login):
 
 def test_user_app_set():
     login = utils.call('POST', url='/b/login', json=Settings.USER).json()['token']
-    params = {'uapp': 'swipe'}
+    params = {'uapp': 'swipe', 'colors': ['pink']}
     res = utils.call('POST',
                         url='/b/apps/running',
-                        json={'name': 'SweepAsync', 'params': params, 'expires':20},
+                        json={'name': 'Flags', 'params': {"uapp": "spain"}, 'expires':20},
                         headers={'Authorization': 'Bearer '+login})
     assert utils.is_status_ok(res.status_code)
 
-def test_user_app_position():
-    login = utils.call('POST', url='/b/login', json=Settings.USER).json()['token']
-    params = {'uapp': 'swipe'}
-    res = utils.call('GET',
-                        url='/b/apps/position',
-                        headers={'Authorization': 'Bearer '+login})
-    assert utils.is_status_ok(res.status_code)
-    print(res.json())
+# def test_user_app_position():
+#     login = utils.call('POST', url='/b/login', json=Settings.USER).json()['token']
+#     params = {'uapp': 'swipe', 'colors': ['pink']}
+#     res = utils.call('GET',
+#                         url='/b/apps/position',
+#                         headers={'Authorization': 'Bearer '+login})
+#     assert utils.is_status_ok(res.status_code)
+#     print(res.json())
 
 # def test_admin_force_app_set_2(login):
 #     sleep(2)

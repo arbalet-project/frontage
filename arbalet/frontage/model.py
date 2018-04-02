@@ -9,9 +9,12 @@
 """
 import numpy as np
 import json
+# import time
 
 from threading import RLock
-
+from utils.colors import name_to_rgb
+# from utils.tools import Rate
+from copy import deepcopy
 
 __all__ = ['Model']
 
@@ -25,6 +28,18 @@ class Model(object):
 
         self._model_lock = RLock()
         self._model = np.tile(color, (height, width, 1)).astype(float)
+
+    def copy(self):
+        return deepcopy(self)
+
+    def get_width(self):
+        return self.width
+
+    def get_height(self):
+        return self.height
+
+    def get_pixel(self, h, w):
+        return self._model[h, w]
 
     def __getitem__(self, item):
         return self._model[item]
@@ -41,6 +56,8 @@ class Model(object):
             self._model[h, w] = color
 
     def set_all(self, color):
+        if isinstance(color, str):
+            color = name_to_rgb(color)
         for w in range(self.width):
             for h in range(self.height):
                 self._model[h, w] = color
@@ -77,7 +94,7 @@ class Model(object):
 
     def __mul__(self, scalar):
         m = Model(self.height, self.width)
-        m._model = scalar*self._model
+        m._model = scalar * self._model
         return m
 
     def json(self):

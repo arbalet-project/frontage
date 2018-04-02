@@ -10,7 +10,7 @@ from .colors import Colors
 class SweepAsync(Colors):
 
     def __init__(self):
-        self.PARAMS_LIST['uapp'] = ['swipe']
         Colors.__init__(self, gen_sweep_async)
+        self.PARAMS_LIST['uapp'] = ['swipe']
 
 
