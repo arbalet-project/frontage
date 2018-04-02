@@ -1,0 +1,65 @@
+version: '2'
+services:
+  redis:
+    image: "redis"
+  rabbit:
+    image: "rabbitmq:3-management"
+    hostname: "rabbit"
+    env_file: .env-dev
+    ports:
+      - 5672:5672
+      - 15672:15672
+  app:
+    build: .
+    volumes:
+      - ./arbalet/frontage:/usr/src/app
+    command: ["dev"]
+    env_file: .env-dev
+    links:
+      - redis:redis
+      - rabbit:rabbit
+      - postgres:postgres
+    ports:
+      - 8123:8123
+  scheduler:
+    build: .
+    volumes:
+      - ./arbalet/frontage:/usr/src/app
+    env_file: .env-dev
+    links:
+      - redis:redis
+      - rabbit:rabbit
+      - postgres:postgres
+    ports:
+      - 33460:33460
+    command: ["scheduler"]
+  queue:
+    build: .
+    volumes:
+      - ./arbalet/frontage:/usr/src/app
+    env_file: .env-dev
+    links:
+      - rabbit:rabbit
+      - redis:redis
+      - postgres:postgres
+    ports:
+      - 8124:8124
+    command: ["queue"]
+  worker:
+    build: .
+    volumes:
+      - ./arbalet/frontage:/usr/src/app
+    env_file: .env-dev
+    links:
+      - rabbit:rabbit
+      - redis:redis
+      - postgres:postgres
+    command: ["worker"]
+  postgres:
+    image: postgres
+    env_file: .env-dev
+    restart: always
+    ports:
+      - 5544:5432
+    volumes:
+      - ./postgresdata:/var/lib/postgresql/data

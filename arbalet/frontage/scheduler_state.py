@@ -71,9 +71,20 @@ class SchedulerState(object):
 
     @staticmethod
     def set_registered_apps(apps):
+        # DB
+        session = session_factory()
+        db_apps = session.query(FappModel).all()
+        db_apps_names = [x.name for x in db_apps]
+
         struct = {}
         for fap in apps:
             struct[fap] = apps[fap].jsonify()
+            # not in db ? We create the fapp
+            if fap not in db_apps_names:
+                db_fap = FappModel(fap, is_scheduled=(not apps[fap].PLAYABLE))
+                session.add(db_fap)
+        session.commit()
+        session.close()
         redis.set(SchedulerState.KEY_REGISTERED_APP, json.dumps(struct))
 
     @staticmethod
@@ -153,9 +164,10 @@ class SchedulerState(object):
 
     @staticmethod
     def get_next_default_app():
-        default_app = redis_get(SchedulerState.KEY_DEFAULT_APP_CURRENT_UUID, b"").decode('utf8')
+        # default_app = redis_get(SchedulerState.KEY_DEFAULT_APP_CURRENT_UUID, b"").decode('utf8')
+        default_app = redis_get(SchedulerState.KEY_DEFAULT_APP_CURRENT_UUID, "")
         select_next = True
-        apps = SchedulerState.get_default_scheduled_app()
+        apps = SchedulerState.get_default_scheduled_app(serialized=False, todict=False)
         if not apps:
             return None
         for app in apps:
@@ -185,7 +197,7 @@ class SchedulerState(object):
         session.close()
 
     @staticmethod
-    def get_default_scheduled_app(serialized=False):
+    def get_default_scheduled_app(serialized=False, todict=True):
         # Get model form DB
         apps = []
         session = session_factory()
@@ -193,7 +205,10 @@ class SchedulerState(object):
             if serialized:
                 apps.append(serialize(to_dict(f)))
             else:
-                apps.append(to_dict(f))
+                if todict:
+                    apps.append(to_dict(f))
+                else:
+                    apps.append(f)
         session.close()
         return apps
 

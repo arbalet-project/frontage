@@ -120,7 +120,8 @@ class Scheduler(object):
                 # defualt app are schedulled, and stopped auto when expire is outdated.
                 # any other app starrted by user has highter
                 if default_scheduled_app:
-                    next_app = {'name': default_scheduled_app.name, 'username': '>>>default<<<'}
+                    next_app = {'name': default_scheduled_app.name,
+                                'username': '>>>default<<<'}
                     # expires => in seconde
                     next_app['expires'] = default_scheduled_app.duration
                     if not next_app['expires'] or next_app['expires'] == 0:
@@ -132,9 +133,7 @@ class Scheduler(object):
         usable = SchedulerState.usable()
         count = 0
         print_flush('[SCHEDULER] Entering loop')
-        # self.running_task = start_fap.apply_async(args=['app1'], queue='userapp')
         self.frontage.start()
-        # self.running_task = start_fap.apply_async(args=['Flags', 'user', 'french'], queue='userapp', expires=2)
 
         while True:
             # Check if usable change

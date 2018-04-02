@@ -33,7 +33,7 @@ class Snake(Fap):
     PIXEL_COLOR = 'darkred'
     FOOD_COLOR = 'green'
 
-    PLAYABLE = False
+    PLAYABLE = True
     ACTIVATED = True
 
     PARAMS_LIST = {}

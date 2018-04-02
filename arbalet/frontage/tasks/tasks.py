@@ -44,6 +44,8 @@ def start_default_fap(app):
     SchedulerState.set_app_started_at()
     # app['expire_at'] = str(
     #     datetime.datetime.now())
+    if 'params' not in app:
+        app['params'] = {}
     app['expire_at'] = str(
         datetime.datetime.now() +
         datetime.timedelta(
