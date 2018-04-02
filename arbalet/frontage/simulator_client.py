@@ -55,7 +55,7 @@ class Simulator(object):
         try:
             self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.client.connect(("127.0.0.1", port))
-        except socket.error, e:
+        except socket.error as e:
             print(str(e))
             return False
         print('->Connected')
