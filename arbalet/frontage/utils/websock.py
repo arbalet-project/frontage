@@ -29,7 +29,7 @@ class Websock(Thread):
         data = redis_get(KEY_WS_SEND, None)
         if data:
             redis.set(KEY_WS_SEND, None)
-        if data_to_send is 'None':
+        if data == 'None':
             return None
         return data
 
@@ -43,7 +43,6 @@ class Websock(Thread):
         while True:
             await asyncio.sleep(0.01)
             data_to_send = Websock.get_data()
-            # data_to_send = "dgojdfog"
             if data_to_send:
                 await websocket.send(data_to_send)
 
