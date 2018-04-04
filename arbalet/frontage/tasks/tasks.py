@@ -60,9 +60,9 @@ def start_default_fap(app):
         fap.run(params=app['params'])
     except Exception as e:
         print('--->APP>>')
+        del fap
         print('Error when starting task ' + str(e))
-        raise e
-        return 'Error when starting task ' + str(e)
+        # raise e
     finally:
         SchedulerState.set_current_app({})
 
@@ -81,13 +81,14 @@ def start_fap(app):
     SchedulerState.set_current_app(app)
     try:
         fap = globals()[app['name']]()
-        fap.run(params=app['params'])
+        fap.run(params=app['params'], expires_at=app['expire_at'])
     except Exception as e:
         print('--->APP>>')
         print('Error when starting task ' + str(e))
         raise e
         return 'Error when starting task ' + str(e)
     finally:
+        flask_log('--======================== ENDED START_APP')
         SchedulerState.set_current_app({})
 
 

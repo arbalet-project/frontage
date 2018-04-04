@@ -65,13 +65,14 @@ class Flags(Fap):
             flag = loads(data)['flag']
             if flag in self.PARAMS_LIST['uapp']:
                 getattr(self, flag)()
-        
 
-    def run(self, params):
+    def run(self, params, expires_at=None):
         self.start_socket()
         self.params = params
         if params and params.get('uapp', False) in self.PARAMS_LIST['uapp']:
             getattr(self, params.get('uapp'))()
+        else:
+            self.french()
 
         while True:
             time.sleep(0.1)

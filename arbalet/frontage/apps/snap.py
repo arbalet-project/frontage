@@ -15,7 +15,7 @@ from flask import Flask
 from flask import request
 from flask_cors import CORS
 from flask import render_template
-from flask import request, Response
+from flask import Response
 from functools import wraps
 
 from webbrowser import open
@@ -154,7 +154,7 @@ class Snap(Fap):
             self.nicknames[rand_id] = time()
         return rand_id
 
-    def run(self):
+    def run(self, params, expires_at=None):
         # open('http://snap.berkeley.edu/run')
         signal.signal(signal.SIGINT, self.signal_handler)
         self.loop = IOLoop()

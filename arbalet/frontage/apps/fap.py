@@ -8,6 +8,11 @@ from utils.lock import RWLock
 from utils.websock import Websock
 from utils.tools import Rate
 
+CODE_CLOSE_APP = 1
+CODE_GAME_OVER = 2
+CODE_EXPIRE = 3
+CODE_EXPIRE_SOON = 4
+
 
 class Fap(object):
     PARAMS_LIST = []
@@ -29,6 +34,18 @@ class Fap(object):
 
     def run(self):
         raise NotImplementedError("Fap.run() must be overidden")
+
+    def send_close_app(self):
+        Websock.send_data(CODE_CLOSE_APP, 'App is closing  now...')
+
+    def send_game_over(self):
+        Websock.send_data(CODE_GAME_OVER, 'Game Over !')
+
+    def send_expires(self):
+        Websock.send_data(CODE_EXPIRE, 'You app stop, someone else turn')
+
+    def send_expires_soon(self, timeout_in_sec):
+        Websock.send_data(CODE_EXPIRE_SOON, timeout_in_sec)
 
     def start_socket(self):
         self.ws = Websock(self, '0.0.0.0', 8124)
@@ -92,7 +109,8 @@ class Fap(object):
 
     def __del__(self):
         print('----CLOSE----')
-        time.sleep(0.2)
         self.ws.close()
+        time.sleep(0.2)
+        print('----CLOSED----')
         # CHANNEL.queue_delete(queue=SchedulerState.KEY_MODEL)
         # RABBIT_CONNECTION.close()

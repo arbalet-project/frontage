@@ -97,7 +97,9 @@ class SchedulerState(object):
         if not SchedulerState.get_frontage_connected():
             return False
 
+        # FOR TEST ONLY
         return True
+        # -----
 
         val = redis_get(SchedulerState.KEY_USABLE)
         return val == "True"
@@ -156,6 +158,8 @@ class SchedulerState(object):
 
     @staticmethod
     def set_current_app(app_struct):
+        flask_log('SET QUEUEUEUEUEUEUE')
+        flask_log(app_struct)
         redis.set(
             SchedulerState.KEY_CURRENT_RUNNING_APP,
             json.dumps(app_struct))
@@ -225,12 +229,14 @@ class SchedulerState(object):
 
     @staticmethod
     def stop_app(c_app):
+        flask_log(" ========= STOP_APP ====================")
         if not c_app:
             return
 
         from tasks.celery import app
         # revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
-        app.control.revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
+        # app.control.revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
+        app.control.revoke(c_app['task_id'], terminate=True)
         sleep(0.05)
 
     @staticmethod

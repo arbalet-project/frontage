@@ -7,7 +7,7 @@ import sys
 from time import sleep
 from utils.red import redis
 from controller import Frontage
-from tasks.tasks import start_fap, start_default_fap
+from tasks.tasks import start_fap, start_default_fap, clear_all_task
 from tasks.celery import app
 from scheduler_state import SchedulerState
 
@@ -33,6 +33,7 @@ class Scheduler(object):
 
     def __init__(self, port=33460, hardware=True, simulator=True):
         print_flush('---> Waiting for frontage connection...')
+        clear_all_task()
         # Blocking until the hardware client connects
         self.frontage = Frontage(port, hardware)
         print_flush('---> Frontage connected')
@@ -42,7 +43,7 @@ class Scheduler(object):
         redis.set(SchedulerState.KEY_USERS_Q, '[]')
         redis.set(SchedulerState.KEY_FORCED_APP, False)
 
-        SchedulerState.set_current_app({})
+        # SchedulerState.set_current_app({})
 
         # Dict { Name: ClassName, Start_at: XXX, End_at: XXX, task_id: XXX}
         self.current_app_state = None
@@ -95,6 +96,7 @@ class Scheduler(object):
         self.keep_alive_waiting_app()
         queue = SchedulerState.get_user_app_queue()
         c_app = SchedulerState.get_current_app()
+        print_flush(c_app)
         # one task already running
         if c_app:
             # Someone wait for his own task ?

@@ -13,6 +13,7 @@
     License: GPL version 3 http://www.gnu.org/licenses/gpl.html
 """
 import random
+import time
 
 from apps.fap import Fap
 from apps.actions import Actions
@@ -69,8 +70,12 @@ class Snake(Fap):
         print("Game OVER")
         self.flash()
         # self.ws.send("GAME OVER! Score: {}".format(len(self.queue)), 'deeppink')
+        print('----------=================')
+        self.send_game_over()
+        print('----------=================')
         self.set_pink()
         self.send_model()
+        time.sleep(1)
 
     def process_extras(self, x=None, y=None):
         pass
@@ -91,7 +96,7 @@ class Snake(Fap):
             self.model.set_column(i, rouge)
         self.send_model()
 
-    def run(self, params):
+    def run(self, params, expires_at=None):
         self.start_socket()
 
         if not params:
@@ -136,4 +141,5 @@ class Snake(Fap):
                 self.send_model()
             rate.sleep()
         self.game_over()
+        self.send_close_app()
         exit()

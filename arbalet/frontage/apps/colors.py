@@ -30,7 +30,7 @@ class Colors(Fap):
         Fap.__init__(self)
         self.generator = gen
 
-    def run(self, params):
+    def run(self, params, expires_at=None):
         if not self.generator:
             print('GENERATOR NOT DEFINED. ABORDED')
         c_params = None

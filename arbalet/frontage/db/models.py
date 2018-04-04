@@ -41,3 +41,21 @@ class FappModel(Base):
     def __repr__(self):
         return '<Fapp %r (%r) (%r)>' % (
             self.uniqid, self.is_scheduled, self.position)
+
+# class ConfigModel(Base):
+#     __tablename__ = 'fapp'
+
+#     uniqid = Column(String(36), primary_key=True)
+#     expires = Column(Integer)
+
+#     def __init__(self, app_name, is_scheduled=False):
+#         self.uniqid = str(uuid4())
+#         self.position = 0
+#         self.duration = (15 * 60)
+#         self.name = app_name
+#         self.is_scheduled = is_scheduled
+#         self.created_at = datetime.datetime.utcnow()
+
+#     def __repr__(self):
+#         return '<Fapp %r (%r) (%r)>' % (
+#             self.uniqid, self.is_scheduled, self.position)
