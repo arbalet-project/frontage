@@ -26,9 +26,6 @@ def print_flush(s):
     sys.stdout.flush()
 
 
-TASK_EXPIRATION = 1800
-
-
 class Scheduler(object):
 
     def __init__(self, port=33460, hardware=True, simulator=True):

@@ -7,13 +7,16 @@ import time
 
 from time import sleep
 from utils.red import redis, redis_get
-from db.models import FappModel
+from db.models import FappModel, ConfigModel
 from db.base import session_factory
 from db.tools import to_dict, serialize
 
 
 def flask_log(msg):
     print(msg, file=sys.stderr)
+
+
+TASK_EXPIRATION = 60
 
 
 class SchedulerState(object):
@@ -47,6 +50,27 @@ class SchedulerState(object):
 
     KEY_CURRENT_RUNNING_APP = 'frontage_current_running_app'
     """KEY_CURRENT_USER = 'frontage_current_user'"""
+
+    @staticmethod
+    def get_expires_value():
+        session = session_factory()
+        expires = session.query(ConfigModel).first()
+        session.close()
+        if expires:
+            return expires.expires_delay
+        return TASK_EXPIRATION
+
+    @staticmethod
+    def set_expires_value(value=TASK_EXPIRATION):
+
+        session = session_factory()
+        app = session.query(ConfigModel).first()
+        if not app:
+            conf = ConfigModel(expires_delay=value)
+            session.add(conf)
+            session.commit()
+        else:
+            app.expires_delay = value
 
     @staticmethod
     def get_forced_app():

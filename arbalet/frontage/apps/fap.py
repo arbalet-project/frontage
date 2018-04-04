@@ -36,13 +36,13 @@ class Fap(object):
         raise NotImplementedError("Fap.run() must be overidden")
 
     def send_close_app(self):
-        Websock.send_data(CODE_CLOSE_APP, 'App is closing  now...')
+        Websock.send_data(CODE_CLOSE_APP, 'CLOSING')
 
     def send_game_over(self):
-        Websock.send_data(CODE_GAME_OVER, 'Game Over !')
+        Websock.send_data(CODE_GAME_OVER, 'GAME_OVER')
 
     def send_expires(self):
-        Websock.send_data(CODE_EXPIRE, 'You app stop, someone else turn')
+        Websock.send_data(CODE_EXPIRE, 'EXPIRE')
 
     def send_expires_soon(self, timeout_in_sec):
         Websock.send_data(CODE_EXPIRE_SOON, timeout_in_sec)

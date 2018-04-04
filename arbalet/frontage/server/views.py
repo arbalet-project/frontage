@@ -100,7 +100,8 @@ class AppAdminRuningView(Resource):
     def post(self, user):
         name = request.get_json()['name']
         params = request.get_json()['params']
-        expires = request.get_json().get('expires', 20)
+        expires = request.get_json().get('expires', SchedulerState.get_expires_value())
+
         if not SchedulerState.usable():
             flask_log("Frontage is not started")
             abort(400, "Frontage is not started")
@@ -145,6 +146,16 @@ class AppRuningView(Resource):
             flask_log(str(e))
             abort(403, str(e))
         # SchedulerState.set_forced_app(name, params, expires)
+
+
+class ConfigView(Resource):
+    @authentication_required
+    def get(self, user):
+        return SchedulerState.get_expires_value()
+
+    def post(self, user):
+        expire = request.get_json()['value']
+        return SchedulerState.set_expires_value(expire)
 
 
 class AppDefaultListView(Resource):
@@ -219,11 +230,19 @@ def status():
                    current_time=datetime.datetime.now().isoformat())
 
 
+@blueprint.route('/frontage/status', methods=['POST'])
+def status_post():
+    # CAHNGE VALUE
+    return jsonify(is_usable=SchedulerState.usable())
+
+
 @blueprint.route('/frontage/next_date', methods=['GET'])
 def next_date():
     state = SchedulerState.usable()
     return jsonify(is_usable=state)
 
+
+rest_api.add_resource(ConfigView, '/b/config/')
 
 rest_api.add_resource(AppDefaultView, '/b/apps/default/')
 rest_api.add_resource(AppDefaultListView, '/b/apps/default')
