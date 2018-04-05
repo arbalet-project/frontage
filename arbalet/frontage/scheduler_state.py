@@ -178,11 +178,10 @@ class SchedulerState(object):
 
     @staticmethod
     def get_current_app():
-        return json.loads(redis.get(SchedulerState.KEY_CURRENT_RUNNING_APP))
+        return json.loads(redis_get(SchedulerState.KEY_CURRENT_RUNNING_APP, ""))
 
     @staticmethod
     def set_current_app(app_struct):
-        flask_log('SET QUEUEUEUEUEUEUE')
         flask_log(app_struct)
         redis.set(
             SchedulerState.KEY_CURRENT_RUNNING_APP,
