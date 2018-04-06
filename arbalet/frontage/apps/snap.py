@@ -8,6 +8,7 @@
 import sys
 import petname
 import socket
+from json import dumps, loads
 
 from flask import Flask
 from flask import request
@@ -24,31 +25,7 @@ from tornado.ioloop import IOLoop
 
 from time import time
 from apps.fap import Fap
-
-
-def check_auth(username, password):
-    """This function is called to check if a username /
-    password combination is valid.
-    """
-    return username == 'admin' and password == './arbalet'
-
-
-def authenticate():
-    """Sends a 401 response that enables basic auth"""
-    return Response(
-    'Could not verify your access level for that URL.\n'
-    'You have to login with proper credentials', 401,
-    {'WWW-Authenticate': 'Basic realm="Login Required"'})
-
-
-def requires_auth(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return authenticate()
-        return f(*args, **kwargs)
-    return decorated
+from utils.security import authentication_required
 
 
 class Snap(Fap):
@@ -68,13 +45,14 @@ class Snap(Fap):
         self.route()
 
     def route(self):
-        self.flask.route('/admin', methods=['GET', 'POST'])(self.render_admin_page)
-        self.flask.route('/', methods=['GET', 'POST'])(self.render_admin_page)
+
         #self.flask.route('/set_pixel_rgb', methods=['POST'])(self.set_pixel_rgb)
         self.flask.route('/set_rgb_matrix', methods=['POST'])(self.set_rgb_matrix)
         self.flask.route('/is_authorized/<nickname>', methods=['GET'])(self.is_authorized)
-        self.flask.route('/authorize', methods=['POST'])(self.authorize)
         self.flask.route('/get_nickname', methods=['GET'])(self.get_nickname)
+
+        self.flask.route('/clients', methods=['GET'])(self.get_clients)
+        self.flask.route('/authorize', methods=['POST'])(self.authorize)
 
     def check_nicknames_validity(self):
         with self.lock:
@@ -87,15 +65,17 @@ class Snap(Fap):
                         self.current_auth_nick = "turnoff"
             self.nicknames = temp_dict
 
-    @requires_auth
-    def render_admin_page(self):
-        res = render_template('admin.html', nicknames=self.nicknames.keys(), authorized_nick=self.current_auth_nick)
-        return res
+    @authentication_required
+    def get_clients(self, user):
+        return dumps({"list_clients": list(self.nicknames.keys()) + ["turnoff"], "selected_client":self.current_auth_nick})
 
-    def authorize(self):
-        with self.lock:
-            self.current_auth_nick = request.get_data().decode()
-            self.erase_all()
+    @authentication_required
+    def authorize(self, user):
+        data = loads(request.get_data().decode())   # {selected_client: ""}
+        if "selected_client" in data and data["selected_client"] in self.nicknames.keys():
+            with self.lock:
+                self.current_auth_nick = data["selected_client"]
+                self.erase_all()
         return ''
 
     @staticmethod
