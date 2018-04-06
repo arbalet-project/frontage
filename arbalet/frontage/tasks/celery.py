@@ -16,14 +16,14 @@ SUNRISE = ''
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
     sender.add_periodic_task(
-        10.0,
+        60.0,
         check_sunrise_sunset.s()
     )
 
 
 @app.task
 def check_sunrise_sunset():
-    print('[CELERY] {PERIODIC} Check Sunrise & Sunset}')
+    #print('[CELERY] {PERIODIC} Check Sunrise & Sunset}')
 
     state = redis_get(SchedulerState.KEY_SUN_STATE)
     now = datetime.datetime.now().time()
