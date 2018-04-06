@@ -88,12 +88,11 @@ class Scheduler(object):
 
     def check_scheduler(self):
         if SchedulerState.get_forced_app():
-            return
+            return False
 
         self.keep_alive_waiting_app()
         queue = SchedulerState.get_user_app_queue()
         c_app = SchedulerState.get_current_app()
-        print_flush(c_app)
         # one task already running
         if c_app:
             # Someone wait for his own task ?
@@ -106,15 +105,19 @@ class Scheduler(object):
                     SchedulerState.stop_app(c_app)
                     # Start app
                     start_fap.apply_async(args=[next_app], queue='userapp')
+                    print("## Starting {} [case A]".format(next_app['name']))
                     # Remove app form waiting Q
                     SchedulerState.pop_user_app_queue(queue)
+                    return True
         else:
             # no app runing, app are waiting in queue. We start one
             if len(queue) > 0:
                 start_fap.apply_async(args=[queue[0]], queue='userapp')
+                print("## Starting {} [case B]".format(queue[0]['name']))
                 SchedulerState.pop_user_app_queue(queue)
-                # No task waiting, start defautl scheduler
+                return True
             else:
+                # No task waiting, start defautl scheduler
                 default_scheduled_app = SchedulerState.get_next_default_app()
                 # defualt app are schedulled, and stopped auto when expire is outdated.
                 # any other app starrted by user has highter
@@ -126,15 +129,18 @@ class Scheduler(object):
                     if not next_app['expires'] or next_app['expires'] == 0:
                         next_app['expires'] = (15 * 60)
                     start_default_fap.apply_async(args=[next_app], queue='userapp')
-
+                    print("## Starting {} [DEFAULT]".format(next_app['name']))
+                    return True
+        return False
+ 
     def run(self):
         last_state = False
         usable = SchedulerState.usable()
-        count = 0
         print_flush('[SCHEDULER] Entering loop')
         self.frontage.start()
 
         while True:
+            state_changed = False
             # Check if usable change
             if (usable != last_state) and last_state is True:
                 self.frontage.erase_all()
@@ -142,14 +148,10 @@ class Scheduler(object):
                 last_state = usable
             # Available, play machine state
             elif SchedulerState.usable():
-                self.check_scheduler()
+                state_changed = self.check_scheduler()
 
             # Ugly sleep to avoid CPU consuming, not really usefull but I pref
             # use it ATM before advanced tests
-            count += 1
-            if (count % 2) == 0:
-                print_flush('===== Scheduler still running =====')
-                print_flush(SchedulerState.get_user_app_queue())
             sleep(0.5)
         print_flush('===== Scheduler End =====')
 
