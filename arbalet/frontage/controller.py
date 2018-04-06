@@ -30,7 +30,7 @@ class Frontage(Thread):
         self.hardware_port = hardware_port
         self.hardware = hardware
         self.clock = Clock()
-        SchedulerState.set_frontage_connected(False)
+        self.client, self.address = None, None
 
         # row, column -> DMX address
         self.mapping = array([[19,
@@ -111,7 +111,6 @@ class Frontage(Thread):
                                58]])
 
         self.num_pixels = self.mapping.shape[0] * self.mapping.shape[1]
-        self.start_server()
 
     def start_server(self):
         # Use asyncio or twisted?
@@ -120,7 +119,6 @@ class Frontage(Thread):
         self.hardware_server.bind(("0.0.0.0", self.hardware_port))
         self.hardware_server.listen(1)
         # self.start_rabbit()
-
         if self.hardware:
             print_flush("Waiting Hardware TCP client connection...")
             print_flush(self.hardware_port)
@@ -129,11 +127,9 @@ class Frontage(Thread):
                 "Client {}:{} connected!".format(
                     self.address[0],
                     self.address[1]))
-        else:
-            self.client, self.address = None, None
 
         print_flush("====> START STATE")
-        SchedulerState.set_frontage_connected(True)
+
 
     def map(self, row, column):
         return self.mapping[row][column]
@@ -164,7 +160,9 @@ class Frontage(Thread):
         self.update()
 
     def run(self):
-        print("==> Frontage Controler Started")
+        print("==> Starting Frontage hardware server...")
+        self.start_server()
+        print("==> Frontage hardware server is up!")
         self.pubsub = redis.pubsub()
         self.pubsub.subscribe([SchedulerState.KEY_MODEL])
 

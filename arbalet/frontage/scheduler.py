@@ -31,9 +31,7 @@ class Scheduler(object):
     def __init__(self, port=33460, hardware=True, simulator=True):
         print_flush('---> Waiting for frontage connection...')
         clear_all_task()
-        # Blocking until the hardware client connects
         self.frontage = Frontage(port, hardware)
-        print_flush('---> Frontage connected')
 
         redis.set(SchedulerState.KEY_SUNRISE, SchedulerState.DEFAULT_RISE)
         redis.set(SchedulerState.KEY_SUNDOWN, SchedulerState.DEFAULT_DOWN)
@@ -136,6 +134,7 @@ class Scheduler(object):
     def run(self):
         last_state = False
         usable = SchedulerState.usable()
+        SchedulerState.set_frontage_connected(True)  # TODO ... moved here because it should not prevent the scheduler from starting
         print_flush('[SCHEDULER] Entering loop')
         self.frontage.start()
 
@@ -144,15 +143,15 @@ class Scheduler(object):
             # Check if usable change
             if (usable != last_state) and last_state is True:
                 self.frontage.erase_all()
-                self.frontage.update()
                 last_state = usable
             # Available, play machine state
             elif SchedulerState.usable():
                 state_changed = self.check_scheduler()
 
-            # Ugly sleep to avoid CPU consuming, not really usefull but I pref
-            # use it ATM before advanced tests
-            sleep(0.5)
+            # Update on a regular basis in any case
+            sleep(1)
+            self.frontage.update()
+
         print_flush('===== Scheduler End =====')
 
 
