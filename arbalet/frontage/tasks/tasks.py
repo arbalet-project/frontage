@@ -81,13 +81,13 @@ def start_fap(app):
 
     SchedulerState.set_current_app(app)
     try:
+        flask_log('[start_fap.apply_async] ===========> start run')
         fap = globals()[app['name']]()
         fap.run(params=app['params'], expires_at=app['expire_at'])
     except Exception as e:
-        print('--->APP>>')
-        print('Error when starting task ' + str(e))
+        flask_log('--->APP>>')
+        flask_log('Error when starting task ' + str(e))
         raise e
-        return 'Error when starting task ' + str(e)
     finally:
         flask_log('--======================== ENDED START_APP')
         SchedulerState.set_current_app({})

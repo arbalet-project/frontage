@@ -1,0 +1,8 @@
+[07/04/2018] Database Change
+
+docker-compose exec postgres bash
+psql -p 5432 -h 127.0.0.1 -U fhhfebdvdoefojgohgohf arbalet_v1
+ALTER TABLE fapp ADD default_params text;
+
+then, exit all :)
+

@@ -20,11 +20,13 @@ from apps.snake import Snake
 from apps.tetris import Tetris
 from utils.sentry_client import SENTRY
 
+DEBUG = True
 
 def print_flush(s):
+    if not DEBUG:
+        return
     print(s)
     sys.stdout.flush()
-
 
 class Scheduler(object):
 
@@ -99,11 +101,10 @@ class Scheduler(object):
                 if datetime.datetime.now() > datetime.datetime.strptime(
                         c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") or c_app['scheduled_app']:
                     print_flush('===> REVOKING APP, someone else turn')
-                    # !!!! NOT TESTED WITHOUT SchedulerState.set_current_app({})
                     SchedulerState.stop_app(c_app)
                     # Start app
                     start_fap.apply_async(args=[next_app], queue='userapp')
-                    print("## Starting {} [case A]".format(next_app['name']))
+                    print_flush("## Starting {} [case A]".format(next_app['name']))
                     # Remove app form waiting Q
                     SchedulerState.pop_user_app_queue(queue)
                     return True
@@ -111,7 +112,7 @@ class Scheduler(object):
             # no app runing, app are waiting in queue. We start one
             if len(queue) > 0:
                 start_fap.apply_async(args=[queue[0]], queue='userapp')
-                print("## Starting {} [case B]".format(queue[0]['name']))
+                print_flush("## Starting {} [case B]".format(queue[0]['name']))
                 SchedulerState.pop_user_app_queue(queue)
                 return True
             else:
@@ -128,30 +129,37 @@ class Scheduler(object):
                     if not next_app['expires'] or next_app['expires'] == 0:
                         next_app['expires'] = (15 * 60)
                     start_default_fap.apply_async(args=[next_app], queue='userapp')
-                    print("## Starting {} [DEFAULT]".format(next_app['name']))
+                    SchedulerState.wait_task_to_start()
+                    print_flush("## Starting {} [DEFAULT]".format(next_app['name']))
                     return True
         return False
- 
+
     def run(self):
         last_state = False
         usable = SchedulerState.usable()
         SchedulerState.set_frontage_connected(True)  # TODO ... moved here because it should not prevent the scheduler from starting
         print_flush('[SCHEDULER] Entering loop')
         self.frontage.start()
-
+        count = 0
         while True:
-            state_changed = False
             # Check if usable change
             if (usable != last_state) and last_state is True:
                 self.frontage.erase_all()
                 last_state = usable
             # Available, play machine state
             elif SchedulerState.usable():
-                state_changed = self.check_scheduler()
+                self.check_scheduler()
 
             # Update on a regular basis in any case
-            sleep(1)
+            sleep(0.1)
             self.frontage.update()
+            if count % 50 == 0:
+                print_flush("-------- Current App")
+                print_flush(SchedulerState.get_current_app())
+                print_flush("---------- Waiting Queue")
+                print_flush(SchedulerState.get_user_app_queue())
+                print_flush(" ========== Scheduling ==========")
+            count += 1
 
         print_flush('===== Scheduler End =====')
 

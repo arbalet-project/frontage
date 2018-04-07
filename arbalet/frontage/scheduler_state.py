@@ -39,6 +39,7 @@ class SchedulerState(object):
     KEY_SUNRISE_OFFSET = 'key_sunrise_offset'
     KEY_SUNDOWN_OFFSET = 'key_sundown_offset'
     KEY_CONNECTED = 'frontage_connected'
+    # KEY_APP_START_LOCK = 'key_app_start_lock'
     KEY_USABLE = 'frontage_usable'
     KEY_MODEL = 'frontage_model'
     KEY_SUNRISE = 'frontage_sunrise'
@@ -94,6 +95,11 @@ class SchedulerState(object):
     @staticmethod
     def set_frontage_connected(state):
         return redis.set(SchedulerState.KEY_CONNECTED, str(state))
+
+    @staticmethod
+    def wait_task_to_start():
+        while not SchedulerState.get_current_app():
+            sleep(0.1)
 
     @staticmethod
     def set_forced_app(app_name, params, expires=600):
@@ -189,11 +195,10 @@ class SchedulerState(object):
 
     @staticmethod
     def get_current_app():
-        return json.loads(redis_get(SchedulerState.KEY_CURRENT_RUNNING_APP, ""))
+        return json.loads(redis.get(SchedulerState.KEY_CURRENT_RUNNING_APP))
 
     @staticmethod
     def set_current_app(app_struct):
-        flask_log(app_struct)
         redis.set(
             SchedulerState.KEY_CURRENT_RUNNING_APP,
             json.dumps(app_struct))

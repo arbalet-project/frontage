@@ -67,6 +67,7 @@ class Flags(Fap):
                 getattr(self, flag)()
 
     def run(self, params, expires_at=None):
+        print("=====> Start FAP")
         self.start_socket()
         self.params = params
         if params and params.get('uapp', False) in self.PARAMS_LIST['uapp']:
@@ -74,5 +75,13 @@ class Flags(Fap):
         else:
             self.french()
 
+        count = 0
         while True:
             time.sleep(0.1)
+            if count % 100 == 0:
+                self.italy()
+                print(" ========== Inside FAP ==========")
+            if count % 100 == 50:
+                self.germany()
+                print(" ========== Inside FAP ==========")
+            count += 1
