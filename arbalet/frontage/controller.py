@@ -127,9 +127,9 @@ class Frontage(Thread):
                 "Client {}:{} connected!".format(
                     self.address[0],
                     self.address[1]))
+            self.update()
 
         print_flush("====> START STATE")
-
 
     def map(self, row, column):
         return self.mapping[row][column]

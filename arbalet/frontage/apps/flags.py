@@ -75,13 +75,14 @@ class Flags(Fap):
         else:
             self.french()
 
-        count = 0
+        # count = 0
         while True:
-            time.sleep(0.1)
-            if count % 100 == 0:
-                self.italy()
-                print(" ========== Inside FAP ==========")
-            if count % 100 == 50:
-                self.germany()
-                print(" ========== Inside FAP ==========")
-            count += 1
+            time.sleep(1)
+            self.send_model()
+            # if count % 100 == 0:
+            #     self.italy()
+            #     print(" ========== Inside FAP ==========")
+            # if count % 100 == 50:
+            #     self.germany()
+            #     print(" ========== Inside FAP ==========")
+            # count += 1
