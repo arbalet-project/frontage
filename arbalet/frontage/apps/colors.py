@@ -22,27 +22,30 @@ class Colors(Fap):
     #                     'sweep_rand': gen_sweep_rand }
 
     def __init__(self, gen):
-        self.PARAMS_LIST = { 'uapp': None,
-                    'dur_min': 5,
-                    'dur_max': 20 ,
-                    'refresh_rate': 50,
-                    'colors': []}
         Fap.__init__(self)
+        self.rate = None
+        self.PARAMS_LIST = {}
         self.generator = gen
 
-    def run(self, params, expires_at=None):
-        if not self.generator:
-            print('GENERATOR NOT DEFINED. ABORDED')
-        c_params = None
-        if params and (params.get('uapp', False) in self.PARAMS_LIST['uapp']):
-            c_params = animations[params['uapp']]
-        else:
-            raise NameError('uapp not found')
-        self.durations_min = params.get('dur_min', c_params.get('dur_min'))
-        self.durations_max = params.get('dur_max', c_params.get('dur_max'))
-        self.rate = Rate(params.get('refresh_rate', c_params.get('rate')))
+    def create_generator(self):
+        # Construct all pixel generators
+        self.generators = []
+        for h in range(self.model.height):
+            line = []
+            for w in range(self.model.width):
+                duration = random.randrange(0, self.durations_max - self.durations_min)
+                line.append(self.generator(self.durations_min, int((2.0 / self.rate.sleep_dur)), duration, self.colors))
+            self.generators.append(line)
+
+    def select_colors(self, params, c_params):
         self.colors = []
-        for c in params['colors']:
+        param_color = params.get('colors', False)
+
+        # we convert to list if needed
+        if param_color and isinstance(param_color, str):
+            params['colors'] = [param_color]
+
+        for c in params.get('colors', c_params.get('colors')):
             if isinstance(c, (tuple, list, set)):
                 self.colors.append(rgb_to_hsv(c))
             elif c in cnames:
@@ -50,14 +53,31 @@ class Colors(Fap):
             else:
                 print(str(c) + ' is not a valid color')
 
-        # Construct all pixel generators
-        generators = []
-        for h in range(self.model.height):
-            line = []
-            for w in range(self.model.width):
-                duration = random.randrange(0, self.durations_max - self.durations_min)
-                line.append(self.generator(self.durations_min, int((2.0 / self.rate.sleep_dur)), duration, self.colors))
-            generators.append(line)
+    def load_animation(self, params):
+        if params and (params.get('uapp', False) in self.PARAMS_LIST['uapp']):
+            return animations[params['uapp']]
+        else:
+            return {}
+
+    def process_params(self, params):
+        c_params = self.load_animation(params)
+
+        self.durations_min = params.get('dur_min', c_params.get('dur_min'))
+        self.durations_max = params.get('dur_max', c_params.get('dur_max'))
+        if self.rate:
+            del self.rate
+        self.rate = Rate(params.get('refresh_rate', c_params.get('rate')))
+
+        self.select_colors(params, c_params)
+
+    def run(self, params, expires_at=None):
+        if not self.generator:
+            print('GENERATOR NOT DEFINED. ABORDED')
+            return
+        self.start_socket()
+
+        self.process_params(params)
+        self.create_generator()
 
         # Browse all pixel generators at each time
         while True:
@@ -65,10 +85,14 @@ class Colors(Fap):
                 for h in range(self.model.height):
                     for w in range(self.model.width):
                         try:
-                            color = next(generators[h][w])
+                            color = next(self.generators[h][w])
                         except StopIteration:
+                            # print('Error StopIteration')
+                            pass
+                        except IndexError:
+                            # print('Error IndexError')
                             pass
                         else:
                             self.model.set_pixel(h, w, color)
-                            self.send_model()
+                self.send_model()
             self.rate.sleep()

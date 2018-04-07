@@ -11,5 +11,7 @@ class SweepAsync(Colors):
         self.PARAMS_LIST['uapp'] = ['swipe']
 
     def run(self, params, expires_at=None):
-        params['colors'] = 'blueviolet'
-        Colors.run(params, expires_at)
+        if not params:
+            params = {}
+        params['uapp'] = 'swipe'
+        Colors.run(self, params, expires_at)
