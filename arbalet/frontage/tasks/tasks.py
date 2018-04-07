@@ -18,6 +18,7 @@ from apps.sweep_async import SweepAsync
 from apps.sweep_rand import SweepRand
 from apps.snake import Snake
 from apps.tetris import Tetris
+from apps.snap import Snap
 
 
 class TestApp():

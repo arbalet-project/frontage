@@ -114,7 +114,6 @@ class Snake(Fap):
         self.send_model()
 
         while True:
-            print('---> Inside FAP')
             rate.sleep_dur = 1.0 / self.rate
             with self.model:
                 # No need anymore, thx to asyncio ;)

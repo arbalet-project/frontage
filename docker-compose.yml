@@ -44,6 +44,7 @@ services:
       - postgres:postgres
     ports:
       - 8124:8124
+      - 33450:33450
     command: ["queue"]
   worker:
     build: .
