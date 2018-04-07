@@ -138,7 +138,7 @@ class AppRuningView(Resource):
     @authentication_required
     def post(self, user):
         name = request.get_json()['name']
-        params = request.get_json()['params']
+        params = request.get_json().get('params', {})
         expires = request.get_json().get('expires', 20)
         if not SchedulerState.usable():
             flask_log("Frontage is not started")

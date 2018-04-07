@@ -7,6 +7,7 @@ import time
 
 from time import sleep
 from utils.red import redis, redis_get
+from utils.websock import Websock
 from db.models import FappModel, ConfigModel
 from db.base import session_factory
 from db.tools import to_dict, serialize
@@ -104,7 +105,9 @@ class SchedulerState(object):
     @staticmethod
     def set_forced_app(app_name, params, expires=600):
         from tasks.tasks import start_forced_fap
-        SchedulerState.stop_app(SchedulerState.get_current_app())
+        from apps.fap import Fap
+
+        SchedulerState.stop_app(SchedulerState.get_current_app(), Fap.CODE_CLOSE_APP, 'The admin started a forced app')
         start_forced_fap.apply_async(
             args=[app_name, 'FORCED', params], expires=expires)
 
@@ -316,12 +319,13 @@ class SchedulerState(object):
         redis.get(SchedulerState.KEY_APP_STARTED_AT)
 
     @staticmethod
-    def stop_app(c_app):
+    def stop_app(c_app, stop_code=None, stop_message=None):
         flask_log(" ========= STOP_APP ====================")
         if not c_app:
             return
 
         from tasks.celery import app
+        # Websock.send_data(stop_code, stop_message)
         # revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
         # app.control.revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
         app.control.revoke(c_app['task_id'], terminate=True)

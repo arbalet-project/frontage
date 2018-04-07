@@ -11,6 +11,7 @@ from tasks.tasks import start_fap, start_default_fap, clear_all_task
 from tasks.celery import app
 from scheduler_state import SchedulerState
 
+from apps.fap import Fap
 from apps.flags import Flags
 from apps.random_flashing import RandomFlashing
 from apps.sweep_async import SweepAsync
@@ -22,11 +23,13 @@ from utils.sentry_client import SENTRY
 
 DEBUG = True
 
+
 def print_flush(s):
     if not DEBUG:
         return
     print(s)
     sys.stdout.flush()
+
 
 class Scheduler(object):
 
@@ -101,7 +104,7 @@ class Scheduler(object):
                 if datetime.datetime.now() > datetime.datetime.strptime(
                         c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") or c_app['scheduled_app']:
                     print_flush('===> REVOKING APP, someone else turn')
-                    SchedulerState.stop_app(c_app)
+                    SchedulerState.stop_app(c_app, Fap.CODE_EXPIRE, 'someone else turn')
                     # Start app
                     start_fap.apply_async(args=[next_app], queue='userapp')
                     print_flush("## Starting {} [case A]".format(next_app['name']))
