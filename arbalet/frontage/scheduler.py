@@ -120,6 +120,7 @@ class Scheduler(object):
                 # any other app starrted by user has highter
                 if default_scheduled_app:
                     next_app = {'name': default_scheduled_app.name,
+                                'params': default_scheduled_app.default_params,
                                 'username': '>>>default<<<'}
                     # expires => in seconde
                     next_app['expires'] = default_scheduled_app.duration

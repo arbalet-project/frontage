@@ -25,20 +25,20 @@ def setup_periodic_tasks(sender, **kwargs):
 def check_sunrise_sunset():
     print('[CELERY] {PERIODIC} Check Sunrise & Sunset}')
 
-    state = redis_get(SchedulerState.KEY_SUN_STATE)
+    # state = redis_get(SchedulerState.KEY_SUN_STATE)
     now = datetime.datetime.now().time()
 
     on_at = SchedulerState.get_sundown().time()
     off_at = SchedulerState.get_sunrise().time()
 
     if now < off_at:
-        state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNDOWN)
+        redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNDOWN)
         SchedulerState.set_usable(True)
     elif now > off_at and now < on_at:
-        state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNRISE)
+        redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNRISE)
         SchedulerState.set_usable(False)
     elif now > off_at and now > on_at:
-        state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNDOWN)
+        redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNDOWN)
         SchedulerState.set_usable(True)
 
     # if state == SchedulerState.KEY_SUNRISE:

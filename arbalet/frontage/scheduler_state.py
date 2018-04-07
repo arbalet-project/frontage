@@ -19,6 +19,13 @@ def flask_log(msg):
 TASK_EXPIRATION = 60
 
 
+def add_secs_to_time(timeval, secs_to_add):
+    dummy_date = datetime.date(1, 1, 1)
+    full_datetime = datetime.datetime.combine(dummy_date, timeval)
+    added_datetime = full_datetime + datetime.timedelta(seconds=secs_to_add)
+    return added_datetime.time()
+
+
 class SchedulerState(object):
 
     DEFAULT_RISE = '2017-07-07T01:00:00'
@@ -29,6 +36,8 @@ class SchedulerState(object):
     KEY_DAY_TABLE = 'frontage_day_table'
     CITY = 'data/bordeaux_user.sun'
 
+    KEY_SUNRISE_OFFSET = 'key_sunrise_offset'
+    KEY_SUNDOWN_OFFSET = 'key_sundown_offset'
     KEY_CONNECTED = 'frontage_connected'
     KEY_USABLE = 'frontage_usable'
     KEY_MODEL = 'frontage_model'
@@ -165,7 +174,8 @@ class SchedulerState(object):
 
         v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(
             SchedulerState.KEY_NIGHT_END_AT, SchedulerState.DEFAULT_RISE)
-        return datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
+        sunrise = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
+        return sunrise + datetime.timedelta(seconds=SchedulerState.get_sunrise_offset())
 
     @staticmethod
     def get_sundown(at=None):
@@ -174,7 +184,8 @@ class SchedulerState(object):
 
         v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(
             SchedulerState.KEY_NIGHT_START_AT, SchedulerState.DEFAULT_DOWN)
-        return datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
+        sundown = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
+        return sundown + datetime.timedelta(seconds=SchedulerState.get_sundown_offset())
 
     @staticmethod
     def get_current_app():
@@ -182,14 +193,29 @@ class SchedulerState(object):
 
     @staticmethod
     def set_current_app(app_struct):
-        flask_log('SET QUEUEUEUEUEUEUE')
-        flask_log(app_struct)
         redis.set(
             SchedulerState.KEY_CURRENT_RUNNING_APP,
             json.dumps(app_struct))
 
-    # ============= DEFAULT SCHEDULED APP
+    @staticmethod
+    def set_sundown_offset(offset=0):
+        redis.set(SchedulerState.KEY_SUNDOWN_OFFSET, offset)
+        return True
 
+    @staticmethod
+    def get_sundown_offset():
+        return redis_get(SchedulerState.KEY_SUNDOWN_OFFSET, 0)
+
+    @staticmethod
+    def set_sunrise_offset(offset=0):
+        redis.set(SchedulerState.KEY_SUNRISE_OFFSET, offset)
+        return True
+
+    @staticmethod
+    def get_sunrise_offset():
+        return redis_get(SchedulerState.KEY_SUNRISE_OFFSET, 0)
+
+    # ============= DEFAULT SCHEDULED APP
     @staticmethod
     def get_next_default_app():
         # default_app = redis_get(SchedulerState.KEY_DEFAULT_APP_CURRENT_UUID, b"").decode('utf8')
@@ -239,6 +265,38 @@ class SchedulerState(object):
                     apps.append(f)
         session.close()
         return apps
+
+    @staticmethod
+    def set_default_scheduled_app_params(app_name, app_params):
+        if not app_params:
+            app_params = None
+        try:
+            session = session_factory()
+            fap = session.query(FappModel).filter_by(name=app_name).first()
+            if not fap:
+                return False
+            fap.default_params = app_params
+            session.commit()
+        finally:
+            session.close()
+
+        return True
+
+    @staticmethod
+    def get_default_scheduled_app_params(app_name, serialized=True):
+        try:
+            session = session_factory()
+            fap = session.query(FappModel).filter_by(name=app_name).first()
+            if not fap:
+                return False
+
+            fap_dict = to_dict(fap)
+            if serialize:
+                return serialize(fap_dict)
+            else:
+                return fap_dict
+        finally:
+            session.close()
 
     # =============
     @staticmethod

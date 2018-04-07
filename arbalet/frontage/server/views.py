@@ -4,7 +4,7 @@ import sys
 import datetime
 
 from flask import request, jsonify, abort, Blueprint
-from flask_restful import reqparse, Resource
+from flask_restful import Resource
 from utils.security import authentication_required, generate_user_token, is_admin
 from scheduler_state import SchedulerState
 from server.extensions import rest_api
@@ -78,10 +78,15 @@ def admin_set_cal_at(user, at):
                    params={})
 
 
-parser = reqparse.RequestParser()
-parser.add_argument('type')
-parser.add_argument('by')
-parser.add_argument('comment')
+@blueprint.route('/b/admin/state', methods=['PATCH'])
+@authentication_required
+def admin_set_state(user, at):
+    if request.get_json().get('sunrise_offset'):
+        SchedulerState.set_sunrise_offset(request.get_json().get('sunrise_offset', 0))
+    if request.get_json().get('sundown_offset'):
+        SchedulerState.set_sundown_offset(request.get_json().get('sundown_offset', 0))
+
+    return jsonify(done=True)
 
 
 class AppQueueView(Resource):
@@ -167,18 +172,37 @@ class AppDefaultListView(Resource):
         return True
 
 
+class AppDefaultParamView(Resource):
+    @authentication_required
+    def get(self, user, app_name):
+        return SchedulerState.get_default_scheduled_app_params(app_name, serialized=True)
+
+    @authentication_required
+    def post(self, user, app_name):
+        if not is_admin(user):
+            abort(403, "Forbidden Bru")
+        params = request.get_json().get('params', None)
+
+        return SchedulerState.set_default_scheduled_app_params(app_name, params)
+
+
 class AppDefaultView(Resource):
     @authentication_required
     def get(self, user):
         return SchedulerState.get_default_scheduled_app(serialized=True)
 
     def delete(self, user):
+        if not is_admin(user):
+            abort(403, "Forbidden Bru")
         SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), False)
 
         return SchedulerState.get_default_scheduled_app(serialized=True)
 
     @authentication_required
     def post(self, user):
+        if not is_admin(user):
+            abort(403, "Forbidden Bru")
+
         app_state = request.get_json().get('app_state')
         app_state_bool = False
         if app_state == 'True':
@@ -245,6 +269,7 @@ def next_date():
 rest_api.add_resource(ConfigView, '/b/config/')
 
 rest_api.add_resource(AppDefaultView, '/b/apps/default/')
+rest_api.add_resource(AppDefaultParamView, '/b/apps/default/<string:app_name>')
 rest_api.add_resource(AppDefaultListView, '/b/apps/default')
 
 rest_api.add_resource(AppAdminRuningView, '/b/apps/admin/running')
