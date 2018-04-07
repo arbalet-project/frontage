@@ -99,24 +99,23 @@ class Simulator(object):
                 return True
 
     def raw_to_model(self, raw):
+        i = 0
         for row in range(self.model.height):
             for col in range(self.model.width):
-                current_cell = row * self.model.width + col
-                current_cell = current_cell * 4
-                self.model[row, col] = raw[current_cell + 1:current_cell + 4]
+                self.model[row, col] = (raw[i], raw[i+1], raw[i+2])
+                i += 3
 
     def run(self):
         while True:
             try:
-                resp = self.client.recv(304)
+                resp = self.client.recv(self.model.width*self.model.height*3)
             except socket.timeout:
                 pass
             else:
                 if resp != "":
                     # print_flush(resp)
                     # print_flush("*****")
-                    # print_flush(len(resp))
-                    raw = struct.unpack("!{}B".format(76 * 4), resp)
+                    raw = struct.unpack("!{}B".format(self.model.width*self.model.height*3), resp)
                     self.raw_to_model(raw)
                     self.update()
             for e in event.get():
