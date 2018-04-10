@@ -271,6 +271,7 @@ class SchedulerState(object):
                 if todict:
                     apps.append(to_dict(f))
                 else:
+                    f.default_params = json.loads(f.default_params)
                     apps.append(f)
         session.close()
         return apps
