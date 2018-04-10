@@ -6,7 +6,7 @@ import sys
 
 from time import sleep
 from utils.red import redis
-from controller import Frontage
+from frontage import Frontage
 from tasks.tasks import start_fap, start_default_fap, clear_all_task
 from tasks.celery import app
 from scheduler_state import SchedulerState

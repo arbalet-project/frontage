@@ -125,14 +125,16 @@ class AppRuningView(Resource):
     @authentication_required
     def delete(self, user):
         c_app = SchedulerState.get_current_app()
-        if is_admin(user):
-            SchedulerState.stop_app(c_app)
-        else:
-            if c_app['username'] == user['username']:
+        if 'username' in c_app:
+            if is_admin(user):
                 SchedulerState.stop_app(c_app)
             else:
-                abort(400, "You are not the owner of the current app")
-
+                if c_app['username'] == user['username']:
+                    SchedulerState.stop_app(c_app)
+                else:
+                    abort(400, "You are not the owner of the current app")
+        else:
+            print("Tried to delete an app while no one was running, ignoring delete request.")
         return '', 204
 
     @authentication_required
