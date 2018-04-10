@@ -5,7 +5,6 @@ import datetime
 import sys
 
 from time import sleep
-from json import loads
 
 from server.extensions import celery
 from celery.task.control import revoke
@@ -59,7 +58,7 @@ def start_default_fap(app):
     SchedulerState.set_current_app(app)
     try:
         fap = globals()[app['name']]()
-        fap.run(params=loads(app['params']))
+        fap.run(params=app['params'])
     except Exception as e:
         print('--->APP>>')
         del fap
