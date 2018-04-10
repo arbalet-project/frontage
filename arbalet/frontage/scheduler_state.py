@@ -7,7 +7,6 @@ import time
 
 from time import sleep
 from utils.red import redis, redis_get
-from utils.websock import Websock
 from db.models import FappModel, ConfigModel
 from db.base import session_factory
 from db.tools import to_dict, serialize
@@ -271,7 +270,8 @@ class SchedulerState(object):
                 if todict:
                     apps.append(to_dict(f))
                 else:
-                    f.default_params = json.loads(f.default_params)
+                    if f.default_params:
+                        f.default_params = json.loads(f.default_params)
                     apps.append(f)
         session.close()
         return apps
