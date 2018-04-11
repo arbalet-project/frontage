@@ -25,18 +25,19 @@ from tornado.ioloop import IOLoop
 
 from time import time
 from apps.fap import Fap
-from utils.security import authentication_required
+from utils.security import authentication_required, is_admin
 
 
 class Snap(Fap):
     PLAYABLE = True
     ACTIVATED = False
+    OFF = "Éteindre"
 
     def __init__(self, port=33450):
         Fap.__init__(self)
 
         self.flask = Flask(__name__)
-        self.current_auth_nick = "turnoff"
+        self.current_auth_nick = self.OFF
         self.nicknames = {}
         self.lock = RLock()
         CORS(self.flask)
@@ -62,21 +63,28 @@ class Snap(Fap):
                     temp_dict[k] = v
                 else:
                     if k == self.current_auth_nick:
-                        self.current_auth_nick = "turnoff"
+                        self.current_auth_nick = self.OFF
             self.nicknames = temp_dict
 
     @authentication_required
     def get_clients(self, user):
-        return dumps({"list_clients": list(self.nicknames.keys()) + ["turnoff"], "selected_client":self.current_auth_nick})
+        if not is_admin(user):
+            abort(403, "Forbidden Bru")
+
+        return dumps({"list_clients": list(self.nicknames.keys()) + [self.OFF], "selected_client":self.current_auth_nick})
 
     @authentication_required
     def authorize(self, user):
+        if not is_admin(user):
+            abort(403, "Forbidden Bru")
+
         data = loads(request.get_data().decode())   # {selected_client: ""}
-        if "selected_client" in data and data["selected_client"] in self.nicknames.keys():
+        if "selected_client" in data and data["selected_client"] in list(self.nicknames.keys()) + [self.OFF]:
             with self.lock:
                 self.current_auth_nick = data["selected_client"]
                 self.erase_all()
-        return ''
+            return dumps({"success": True, "message": "Client authorized successfully"})
+        abort(404, "No such client.")
 
     @staticmethod
     def scale(v):
@@ -107,6 +115,7 @@ class Snap(Fap):
         else:
             self.send_model()
         return ''
+
 
     def erase_all(self):
         self.model.set_all("black")
