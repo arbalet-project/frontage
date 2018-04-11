@@ -20,15 +20,7 @@ from apps.snap import Snap
 from apps.snake import Snake
 from apps.tetris import Tetris
 from utils.sentry_client import SENTRY
-
-DEBUG = True
-
-
-def print_flush(s):
-    if not DEBUG:
-        return
-    print(s)
-    sys.stdout.flush()
+from server.flaskutils import print_flush
 
 
 class Scheduler(object):

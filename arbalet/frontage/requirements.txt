@@ -25,3 +25,4 @@ tornado
 raven
 blinker
 SQLAlchemy
+flask-expects-json

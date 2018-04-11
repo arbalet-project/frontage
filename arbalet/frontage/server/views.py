@@ -1,17 +1,12 @@
-from __future__ import print_function
-
-import sys
 import datetime
 
-from flask import request, jsonify, abort, Blueprint
+from flask import request, jsonify, abort, Blueprint, g
 from flask_restful import Resource
 from utils.security import authentication_required, generate_user_token, is_admin
 from scheduler_state import SchedulerState
 from server.extensions import rest_api
-
-
-def flask_log(msg):
-    print(msg, file=sys.stderr)
+from server.flaskutils import print_flush
+from flask_expects_json import expects_json
 
 
 blueprint = Blueprint('views', __name__)
@@ -22,10 +17,21 @@ def is_up():
     return jsonify(is_up=True)
 
 
+LOGIN_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'username': {'type': 'string'},
+        'password': {'type': 'string'}
+    },
+    'required': ['username', 'password']
+}
+
+
 @blueprint.route('/b/login', methods=['POST'])
+@expects_json(LOGIN_SCHEMA)
 def login():
-    username = request.get_json().get('username', False)
-    password = request.get_json().get('password', False)
+    username = g.data.get('username', False)
+    password = g.data.get('password', False)
 
     if ((username == 'frontageadmin') and password == 'frontagepassword'):
         return jsonify(
@@ -43,13 +49,23 @@ def login():
         return jsonify(login=False)
 
 
-ADMIN_BASE = '/b/admin'
+ENABLE_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'state': {'type': 'string'}
+    },
+    'required': ['state']
+}
 
 
-@blueprint.route(ADMIN_BASE + '/enabled', methods=['POST'])
+@blueprint.route('/b/admin/enabled', methods=['POST'])
 @authentication_required
+@expects_json(ENABLE_SCHEMA)
 def admin_enabled_scheduler(user):
-    SchedulerState.set_usable(request.get_json().get('enabled', False))
+    state = g.data.get('state', 'on')
+    if state not in ['on', 'off', 'scheduled']:
+        abort(415)
+    SchedulerState.set_enable_state(state)
     return jsonify(enabled=SchedulerState.usable())
 
 
@@ -80,11 +96,15 @@ def admin_set_cal_at(user, at):
 
 @blueprint.route('/b/admin/state', methods=['PATCH'])
 @authentication_required
-def admin_set_state(user, at):
+def admin_set_state(user):
     if request.get_json().get('sunrise_offset'):
         SchedulerState.set_sunrise_offset(request.get_json().get('sunrise_offset', 0))
     if request.get_json().get('sundown_offset'):
         SchedulerState.set_sundown_offset(request.get_json().get('sundown_offset', 0))
+    if request.get_json().get('sunrise'):
+        SchedulerState.set_forced_sunrise(request.get_json()['sunrise'])
+    if request.get_json().get('sundown'):
+        SchedulerState.set_forced_sundown(request.get_json()['sundown'])
 
     return jsonify(done=True)
 
@@ -108,7 +128,7 @@ class AppAdminRuningView(Resource):
         expires = request.get_json().get('expires', SchedulerState.get_expires_value())
 
         if not SchedulerState.usable():
-            flask_log("Frontage is not started")
+            print_flush("Frontage is not started")
             abort(400, "Frontage is not started")
         if is_admin(user):
             SchedulerState.set_forced_app(name, params, expires)
@@ -143,14 +163,14 @@ class AppRuningView(Resource):
         params = request.get_json().get('params', {})
         expires = request.get_json().get('expires', 20)
         if not SchedulerState.usable():
-            flask_log("Frontage is not started")
+            print_flush("Frontage is not started")
             abort(400, "Frontage is not started")
 
         try:
             return SchedulerState.start_scheduled_app(
                 user['username'], name, params, expires)
         except Exception as e:
-            flask_log(str(e))
+            print_flush(str(e))
             abort(403, str(e))
         # SchedulerState.set_forced_app(name, params, expires)
 
@@ -205,10 +225,7 @@ class AppDefaultView(Resource):
         if not is_admin(user):
             abort(403, "Forbidden Bru")
 
-        app_state = request.get_json().get('app_state')
-        app_state_bool = False
-        if app_state == 'True':
-            app_state_bool = True
+        app_state_bool = request.get_json().get('app_state', False)
         SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), app_state_bool)
 
         return SchedulerState.get_default_scheduled_app(serialized=True)
@@ -225,9 +242,10 @@ class AppListView(Resource):
 
         formated = []
         defaults_apps = SchedulerState.get_default_scheduled_app(serialized=False)
+        defaults_apps_names = [x['name'] for x in defaults_apps]
         for x in apps:
             ext_app = apps[x]
-            ext_app['scheduled'] = False if (x not in defaults_apps) else defaults_apps[x]
+            ext_app['scheduled'] = False if (x not in defaults_apps_names) else True
             formated.append(ext_app)
         return formated
 
@@ -252,6 +270,7 @@ def remove_from_queue(user):
 def status():
     state = SchedulerState.usable()
     return jsonify(is_usable=state,
+                   state=SchedulerState.get_enable_state(),
                    scheduled_time=SchedulerState.default_scheduled_time(),
                    current_time=datetime.datetime.now().isoformat())
 
