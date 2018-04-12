@@ -32,6 +32,7 @@ services:
       - postgres:postgres
     ports:
       - 33460:33460
+      - 6454:6454/udp
     command: ["scheduler"]
   queue:
     build: .
