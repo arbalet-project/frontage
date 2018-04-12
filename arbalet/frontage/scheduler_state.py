@@ -45,6 +45,7 @@ class SchedulerState(object):
     KEY_MODEL = 'frontage_model'
     KEY_SUNRISE = 'frontage_sunrise'
     KEY_SUNDOWN = 'frontage_sundown'
+    KEY_NOTICE_EXPIRE_SOON = 'key_notice_expire_soon'
     KEY_FORCED_SUNDOWN_OFFSET = 'key_forced_sundown_offset'
     KEY_FORCED_SUNRISE_OFFSET = 'key_forced_sunrise_offset'
     KEY_SUN_STATE = 'frontage_sunstate'
@@ -84,6 +85,16 @@ class SchedulerState(object):
             session.commit()
         else:
             app.expires_delay = value
+
+        session.close()
+
+    @staticmethod
+    def set_expire_soon(value=True):
+        redis.set(SchedulerState.KEY_NOTICE_EXPIRE_SOON, value)
+
+    @staticmethod
+    def get_expire_soon():
+        return redis_get(SchedulerState.KEY_NOTICE_EXPIRE_SOON, False) == 'True'
 
     @staticmethod
     def get_forced_app():

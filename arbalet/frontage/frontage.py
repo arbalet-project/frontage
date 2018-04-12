@@ -4,7 +4,6 @@ import sys
 
 from socket import *
 from struct import pack
-from numpy import array
 from model import Model
 from pygame.time import Clock
 from threading import Thread
@@ -31,7 +30,7 @@ class Frontage(Thread):
         self.hardware = hardware
         self.clock = Clock()
         self.client, self.address = None, None
-        self.num_pixels = width*height
+        self.num_pixels = width * height
 
     def start_server(self):
         # Use asyncio or twisted?

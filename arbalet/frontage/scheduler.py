@@ -2,13 +2,11 @@
 import json
 import datetime
 import time
-import sys
 
 from time import sleep
 from utils.red import redis
 from frontage import Frontage
 from tasks.tasks import start_fap, start_default_fap, clear_all_task
-from tasks.celery import app
 from scheduler_state import SchedulerState
 
 from apps.fap import Fap
@@ -21,6 +19,9 @@ from apps.snake import Snake
 from apps.tetris import Tetris
 from utils.sentry_client import SENTRY
 from server.flaskutils import print_flush
+
+
+EXPIRE_SOON_DELAY = 60
 
 
 class Scheduler(object):
@@ -55,17 +56,6 @@ class Scheduler(object):
         redis.set(SchedulerState.KEY_SCHEDULED_APP_TIME,
                   SchedulerState.DEFAULT_APP_SCHEDULE_TIME)
     # def start_ne
-
-    def get_current_user_app(self):
-        # Deprecated
-        try:
-            a = app.control.inspect(['celery@workerqueue']).active()[
-                'celery@workerqueue']
-            return a
-        except Exception as e:
-            print_flush(str(e))
-            SENTRY.captureException()
-            return []
 
     def keep_alive_waiting_app(self):
         queue = SchedulerState.get_user_app_queue()
@@ -103,6 +93,10 @@ class Scheduler(object):
                     # Remove app form waiting Q
                     SchedulerState.pop_user_app_queue(queue)
                     return True
+                if datetime.datetime.now() > (datetime.datetime.strptime(
+                        c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") + datetime.timedelta(secondes=EXPIRE_SOON_DELAY)):
+                    if not SchedulerState.get_expire_soon():
+                        Fap.send_expires_soon()
         else:
             # no app runing, app are waiting in queue. We start one
             if len(queue) > 0:
