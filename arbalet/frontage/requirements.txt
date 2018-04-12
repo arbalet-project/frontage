@@ -16,6 +16,7 @@ docopt
 gunicorn
 pika
 numpy
+petname
 pygame
 click
 asyncio
@@ -26,3 +27,4 @@ raven
 blinker
 SQLAlchemy
 flask-expects-json
+
