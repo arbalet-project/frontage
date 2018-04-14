@@ -3,6 +3,7 @@
 
 ```
 sudo apt install docker-compose avahi-daemon openssh-server
+sudo adduser arbalet docker
 
 mkdir ~/Arbalet && cd ~/Arbalet
 git clone http://github.com/arbalet-project/frontage.git
