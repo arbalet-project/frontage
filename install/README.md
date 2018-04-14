@@ -13,6 +13,9 @@ sudo systemctl set-default multi-user.target
 sudo cp arbalet.service /lib/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable arbalet.service
+
+sudo cp interfaces /etc/network/interfaces
+
 sudo reboot
 ```
 
