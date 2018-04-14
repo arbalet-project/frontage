@@ -15,6 +15,10 @@ sudo systemctl daemon-reload
 sudo systemctl enable arbalet.service
 
 sudo cp interfaces /etc/network/interfaces
+sudo apt install dnsmasq
+sudo cp dnsmasq.conf /etc/dnsmasq.conf
+sudo cp hosts /etc/hosts
+sudo cp hostname /etc/hostname
 
 sudo reboot
 ```
