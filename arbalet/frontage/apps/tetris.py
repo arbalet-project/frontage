@@ -142,6 +142,7 @@ class Tetris(Fap):
         self.flash()
         # self.ws.send("GAME OVER! Score: {}".format(len(self.queue)), 'deeppink')
         self.set_pink()
+        self.send_game_over()
 
     def process_extras(self, x=None, y=None):
         pass
@@ -255,7 +256,7 @@ class Tetris(Fap):
             self.model.set_column(i, rouge)
         self.send_model()
 
-    def run(self, params):
+    def run(self, params, expires_at=None):
         self.start_socket()
 
         if not params:
@@ -282,5 +283,6 @@ class Tetris(Fap):
         # if self.score > 0:
         self.flash()
         self.game_over()
+        self.send_close_app()
         exit()
         # self.model.write("GAME OVER! Score: {}, level {}".format(self.score, self.speed - 1), 'deeppink')

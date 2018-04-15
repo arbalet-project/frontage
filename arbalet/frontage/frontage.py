@@ -24,94 +24,14 @@ def print_flush(s):
 class Frontage(Thread):
     CNT = 0
 
-    def __init__(self, hardware_port=33640, hardware=True):
+    def __init__(self, hardware_port=33640, hardware=True, width=19, height=4):
         Thread.__init__(self)
-        self.model = Model(4, 19)
+        self.model = Model(height, width)
         self.hardware_port = hardware_port
         self.hardware = hardware
         self.clock = Clock()
-        SchedulerState.set_frontage_connected(False)
-
-        # row, column -> DMX address
-        self.mapping = array([[19,
-                               18,
-                               17,
-                               16,
-                               15,
-                               14,
-                               13,
-                               12,
-                               11,
-                               10,
-                               9,
-                               8,
-                               7,
-                               6,
-                               5,
-                               4,
-                               3,
-                               2,
-                               1],
-                              [38,
-                               37,
-                               36,
-                               35,
-                               34,
-                               33,
-                               32,
-                               31,
-                               30,
-                               29,
-                               28,
-                               27,
-                               26,
-                               25,
-                               24,
-                               23,
-                               22,
-                               21,
-                               20],
-                              [57,
-                               56,
-                               55,
-                               54,
-                               53,
-                               52,
-                               51,
-                               50,
-                               49,
-                               48,
-                               47,
-                               46,
-                               45,
-                               44,
-                               43,
-                               42,
-                               41,
-                               40,
-                               39],
-                              [71,
-                               70,
-                               69,
-                               68,
-                               67,
-                               66,
-                               65,
-                               0,
-                               0,
-                               0,
-                               0,
-                               0,
-                               64,
-                               63,
-                               62,
-                               61,
-                               60,
-                               59,
-                               58]])
-
-        self.num_pixels = self.mapping.shape[0] * self.mapping.shape[1]
-        self.start_server()
+        self.client, self.address = None, None
+        self.num_pixels = width*height
 
     def start_server(self):
         # Use asyncio or twisted?
@@ -120,7 +40,6 @@ class Frontage(Thread):
         self.hardware_server.bind(("0.0.0.0", self.hardware_port))
         self.hardware_server.listen(1)
         # self.start_rabbit()
-
         if self.hardware:
             print_flush("Waiting Hardware TCP client connection...")
             print_flush(self.hardware_port)
@@ -129,11 +48,9 @@ class Frontage(Thread):
                 "Client {}:{} connected!".format(
                     self.address[0],
                     self.address[1]))
-        else:
-            self.client, self.address = None, None
+            self.update()
 
         print_flush("====> START STATE")
-        SchedulerState.set_frontage_connected(True)
 
     def map(self, row, column):
         return self.mapping[row][column]
@@ -164,7 +81,9 @@ class Frontage(Thread):
         self.update()
 
     def run(self):
-        print("==> Frontage Controler Started")
+        print("==> Starting Frontage hardware server...")
+        self.start_server()
+        print("==> Frontage hardware server is up!")
         self.pubsub = redis.pubsub()
         self.pubsub.subscribe([SchedulerState.KEY_MODEL])
 
@@ -190,16 +109,14 @@ class Frontage(Thread):
                 with self.model:
                     for row in range(self.model.height):
                         for col in range(self.model.width):
-                            led = self.mapping[row, col]
                             r, g, b = self.model[row, col]
-                            data_frame.append(int(led))
-                            data_frame.append(int(r * 255))
-                            data_frame.append(int(g * 255))
-                            data_frame.append(int(b * 255))
+                            data_frame.append(min(255, max(0, int(r * 255))))
+                            data_frame.append(min(255, max(0, int(g * 255))))
+                            data_frame.append(min(255, max(0, int(b * 255))))
                 try:
                     command = pack(
                         "!{}B".format(
-                            self.num_pixels * 4),
+                            self.num_pixels * 3),
                         *data_frame)
                     self.client.send(command)
                 except Exception as e:

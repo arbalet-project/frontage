@@ -3,6 +3,7 @@
 
 ```
 sudo apt install docker-compose avahi-daemon openssh-server
+sudo adduser arbalet docker
 
 mkdir ~/Arbalet && cd ~/Arbalet
 git clone http://github.com/arbalet-project/frontage.git
@@ -13,6 +14,13 @@ sudo systemctl set-default multi-user.target
 sudo cp arbalet.service /lib/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable arbalet.service
+
+sudo cp interfaces /etc/network/interfaces
+sudo apt install dnsmasq
+sudo cp dnsmasq.conf /etc/dnsmasq.conf
+sudo cp hosts /etc/hosts
+sudo cp hostname /etc/hostname
+
 sudo reboot
 ```
 

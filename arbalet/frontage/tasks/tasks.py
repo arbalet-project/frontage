@@ -18,6 +18,7 @@ from apps.sweep_async import SweepAsync
 from apps.sweep_rand import SweepRand
 from apps.snake import Snake
 from apps.tetris import Tetris
+from apps.snap import Snap
 
 
 class TestApp():
@@ -44,6 +45,8 @@ def start_default_fap(app):
     SchedulerState.set_app_started_at()
     # app['expire_at'] = str(
     #     datetime.datetime.now())
+    if 'params' not in app:
+        app['params'] = {}
     app['expire_at'] = str(
         datetime.datetime.now() +
         datetime.timedelta(
@@ -58,9 +61,9 @@ def start_default_fap(app):
         fap.run(params=app['params'])
     except Exception as e:
         print('--->APP>>')
+        del fap
         print('Error when starting task ' + str(e))
-        raise e
-        return 'Error when starting task ' + str(e)
+        # raise e
     finally:
         SchedulerState.set_current_app({})
 
@@ -78,14 +81,15 @@ def start_fap(app):
 
     SchedulerState.set_current_app(app)
     try:
+        flask_log('[start_fap.apply_async] ===========> start run')
         fap = globals()[app['name']]()
-        fap.run(params=app['params'])
+        fap.run(params=app['params'], expires_at=app['expire_at'])
     except Exception as e:
-        print('--->APP>>')
-        print('Error when starting task ' + str(e))
+        flask_log('--->APP>>')
+        flask_log('Error when starting task ' + str(e))
         raise e
-        return 'Error when starting task ' + str(e)
     finally:
+        flask_log('--======================== ENDED START_APP')
         SchedulerState.set_current_app({})
 
 

@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-import random
-
-from utils.tools import Rate
 from ._generator import gen_sweep_async
 from .colors import Colors
 
@@ -13,4 +10,8 @@ class SweepAsync(Colors):
         Colors.__init__(self, gen_sweep_async)
         self.PARAMS_LIST['uapp'] = ['swipe']
 
-
+    def run(self, params, expires_at=None):
+        if not params:
+            params = {}
+        params['uapp'] = 'swipe'
+        Colors.run(self, params, expires_at)

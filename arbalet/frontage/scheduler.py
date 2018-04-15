@@ -6,11 +6,12 @@ import sys
 
 from time import sleep
 from utils.red import redis
-from controller import Frontage
-from tasks.tasks import start_fap, start_default_fap
+from frontage import Frontage
+from tasks.tasks import start_fap, start_default_fap, clear_all_task
 from tasks.celery import app
 from scheduler_state import SchedulerState
 
+from apps.fap import Fap
 from apps.flags import Flags
 from apps.random_flashing import RandomFlashing
 from apps.sweep_async import SweepAsync
@@ -19,30 +20,22 @@ from apps.snap import Snap
 from apps.snake import Snake
 from apps.tetris import Tetris
 from utils.sentry_client import SENTRY
-
-
-def print_flush(s):
-    print(s)
-    sys.stdout.flush()
-
-
-TASK_EXPIRATION = 1800
+from server.flaskutils import print_flush
 
 
 class Scheduler(object):
 
     def __init__(self, port=33460, hardware=True, simulator=True):
         print_flush('---> Waiting for frontage connection...')
-        # Blocking until the hardware client connects
+        clear_all_task()
         self.frontage = Frontage(port, hardware)
-        print_flush('---> Frontage connected')
 
         redis.set(SchedulerState.KEY_SUNRISE, SchedulerState.DEFAULT_RISE)
         redis.set(SchedulerState.KEY_SUNDOWN, SchedulerState.DEFAULT_DOWN)
         redis.set(SchedulerState.KEY_USERS_Q, '[]')
         redis.set(SchedulerState.KEY_FORCED_APP, False)
 
-        SchedulerState.set_current_app({})
+        # SchedulerState.set_current_app({})
 
         # Dict { Name: ClassName, Start_at: XXX, End_at: XXX, task_id: XXX}
         self.current_app_state = None
@@ -90,7 +83,7 @@ class Scheduler(object):
 
     def check_scheduler(self):
         if SchedulerState.get_forced_app():
-            return
+            return False
 
         self.keep_alive_waiting_app()
         queue = SchedulerState.get_user_app_queue()
@@ -103,56 +96,66 @@ class Scheduler(object):
                 if datetime.datetime.now() > datetime.datetime.strptime(
                         c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") or c_app['scheduled_app']:
                     print_flush('===> REVOKING APP, someone else turn')
-                    # !!!! NOT TESTED WITHOUT SchedulerState.set_current_app({})
-                    SchedulerState.stop_app(c_app)
+                    SchedulerState.stop_app(c_app, Fap.CODE_EXPIRE, 'someone else turn')
                     # Start app
                     start_fap.apply_async(args=[next_app], queue='userapp')
+                    print_flush("## Starting {} [case A]".format(next_app['name']))
                     # Remove app form waiting Q
                     SchedulerState.pop_user_app_queue(queue)
+                    return True
         else:
             # no app runing, app are waiting in queue. We start one
             if len(queue) > 0:
                 start_fap.apply_async(args=[queue[0]], queue='userapp')
+                print_flush("## Starting {} [case B]".format(queue[0]['name']))
                 SchedulerState.pop_user_app_queue(queue)
-                # No task waiting, start defautl scheduler
+                return True
             else:
+                # No task waiting, start defautl scheduler
                 default_scheduled_app = SchedulerState.get_next_default_app()
                 # defualt app are schedulled, and stopped auto when expire is outdated.
                 # any other app starrted by user has highter
                 if default_scheduled_app:
-                    next_app = {'name': default_scheduled_app.name, 'username': '>>>default<<<'}
+                    next_app = {'name': default_scheduled_app.name,
+                                'params': default_scheduled_app.default_params,
+                                'username': '>>>default<<<'}
                     # expires => in seconde
                     next_app['expires'] = default_scheduled_app.duration
                     if not next_app['expires'] or next_app['expires'] == 0:
                         next_app['expires'] = (15 * 60)
                     start_default_fap.apply_async(args=[next_app], queue='userapp')
+                    SchedulerState.wait_task_to_start()
+                    print_flush("## Starting {} [DEFAULT]".format(next_app['name']))
+                    return True
+        return False
 
     def run(self):
         last_state = False
         usable = SchedulerState.usable()
-        count = 0
+        SchedulerState.set_frontage_connected(True)  # TODO ... moved here because it should not prevent the scheduler from starting
         print_flush('[SCHEDULER] Entering loop')
-        # self.running_task = start_fap.apply_async(args=['app1'], queue='userapp')
         self.frontage.start()
-        # self.running_task = start_fap.apply_async(args=['Flags', 'user', 'french'], queue='userapp', expires=2)
-
+        count = 0
         while True:
             # Check if usable change
             if (usable != last_state) and last_state is True:
                 self.frontage.erase_all()
-                self.frontage.update()
                 last_state = usable
             # Available, play machine state
             elif SchedulerState.usable():
                 self.check_scheduler()
 
-            # Ugly sleep to avoid CPU consuming, not really usefull but I pref
-            # use it ATM before advanced tests
-            count += 1
-            if (count % 2) == 0:
-                print_flush('===== Scheduler still running =====')
+            # Update on a regular basis in any case
+            sleep(0.1)
+            self.frontage.update()
+            if count % 50 == 0:
+                print_flush("-------- Current App")
+                print_flush(SchedulerState.get_current_app())
+                print_flush("---------- Waiting Queue")
                 print_flush(SchedulerState.get_user_app_queue())
-            sleep(0.5)
+                print_flush(" ========== Scheduling ==========")
+            count += 1
+
         print_flush('===== Scheduler End =====')
 
 
