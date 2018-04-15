@@ -23,7 +23,7 @@ LOGIN_SCHEMA = {
         'username': {'type': 'string'},
         'password': {'type': 'string'}
     },
-    'required': ['username', 'password']
+    'required': ['username']
 }
 
 
