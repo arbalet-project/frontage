@@ -2,13 +2,11 @@
 import json
 import datetime
 import time
-import sys
 
 from time import sleep
 from utils.red import redis
 from frontage import Frontage
 from tasks.tasks import start_fap, start_default_fap, clear_all_task
-from tasks.celery import app
 from scheduler_state import SchedulerState
 
 from apps.fap import Fap
@@ -21,6 +19,9 @@ from apps.snake import Snake
 from apps.tetris import Tetris
 from utils.sentry_client import SENTRY
 from server.flaskutils import print_flush
+
+
+EXPIRE_SOON_DELAY = 5
 
 
 class Scheduler(object):
@@ -56,17 +57,6 @@ class Scheduler(object):
                   SchedulerState.DEFAULT_APP_SCHEDULE_TIME)
     # def start_ne
 
-    def get_current_user_app(self):
-        # Deprecated
-        try:
-            a = app.control.inspect(['celery@workerqueue']).active()[
-                'celery@workerqueue']
-            return a
-        except Exception as e:
-            print_flush(str(e))
-            SENTRY.captureException()
-            return []
-
     def keep_alive_waiting_app(self):
         queue = SchedulerState.get_user_app_queue()
         # i = 0
@@ -77,9 +67,10 @@ class Scheduler(object):
                     SchedulerState.DEFAULT_KEEP_ALIVE_DELAY):
                 # to_remove.append(i)
                 queue.remove(c_app)
-            # i += 1
-        # for rm_app in to_remove:
-        #     queue.pop(rm_app)
+
+        # current_app = SchedulerState.get_current_app()
+        # if time.time() > (current_app['last_alive'] + SchedulerState.DEFAULT_KEEP_ALIVE_DELAY):
+        #     SchedulerState.stop_app(current_app, Fap.CODE_EXPIRE, 'someone else turn')
 
     def check_scheduler(self):
         if SchedulerState.get_forced_app():
@@ -89,11 +80,20 @@ class Scheduler(object):
         queue = SchedulerState.get_user_app_queue()
         c_app = SchedulerState.get_current_app()
         # one task already running
+        now = datetime.datetime.now()
         if c_app:
+            # expire soon
+            if now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
+                if not SchedulerState.get_expire_soon():
+                    Fap.send_expires_soon(EXPIRE_SOON_DELAY)
+            # expire
+            # if now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f")):
+            #     if not SchedulerState.get_expire():
+            #         Fap.send_expires()
             # Someone wait for his own task ?
             if len(queue) > 0:
                 next_app = queue[0]
-                if datetime.datetime.now() > datetime.datetime.strptime(
+                if now > datetime.datetime.strptime(
                         c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") or c_app['scheduled_app']:
                     print_flush('===> REVOKING APP, someone else turn')
                     SchedulerState.stop_app(c_app, Fap.CODE_EXPIRE, 'someone else turn')
@@ -103,6 +103,14 @@ class Scheduler(object):
                     # Remove app form waiting Q
                     SchedulerState.pop_user_app_queue(queue)
                     return True
+                # print_flush('datetime.datetime.now()')
+                # print_flush(datetime.datetime.now())
+                # print_flush('-----------+++')
+                # print_flush(datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f"))
+                # print_flush('-----------+++++++++++++++++')
+                # print_flush((datetime.datetime.strptime(
+                #        c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)))
+                # print_flush('-----------++++++++++++++++++++++++++++++')
         else:
             # no app runing, app are waiting in queue. We start one
             if len(queue) > 0:
@@ -138,11 +146,12 @@ class Scheduler(object):
         count = 0
         while True:
             # Check if usable change
+            usable = SchedulerState.usable()
             if (usable != last_state) and last_state is True:
                 self.frontage.erase_all()
                 last_state = usable
             # Available, play machine state
-            elif SchedulerState.usable():
+            elif usable:
                 self.check_scheduler()
 
             # Update on a regular basis in any case

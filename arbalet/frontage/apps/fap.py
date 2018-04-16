@@ -24,6 +24,7 @@ class Fap(object):
     LOCK_WS = RWLock()
 
     def __init__(self, model=None):
+        SchedulerState.set_expire_soon(False)
         self.username = None
         self.max_time = None
         self.params = None
@@ -42,10 +43,14 @@ class Fap(object):
     def send_game_over(self):
         Websock.send_data(Fap.CODE_GAME_OVER, 'GAME_OVER')
 
-    def send_expires(self):
+    @staticmethod
+    def send_expires():
+        SchedulerState.set_expire(True)
         Websock.send_data(Fap.CODE_EXPIRE, 'EXPIRE')
 
-    def send_expires_soon(self, timeout_in_sec):
+    @staticmethod
+    def send_expires_soon(timeout_in_sec):
+        SchedulerState.set_expire_soon(True)
         Websock.send_data(Fap.CODE_EXPIRE_SOON, timeout_in_sec)
 
     def start_socket(self):
