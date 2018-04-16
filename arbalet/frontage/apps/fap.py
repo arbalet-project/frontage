@@ -45,6 +45,7 @@ class Fap(object):
 
     @staticmethod
     def send_expires():
+        SchedulerState.set_expire(True)
         Websock.send_data(Fap.CODE_EXPIRE, 'EXPIRE')
 
     @staticmethod
