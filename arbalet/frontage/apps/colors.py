@@ -27,6 +27,8 @@ class Colors(Fap):
         self.PARAMS_LIST = {}
         self.generator = gen
 
+
+
     def create_generator(self):
         # Construct all pixel generators
         self.generators = []
@@ -62,17 +64,17 @@ class Colors(Fap):
     def process_params(self, params):
         c_params = self.load_animation(params)
 
-        self.durations_min = params.get('dur_min', c_params.get('dur_min'))
-        self.durations_max = params.get('dur_max', c_params.get('dur_max'))
         if self.rate:
             del self.rate
-        self.rate = Rate(params.get('refresh_rate', c_params.get('rate')))
-
+        rate_hz = params.get('refresh_rate', c_params.get('rate'))
+        self.rate = Rate(rate_hz)
+        self.durations_min = params.get('dur_min', c_params.get('dur_min'))*rate_hz
+        self.durations_max = params.get('dur_max', c_params.get('dur_max'))*rate_hz
         self.select_colors(params, c_params)
 
     def run(self, params, expires_at=None):
         if not self.generator:
-            print('GENERATOR NOT DEFINED. ABORDED')
+            print('GENERATOR NOT DEFINED. ABORTED')
             return
         self.start_socket()
 

@@ -33,6 +33,8 @@ def login():
     username = g.data.get('username', False)
     password = g.data.get('password', False)
 
+    print_flush("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+    print_flush("normal")
     if ((username == 'frontageadmin') and password == 'frontagepassword'):
         return jsonify(
             login=True,
@@ -45,6 +47,33 @@ def login():
             token=generate_user_token(
                 username=username,
                 is_admin=False))
+    else:
+        return jsonify(login=False)
+
+LOGIN_ADMIN_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'username': {'type': 'string'},
+        'password': {'type': 'string'}
+    },
+    'required': ['username', 'password']
+}
+
+@blueprint.route('/b/adminlogin', methods=['POST'])
+@expects_json(LOGIN_ADMIN_SCHEMA)
+def login_admin():
+    username = g.data.get('username', False)
+    password = g.data.get('password', False)
+
+    print_flush("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+    print_flush("admin ")
+
+    if ((username == 'frontageadmin') and password == 'frontagepassword'):
+        return jsonify(
+            login=True,
+            token=generate_user_token(
+                username=username,
+                is_admin=True))
     else:
         return jsonify(login=False)
 

@@ -109,9 +109,9 @@ class Frontage(Thread):
                     for row in range(self.model.height):
                         for col in range(self.model.width):
                             r, g, b = self.model[row, col]
-                            data_frame.append(int(r * 255))
-                            data_frame.append(int(g * 255))
-                            data_frame.append(int(b * 255))
+                            data_frame.append(min(255, max(0, int(r * 255))))
+                            data_frame.append(min(255, max(0, int(g * 255))))
+                            data_frame.append(min(255, max(0, int(b * 255))))
                 try:
                     command = pack(
                         "!{}B".format(
