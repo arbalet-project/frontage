@@ -33,8 +33,6 @@ def login():
     username = g.data.get('username', False)
     password = g.data.get('password', False)
 
-    print_flush("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-    print_flush("normal")
     if ((username == 'frontageadmin') and password == 'frontagepassword'):
         return jsonify(
             login=True,
@@ -64,9 +62,6 @@ LOGIN_ADMIN_SCHEMA = {
 def login_admin():
     username = g.data.get('username', False)
     password = g.data.get('password', False)
-
-    print_flush("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-    print_flush("admin ")
 
     if ((username == 'frontageadmin') and password == 'frontagepassword'):
         return jsonify(
