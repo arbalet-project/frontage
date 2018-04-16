@@ -146,11 +146,12 @@ class Scheduler(object):
         count = 0
         while True:
             # Check if usable change
+            usable = SchedulerState.usable()
             if (usable != last_state) and last_state is True:
                 self.frontage.erase_all()
                 last_state = usable
             # Available, play machine state
-            elif SchedulerState.usable():
+            elif usable:
                 self.check_scheduler()
 
             # Update on a regular basis in any case
