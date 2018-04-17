@@ -31,15 +31,8 @@ LOGIN_SCHEMA = {
 @expects_json(LOGIN_SCHEMA)
 def login():
     username = g.data.get('username', False)
-    password = g.data.get('password', False)
 
-    if ((username == 'frontageadmin') and password == 'frontagepassword'):
-        return jsonify(
-            login=True,
-            token=generate_user_token(
-                username=username,
-                is_admin=True))
-    elif username:
+    if username:
         return jsonify(
             login=True,
             token=generate_user_token(
