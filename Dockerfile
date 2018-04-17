@@ -5,6 +5,8 @@ COPY ./arbalet/frontage/requirements.txt /usr/src/app/requirements.txt
 RUN pip install --no-cache-dir -r /usr/src/app/requirements.txt
 RUN pip install --no-cache-dir git+https://github.com/arbalet-project/python-artnet.git
 
+ENV TZ=Europe/Paris
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 COPY docker-entrypoint.sh /
 COPY wait-for-it.sh /

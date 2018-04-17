@@ -1,12 +1,11 @@
 from __future__ import print_function
 
 import sys
-
 from flask import request, abort
 
 
-def print_flush(msg):
-    print(msg, file=sys.stderr)
+def print_flush(*msg):
+    print(*msg, file=sys.stderr)
     sys.stderr.flush()
 
 

@@ -1,24 +1,17 @@
 from __future__ import print_function
 
-import sys
-
 from socket import *
 from struct import pack
-from numpy import array
 from model import Model
 from pygame.time import Clock
 from threading import Thread
+from server.flaskutils import print_flush
 
 from scheduler_state import SchedulerState
 # from rabbit import CHANNEL, QUEUE_OBJ
 from utils.red import redis
 
 __all__ = ['Frontage']
-
-
-def print_flush(s):
-    print(s)
-    sys.stdout.flush()
 
 
 class Frontage(Thread):
@@ -31,7 +24,7 @@ class Frontage(Thread):
         self.hardware = hardware
         self.clock = Clock()
         self.client, self.address = None, None
-        self.num_pixels = width*height
+        self.num_pixels = width * height
 
     def start_server(self):
         # Use asyncio or twisted?

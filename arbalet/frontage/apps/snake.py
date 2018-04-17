@@ -63,18 +63,16 @@ class Snake(Fap):
         elif data == Actions.K_LEFT:
             new_dir = LEFT
 
-        if new_dir is not None:
-            self.DIRECTION = new_dir
+        if new_dir  is not None:
+            if not (self.DIRECTION[0] == -new_dir[0] and self.DIRECTION[1] == new_dir[1] or \
+                    self.DIRECTION[0] == new_dir[0] and self.DIRECTION[1] == -new_dir[1]):
+                self.DIRECTION = new_dir
 
     def game_over(self):
         print("Game OVER")
-        self.flash()
-        # self.ws.send("GAME OVER! Score: {}".format(len(self.queue)), 'deeppink')
-        print('----------=================')
         self.send_game_over()
-        print('----------=================')
-        self.set_pink()
-        self.send_model()
+        time.sleep(1)
+        self.flash()
         time.sleep(1)
 
     def process_extras(self, x=None, y=None):
@@ -89,12 +87,6 @@ class Snake(Fap):
             self.FOOD_POSITIONS[f] = True
 
             self.model.set_pixel(f[0], f[1], self.FOOD_COLOR)
-
-    def set_pink(self):
-        rouge = name_to_rgb('deeppink')
-        for i in range(0, 19):
-            self.model.set_column(i, rouge)
-        self.send_model()
 
     def run(self, params, expires_at=None):
         self.start_socket()
@@ -140,5 +132,5 @@ class Snake(Fap):
                 self.send_model()
             rate.sleep()
         self.game_over()
-        self.send_close_app()
-        exit()
+        #self.send_close_app()
+

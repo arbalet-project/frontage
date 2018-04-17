@@ -10,6 +10,7 @@ from utils.red import redis, redis_get
 from db.models import FappModel, ConfigModel
 from db.base import session_factory
 from db.tools import to_dict, serialize
+from utils.websock import Websock
 
 
 def flask_log(msg):
@@ -45,6 +46,8 @@ class SchedulerState(object):
     KEY_MODEL = 'frontage_model'
     KEY_SUNRISE = 'frontage_sunrise'
     KEY_SUNDOWN = 'frontage_sundown'
+    KEY_NOTICE_EXPIRE_SOON = 'key_notice_expire_soon'
+    KEY_NOTICE_EXPIRE = 'key_notice_expire'
     KEY_FORCED_SUNDOWN_OFFSET = 'key_forced_sundown_offset'
     KEY_FORCED_SUNRISE_OFFSET = 'key_forced_sunrise_offset'
     KEY_SUN_STATE = 'frontage_sunstate'
@@ -84,6 +87,26 @@ class SchedulerState(object):
             session.commit()
         else:
             app.expires_delay = value
+
+        session.close()
+
+    @staticmethod
+    def set_expire_soon(value=True):
+        flask_log('****************')
+        flask_log(value)
+        redis.set(SchedulerState.KEY_NOTICE_EXPIRE_SOON, value)
+
+    @staticmethod
+    def set_expire(value=True):
+        redis.set(SchedulerState.KEY_NOTICE_EXPIRE, value)
+
+    @staticmethod
+    def get_expire():
+        return redis_get(SchedulerState.KEY_NOTICE_EXPIRE, False) == 'True'
+
+    @staticmethod
+    def get_expire_soon():
+        return redis_get(SchedulerState.KEY_NOTICE_EXPIRE_SOON, False) == 'True'
 
     @staticmethod
     def get_forced_app():
@@ -389,7 +412,11 @@ class SchedulerState(object):
             return
 
         from tasks.celery import app
-        # Websock.send_data(stop_code, stop_message)
+        if not c_app['scheduled_app']:
+            if stop_code and stop_message:
+                Websock.send_data(stop_code, stop_message)
+
+        sleep(0.1)
         # revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
         # app.control.revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
         app.control.revoke(c_app['task_id'], terminate=True)

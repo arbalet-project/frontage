@@ -44,6 +44,8 @@ class Websock(Thread):
             await asyncio.sleep(0.01)
             data_to_send = Websock.get_data()
             if data_to_send:
+                print('=====> SEND    DATA')
+                print(data_to_send)
                 await websocket.send(data_to_send)
 
     async def handler(self, websocket, path):

@@ -111,7 +111,7 @@ class ArtnetClient(object):
     def start_dmx(self):
         if self.dmx is None:
             # Broadcasting on all Arnet nodes network 2.0.0.0/8
-            self.dmx = dmx.Controller("2.255.255.255", universes=self.num_universes)
+            self.dmx = dmx.Controller("2.255.255.255", universes=self.num_universes, fps=15)
             self.dmx.start()
 
     def stop_dmx(self):
