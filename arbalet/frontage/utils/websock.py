@@ -6,7 +6,7 @@ import random
 from time import sleep
 from utils.red import redis, redis_get
 from threading import Thread
-
+from server.flaskutils import print_flush
 
 KEY_WS_SEND = "KEY_WS_SEND"
 
@@ -21,6 +21,9 @@ class Websock(Thread):
 
     @staticmethod
     def send_data(code, message):
+        print_flush("###############################################################################")
+        print_flush("Send : [code={0}] [message={1}]".format(code, message))
+        print_flush("###############################################################################")
         redis.set(KEY_WS_SEND, json.dumps({'code': code,
                                            'message': message}))
 
