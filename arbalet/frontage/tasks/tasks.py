@@ -52,7 +52,8 @@ def start_default_fap(app):
         datetime.timedelta(
             seconds=app['expires']))
     app['task_id'] = start_default_fap.request.id
-    app['scheduled_app'] = True
+    app['is_default'] = True
+    app['username'] = '>>>default<<<'
     app['started_at'] = datetime.datetime.now().isoformat()
 
     SchedulerState.set_current_app(app)
@@ -75,7 +76,7 @@ def start_fap(app):
         datetime.datetime.now() +
         datetime.timedelta(
             seconds=app['expires']))
-    app['scheduled_app'] = False
+    app['is_default'] = False
     app['task_id'] = start_fap.request.id
     app['started_at'] = datetime.datetime.now().isoformat()
 

@@ -48,6 +48,7 @@ def login():
     else:
         return jsonify(login=False)
 
+
 LOGIN_ADMIN_SCHEMA = {
     'type': 'object',
     'properties': {
@@ -56,6 +57,7 @@ LOGIN_ADMIN_SCHEMA = {
     },
     'required': ['username', 'password']
 }
+
 
 @blueprint.route('/b/adminlogin', methods=['POST'])
 @expects_json(LOGIN_ADMIN_SCHEMA)
@@ -94,10 +96,9 @@ def admin_enabled_scheduler(user):
 
 
 @blueprint.route('/b/admin/cal', methods=['GET'])
-@blueprint.route('/b/admin/cal/<at>', methods=['GET'])
-def admin_cal_at(at=None):
-    return jsonify(on=SchedulerState.get_sundown(at).strftime('%H:%M'),
-                   off=SchedulerState.get_sunrise(at).strftime('%H:%M'),
+def admin_cal_at():
+    return jsonify(on=SchedulerState.get_sundown().strftime('%H:%M'),
+                   off=SchedulerState.get_sunrise().strftime('%H:%M'),
                    default="",
                    params={})
 

@@ -5,7 +5,6 @@ import datetime
 from server.extensions import celery
 from server.app import create_app
 from scheduler_state import SchedulerState
-from utils.red import redis, redis_get
 
 app = celery
 app.init_app(create_app())
@@ -27,23 +26,17 @@ def check_sunrise_sunset():
 
     # state = redis_get(SchedulerState.KEY_SUN_STATE)
     now = datetime.datetime.now().time()
-    print('---->')
     on_at = SchedulerState.get_sundown().time()
     off_at = SchedulerState.get_sunrise().time()
 
     if not SchedulerState.get_enable_state() == 'scheduled':
         print('---->Not scheduled')
         return True
-    print(on_at)
-    print(off_at)
     if now < off_at:
-        redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNDOWN)
         SchedulerState.set_usable(True)
     elif now > off_at and now < on_at:
-        redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNRISE)
         SchedulerState.set_usable(False)
     elif now > off_at and now > on_at:
-        redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNDOWN)
         SchedulerState.set_usable(True)
 
     # if state == SchedulerState.KEY_SUNRISE:

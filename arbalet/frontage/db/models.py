@@ -38,7 +38,7 @@ class FappModel(Base):
         self.name = app_name
         self.is_scheduled = is_scheduled
         self.default_params = '{}'
-        self.created_at = datetime.datetime.utcnow()
+        self.created_at = datetime.datetime.now()
 
     def __repr__(self):
         return '<Fapp %r (%r) (%r) (%r)>' % (
@@ -49,12 +49,26 @@ class ConfigModel(Base):
     __tablename__ = 'configmodel'
 
     uniqid = Column(String(36), primary_key=True)
+
+    forced_sunrise = Column(String(36))
+    offset_sunrise = Column(Integer)
+
+    forced_sunset = Column(String(36))
+    offset_sunset = Column(Integer)
+    state = Column(String(36))
     expires_delay = Column(Integer)
 
     def __init__(self, expires_delay):
         self.uniqid = str(uuid4())
+        self.forced_sunset = ""
+        self.offset_sunset = 0
+        self.state = 'scheduled'
+
+        self.forced_sunrise = ""
+        self.offset_sunrise = 0
+
         self.expires_delay = expires_delay
 
     def __repr__(self):
         return '<ConfigModel %r (%r) (%r)>' % (
-            self.uniqid, self.expires_delay)
+            self.uniqid, self.expires_delay, self.forced_sunset)

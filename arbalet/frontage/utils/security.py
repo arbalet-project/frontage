@@ -8,7 +8,7 @@ from utils.web_key import PRIVATE_WEB_KEY
 from utils.web_key_pub import PUBLIC_WEB_KEY
 
 TEN_YEARS = 60 * 60 * 24 * 7 * 52 * 10
-ONE_YEARS = 60 * 60 * 24 * 7 * 52
+ONE_YEARS = (60 * 60 * 24 * 7 * 52)
 ONE_HOUR = 60 * 60
 
 TOKEN_ALGO = 'RS512'
@@ -89,7 +89,7 @@ def admin_required(f):
 
 def generate_user_token(username, is_admin=False):
     now = datetime.datetime.utcnow()
-    delta = datetime.timedelta(seconds=ONE_HOUR)
+    delta = datetime.timedelta(seconds=ONE_YEARS)
 
     payload = {
         # Reserved claims

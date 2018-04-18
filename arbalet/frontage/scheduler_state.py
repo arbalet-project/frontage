@@ -39,13 +39,11 @@ class SchedulerState(object):
 
     KEY_SUNRISE_OFFSET = 'key_sunrise_offset'
     KEY_SUNDOWN_OFFSET = 'key_sundown_offset'
-    KEY_CONNECTED = 'frontage_connected'
     # KEY_APP_START_LOCK = 'key_app_start_lock'
     KEY_USABLE = 'frontage_usable'
     KEY_ENABLE_STATE = 'frontage_enable_state'
     KEY_MODEL = 'frontage_model'
-    KEY_SUNRISE = 'frontage_sunrise'
-    KEY_SUNDOWN = 'frontage_sundown'
+    KEY_FRONTAGE_ON_OFF = 'key_frontage_on_off'
     KEY_NOTICE_EXPIRE_SOON = 'key_notice_expire_soon'
     KEY_NOTICE_EXPIRE = 'key_notice_expire'
     KEY_FORCED_SUNDOWN_OFFSET = 'key_forced_sundown_offset'
@@ -92,8 +90,7 @@ class SchedulerState(object):
 
     @staticmethod
     def set_expire_soon(value=True):
-        flask_log('****************')
-        flask_log(value)
+        flask_log('==== Set Expire Soon')
         redis.set(SchedulerState.KEY_NOTICE_EXPIRE_SOON, value)
 
     @staticmethod
@@ -113,14 +110,6 @@ class SchedulerState(object):
         # add callback on frocer_app_task_launcher to set variable to false
         # when done
         return redis_get(SchedulerState.KEY_FORCED_APP, False) == 'True'
-
-    @staticmethod
-    def get_frontage_connected():
-        return redis_get(SchedulerState.KEY_CONNECTED, False) == 'True'
-
-    @staticmethod
-    def set_frontage_connected(state):
-        return redis.set(SchedulerState.KEY_CONNECTED, str(state))
 
     @staticmethod
     def wait_task_to_start():
@@ -158,12 +147,16 @@ class SchedulerState(object):
     def get_available_apps():
         return json.loads(redis.get(SchedulerState.KEY_REGISTERED_APP))
 
+    def set_frontage_on(value):
+        redis.set(SchedulerState.KEY_FRONTAGE_ON_OFF, value)
+
+    def is_frontage_on():
+        val = redis_get(SchedulerState.KEY_FRONTAGE_ON_OFF)
+        return val == "True"
+
     """ Is scheduller on or off ATM ?"""
     @staticmethod
     def usable():
-        if not SchedulerState.get_frontage_connected():
-            return False
-
         # FOR TEST ONLY
         # return True
         # -----
@@ -179,16 +172,27 @@ class SchedulerState(object):
     @staticmethod
     def set_enable_state(value):
         # redis.set(SchedulerState.KEY_USABLE, str(value))
-        if value == 'on':
-            SchedulerState.set_usable(True)
-        elif value == 'off':
-            SchedulerState.set_usable(False)
-        redis.set(SchedulerState.KEY_ENABLE_STATE, value)
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        conf.state = value
+        session.commit()
+        session.close()
+
+        # if value == 'on':
+        #     SchedulerState.set_frontage_on(True)
+        # elif value == 'off':
+        #     SchedulerState.set_frontage_on(False)
+        # redis.set(SchedulerState.KEY_ENABLE_STATE, value)
 
     @staticmethod
     def get_enable_state():
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        val = conf.state
+        session.close()
+        return val
         # redis.set(SchedulerState.KEY_USABLE, str(value))
-        return redis_get(SchedulerState.KEY_ENABLE_STATE, 'on')
+        # return redis_get(SchedulerState.KEY_ENABLE_STATE, 'on')
 
     @staticmethod
     def default_scheduled_time():
@@ -218,23 +222,45 @@ class SchedulerState(object):
     # FORCER SUN
     @staticmethod
     def set_forced_sundown(at):
-        redis.set(SchedulerState.KEY_FORCED_SUNDOWN_OFFSET, at)
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        conf.forced_sunset = at
+        conf.offset_sunset = 0
+        session.commit()
+        session.close()
+        # redis.set(SchedulerState.KEY_FORCED_SUNDOWN_OFFSET, at)
 
     @staticmethod
     def set_forced_sunrise(at):
-        redis.set(SchedulerState.KEY_FORCED_SUNRISE_OFFSET, at)
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        conf.forced_sunrise = at
+        conf.offset_sunrise = 0
+        session.commit()
+        session.close()
+        # redis.set(SchedulerState.KEY_FORCED_SUNRISE_OFFSET, at)
 
     @staticmethod
     def get_forced_sundown():
-        return redis_get(SchedulerState.KEY_FORCED_SUNDOWN_OFFSET, None)
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        val = conf.forced_sunset
+        session.close()
+        return val
+        # return redis_get(SchedulerState.KEY_FORCED_SUNDOWN_OFFSET, None)
 
     @staticmethod
     def get_forced_sunrise():
-        return redis_get(SchedulerState.KEY_FORCED_SUNRISE_OFFSET, None)
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        val = conf.forced_sunrise
+        session.close()
+        return val
+        # return redis_get(SchedulerState.KEY_FORCED_SUNRISE_OFFSET, None)
     # ----
 
     @staticmethod
-    def get_sunrise(at=None):
+    def get_sunrise():
         # forge date
         # if sundown
         forced_sunrise = SchedulerState.get_forced_sunrise()
@@ -244,14 +270,10 @@ class SchedulerState(object):
             except ValueError:
                 SchedulerState.set_forced_sunrise('')
             else:
-                now = datetime.datetime.utcnow()
+                now = datetime.datetime.now()
                 forced_sunrise_dt = now.replace(hour=forced_sunrise.hour, minute=forced_sunrise.minute)
-                if now > forced_sunrise:
-                    forced_sunrise_dt = forced_sunrise_dt + datetime.timedelta(days=1)
                 return forced_sunrise_dt
-        if not at:
-            at = datetime.datetime.now().strftime('%Y-%m-%d')
-
+        at = datetime.datetime.now().strftime('%Y-%m-%d')
         v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(
             SchedulerState.KEY_NIGHT_END_AT, SchedulerState.DEFAULT_RISE)
         sunrise = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
@@ -259,7 +281,7 @@ class SchedulerState(object):
         return sunrise + datetime.timedelta(hours=float(SchedulerState.get_sunrise_offset()))
 
     @staticmethod
-    def get_sundown(at=None):
+    def get_sundown():
         forced_sundown = SchedulerState.get_forced_sundown()
         if forced_sundown:
             try:
@@ -267,13 +289,10 @@ class SchedulerState(object):
             except ValueError:
                 SchedulerState.set_forced_sundown('')
             else:
-                now = datetime.datetime.utcnow()
+                now = datetime.datetime.now()
                 forced_sundown_dt = now.replace(hour=forced_sundown.hour, minute=forced_sundown.minute)
-                if now > forced_sundown:
-                    forced_sundown_dt = forced_sundown_dt + datetime.timedelta(days=1)
                 return forced_sundown_dt
-        if not at:
-            at = datetime.datetime.now().strftime('%Y-%m-%d')
+        at = datetime.datetime.now().strftime('%Y-%m-%d')
         v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(
             SchedulerState.KEY_NIGHT_START_AT, SchedulerState.DEFAULT_DOWN)
         sundown = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
@@ -291,23 +310,49 @@ class SchedulerState(object):
 
     @staticmethod
     def set_sundown_offset(offset=0):
-        redis.set(SchedulerState.KEY_SUNDOWN_OFFSET, offset)
-        redis.set(SchedulerState.KEY_FORCED_SUNDOWN_OFFSET, 0)
-        return True
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        conf.forced_sunset = ""
+        conf.offset_sunset = offset
+        session.commit()
+        session.close()
+        # return val
+
+        # redis.set(SchedulerState.KEY_SUNDOWN_OFFSET, offset)
+        # redis.set(SchedulerState.KEY_FORCED_SUNDOWN_OFFSET, 0)
+        # return True
 
     @staticmethod
     def get_sundown_offset():
-        return redis_get(SchedulerState.KEY_SUNDOWN_OFFSET, 0)
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        offset = conf.offset_sunset
+        session.close()
+
+        return offset
+        # return redis_get(SchedulerState.KEY_SUNDOWN_OFFSET, 0)
 
     @staticmethod
     def set_sunrise_offset(offset=0):
-        redis.set(SchedulerState.KEY_SUNRISE_OFFSET, offset)
-        redis.set(SchedulerState.KEY_FORCED_SUNRISE_OFFSET, 0)
-        return True
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        conf.forced_sunrise = ""
+        conf.offset_sunrise = offset
+        session.commit()
+        session.close()
+        # redis.set(SchedulerState.KEY_SUNRISE_OFFSET, offset)
+        # redis.set(SchedulerState.KEY_FORCED_SUNRISE_OFFSET, 0)
+        # return True
 
     @staticmethod
     def get_sunrise_offset():
-        return redis_get(SchedulerState.KEY_SUNRISE_OFFSET, 0)
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        offset = conf.offset_sunrise
+        session.close()
+
+        return offset
+        # return redis_get(SchedulerState.KEY_SUNRISE_OFFSET, 0)
 
     # ============= DEFAULT SCHEDULED APP
     @staticmethod
@@ -407,12 +452,12 @@ class SchedulerState(object):
 
     @staticmethod
     def stop_app(c_app, stop_code=None, stop_message=None):
-        flask_log(" ========= STOP_APP ====================")
+        # flask_log(" ========= STOP_APP ====================")
         if not c_app:
             return
 
         from tasks.celery import app
-        if not c_app['scheduled_app']:
+        if not c_app['is_default']:
             if stop_code and stop_message:
                 Websock.send_data(stop_code, stop_message)
 
