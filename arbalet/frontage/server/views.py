@@ -85,8 +85,10 @@ def admin_enabled_scheduler(user):
     if state not in ['on', 'off', 'scheduled']:
         abort(415)
     SchedulerState.set_enable_state(state)
-    return jsonify(enabled=SchedulerState.usable())
-
+    return jsonify(is_usable=SchedulerState.usable(),
+                   state=SchedulerState.get_enable_state(),
+                   scheduled_time=SchedulerState.default_scheduled_time(),
+                   current_time=datetime.datetime.now().isoformat())
 
 @blueprint.route('/b/admin/cal', methods=['GET'])
 def admin_cal_at():
@@ -286,8 +288,7 @@ def remove_from_queue(user):
 
 @blueprint.route('/frontage/status', methods=['GET'])
 def status():
-    state = SchedulerState.usable()
-    return jsonify(is_usable=state,
+    return jsonify(is_usable=SchedulerState.usable(),
                    state=SchedulerState.get_enable_state(),
                    scheduled_time=SchedulerState.default_scheduled_time(),
                    current_time=datetime.datetime.now().isoformat())
@@ -295,9 +296,10 @@ def status():
 
 @blueprint.route('/frontage/status', methods=['POST'])
 def status_post():
-    # CAHNGE VALUE
-    return jsonify(is_usable=SchedulerState.usable())
-
+    return jsonify(is_usable=SchedulerState.usable(),
+                   state=SchedulerState.get_enable_state(),
+                   scheduled_time=SchedulerState.default_scheduled_time(),
+                   current_time=datetime.datetime.now().isoformat())
 
 @blueprint.route('/frontage/next_date', methods=['GET'])
 def next_date():

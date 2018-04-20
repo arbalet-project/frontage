@@ -45,8 +45,6 @@ class Frontage(Thread):
 
         print_flush("====> START STATE")
 
-    def map(self, row, column):
-        return self.mapping[row][column]
 
     def __getitem__(self, row):
         return self.model.__getitem__(row)
@@ -62,16 +60,6 @@ class Frontage(Thread):
 
     def erase_all(self):
         self.set_all(0, 0, 0)
-
-    def handle_model_msg(self, channel, method, properties, body):
-        # print('[MODEL-QUEUE] Received data')
-        # self.CNT += 1
-        # print('--->'+str(self.CNT))
-        # print("---")
-        # print(QUEUE_OBJ.method.message_count)
-
-        self.model.set_from_json(body)
-        self.update()
 
     def run(self):
         print("==> Starting Frontage hardware server...")
