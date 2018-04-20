@@ -90,8 +90,9 @@ class Scheduler(object):
         sunrise = SchedulerState.get_sunrise()
         sunset = SchedulerState.get_sundown()
 
-        if now > sunrise:
+        if sunset.time() > sunrise.time():
             sunrise = sunrise + datetime.timedelta(days=1)
+
         if sunset < now and now < sunrise:
             SchedulerState.set_frontage_on(True)
         else:
@@ -106,8 +107,13 @@ class Scheduler(object):
     def run_scheduler(self):
         # check usable value, based on ON/OFF AND if a forced app is running
         SchedulerState.set_usable((not SchedulerState.get_forced_app() == 'True') and SchedulerState.is_frontage_on())
-        if SchedulerState.get_enable_state() == 'scheduled':
+        enable_state = SchedulerState.get_enable_state()
+        if enable_state == 'scheduled':
             self.check_on_off_table()
+        elif enable_state == 'on':
+            SchedulerState.set_frontage_on(True)
+        elif enable_state == 'off':
+            SchedulerState.set_frontage_on(False)
 
         if SchedulerState.is_frontage_on():
             self.check_app_scheduler()
@@ -281,8 +287,6 @@ class Scheduler(object):
         while True:
             self.run_scheduler()
             self.print_scheduler_info()
-
-        print_flush('===== Scheduler End =====')
 
 
 def load_day_table(file_name):

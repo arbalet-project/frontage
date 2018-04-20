@@ -150,6 +150,7 @@ class SchedulerState(object):
     def set_frontage_on(value):
         redis.set(SchedulerState.KEY_FRONTAGE_ON_OFF, value)
 
+    @staticmethod
     def is_frontage_on():
         val = redis_get(SchedulerState.KEY_FRONTAGE_ON_OFF)
         return val == "True"
@@ -157,10 +158,6 @@ class SchedulerState(object):
     """ Is scheduller on or off ATM ?"""
     @staticmethod
     def usable():
-        # FOR TEST ONLY
-        # return True
-        # -----
-
         val = redis_get(SchedulerState.KEY_USABLE)
         return val == "True"
 
@@ -271,7 +268,8 @@ class SchedulerState(object):
                 SchedulerState.set_forced_sunrise('')
             else:
                 now = datetime.datetime.now()
-                forced_sunrise_dt = now.replace(hour=forced_sunrise.hour, minute=forced_sunrise.minute)
+                forced_sunrise_dt = now.replace(hour=forced_sunrise.hour, minute=forced_sunrise.minute,
+                                                second=0, microsecond=0)
                 return forced_sunrise_dt
         at = datetime.datetime.now().strftime('%Y-%m-%d')
         v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(
@@ -290,7 +288,8 @@ class SchedulerState(object):
                 SchedulerState.set_forced_sundown('')
             else:
                 now = datetime.datetime.now()
-                forced_sundown_dt = now.replace(hour=forced_sundown.hour, minute=forced_sundown.minute)
+                forced_sundown_dt = now.replace(hour=forced_sundown.hour, minute=forced_sundown.minute,
+                                                second=0, microsecond=0)
                 return forced_sundown_dt
         at = datetime.datetime.now().strftime('%Y-%m-%d')
         v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(
