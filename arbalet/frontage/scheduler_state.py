@@ -44,7 +44,7 @@ class SchedulerState(object):
     KEY_APP_STARTED_AT = 'frontage_app_started_at'
     KEY_ON_TIME = 'astronomical_twilight_end'
     KEY_OFF_TIME = 'astronomical_twilight_begin'
-    KEY_DEFAULT_APP_CURRENT_UUID = 'key_default_app_current_uuid'
+    KEY_DEFAULT_APP_CURRENT_INDEX = 'key_default_app_current_index'
 
     # admin override app
     KEY_FORCED_APP = 'frontage_forced_app'
@@ -347,21 +347,15 @@ class SchedulerState(object):
     # ============= DEFAULT SCHEDULED APP
     @staticmethod
     def get_next_default_app():
-        # default_app = redis_get(SchedulerState.KEY_DEFAULT_APP_CURRENT_UUID, b"").decode('utf8')
-        default_app = redis_get(SchedulerState.KEY_DEFAULT_APP_CURRENT_UUID, "")
-        select_next = True
+        index = int(redis_get(SchedulerState.KEY_DEFAULT_APP_CURRENT_INDEX, 0))
         apps = SchedulerState.get_default_scheduled_app(serialized=False, todict=False)
-        if not apps:
+        try:
+            app = apps[index]
+        except IndexError:
             return None
-        for app in apps:
-            if select_next:
-                redis.set(SchedulerState.KEY_DEFAULT_APP_CURRENT_UUID, app.uniqid)
-                return app
-            if app.uniqid == default_app:
-                select_next = True
-
-        redis.set(SchedulerState.KEY_DEFAULT_APP_CURRENT_UUID, apps[0].uniqid)
-        return apps[0]
+        index = (index+1) % len(apps)
+        redis.set(SchedulerState.KEY_DEFAULT_APP_CURRENT_INDEX, index)
+        return app
 
     @staticmethod
     def set_default_scheduled_app_state(app_name, state):
