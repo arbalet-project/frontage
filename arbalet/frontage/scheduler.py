@@ -87,10 +87,11 @@ class Scheduler(object):
 
     def check_on_off_table(self):
         now = datetime.datetime.now()
-        sunrise = SchedulerState.get_sunrise()
-        sunset = SchedulerState.get_sundown()
+        sunrise = SchedulerState.get_scheduled_off_time()
+        sunset = SchedulerState.get_scheduled_on_time()
 
-        if sunset.time() > sunrise.time():
+
+        if sunset > sunrise:
             sunrise = sunrise + datetime.timedelta(days=1)
 
         if sunset < now and now < sunrise:
@@ -268,10 +269,10 @@ class Scheduler(object):
             print_flush(SchedulerState.get_user_app_queue())
             print_flush('Forced App ?' + str(SchedulerState.get_forced_app() == 'True'))
             print_flush("---------- Sunrise")
-            print_flush(SchedulerState.get_sunrise())
-            print_flush(SchedulerState.get_forced_sunrise())
+            print_flush(SchedulerState.get_scheduled_off_time())
+            print_flush(SchedulerState.get_forced_off_time())
             print_flush("---------- Sunset")
-            print_flush(SchedulerState.get_sundown())
+            print_flush(SchedulerState.get_scheduled_on_time())
             print_flush(" ========== Scheduling ==========")
         self.count += 1
 

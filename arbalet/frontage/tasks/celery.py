@@ -26,8 +26,8 @@ def check_sunrise_sunset():
 
     # state = redis_get(SchedulerState.KEY_SUN_STATE)
     now = datetime.datetime.now().time()
-    on_at = SchedulerState.get_sundown().time()
-    off_at = SchedulerState.get_sunrise().time()
+    on_at = SchedulerState.get_scheduled_on_time().time()
+    off_at = SchedulerState.get_scheduled_off_time().time()
 
     if not SchedulerState.get_enable_state() == 'scheduled':
         print('---->Not scheduled')

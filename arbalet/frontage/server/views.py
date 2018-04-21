@@ -87,31 +87,16 @@ def admin_enabled_scheduler(user):
     SchedulerState.set_enable_state(state)
     return jsonify(is_usable=SchedulerState.usable(),
                    state=SchedulerState.get_enable_state(),
-                   scheduled_time=SchedulerState.default_scheduled_time(),
                    current_time=datetime.datetime.now().isoformat())
 
 @blueprint.route('/b/admin/cal', methods=['GET'])
 def admin_cal_at():
-    return jsonify(on=SchedulerState.get_sundown().strftime('%H:%M'),
-                   off=SchedulerState.get_sunrise().strftime('%H:%M'),
-                   default="",
-                   params={})
+    return jsonify(on=SchedulerState.get_forced_on_time(),
+                   off=SchedulerState.get_forced_off_time(),
+                   on_offset=SchedulerState.get_sundown_offset(),
+                   off_offset=SchedulerState.get_sunrise_offset())
 
 # format .strftime('%Y-%m-%d')
-
-
-@blueprint.route('/b/admin/cal/<at>', methods=['PATCH'])
-@authentication_required
-def admin_set_cal_at(user, at):
-    if request.get_json().get('on'):
-        SchedulerState.set_sundown(day=at, at=request.get_json()['on'])
-    if request.get_json().get('off'):
-        SchedulerState.set_sunrise(day=at, at=request.get_json()['off'])
-
-    return jsonify(on=SchedulerState.get_sundown(at).strftime('%H:%M'),
-                   off=SchedulerState.get_sunrise(at).strftime('%H:%M'),
-                   default="",
-                   params={})
 
 
 @blueprint.route('/b/admin/state', methods=['PATCH'])
@@ -120,11 +105,11 @@ def admin_set_state(user):
     if request.get_json().get('sunrise_offset'):
         SchedulerState.set_sunrise_offset(request.get_json().get('sunrise_offset', 0))
     if request.get_json().get('sundown_offset'):
-        SchedulerState.set_sundown_offset(request.get_json().get('sundown_offset', 0))
+        SchedulerState.set_sunset_offset(request.get_json().get('sundown_offset', 0))
     if request.get_json().get('sunrise'):
-        SchedulerState.set_forced_sunrise(request.get_json()['sunrise'])
+        SchedulerState.set_forced_off_time(request.get_json()['sunrise'])
     if request.get_json().get('sundown'):
-        SchedulerState.set_forced_sundown(request.get_json()['sundown'])
+        SchedulerState.set_forced_on_time(request.get_json()['sundown'])
 
     return jsonify(done=True)
 
@@ -289,22 +274,9 @@ def remove_from_queue(user):
 @blueprint.route('/frontage/status', methods=['GET'])
 def status():
     return jsonify(is_usable=SchedulerState.usable(),
+                   next_on_time=SchedulerState.get_scheduled_on_time().isoformat(),
                    state=SchedulerState.get_enable_state(),
-                   scheduled_time=SchedulerState.default_scheduled_time(),
                    current_time=datetime.datetime.now().isoformat())
-
-
-@blueprint.route('/frontage/status', methods=['POST'])
-def status_post():
-    return jsonify(is_usable=SchedulerState.usable(),
-                   state=SchedulerState.get_enable_state(),
-                   scheduled_time=SchedulerState.default_scheduled_time(),
-                   current_time=datetime.datetime.now().isoformat())
-
-@blueprint.route('/frontage/next_date', methods=['GET'])
-def next_date():
-    state = SchedulerState.usable()
-    return jsonify(is_usable=state)
 
 
 rest_api.add_resource(ConfigView, '/b/config/')
