@@ -57,8 +57,9 @@ class ConfigModel(Base):
     offset_sunset = Column(Integer)
     state = Column(String(36))
     expires_delay = Column(Integer)
+    default_app_lifetime = Column(Integer)
 
-    def __init__(self, expires_delay):
+    def __init__(self):
         self.uniqid = str(uuid4())
         self.forced_sunset = ""
         self.offset_sunset = 0
@@ -66,8 +67,9 @@ class ConfigModel(Base):
 
         self.forced_sunrise = ""
         self.offset_sunrise = 0
+        self.default_app_lifetime = 15 * 60
 
-        self.expires_delay = expires_delay
+        self.expires_delay = 120
 
     def __repr__(self):
         return '<ConfigModel %r (%r) (%r)>' % (

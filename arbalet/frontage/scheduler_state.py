@@ -17,9 +17,6 @@ def flask_log(msg):
     print(msg, file=sys.stderr)
 
 
-TASK_EXPIRATION = 60
-
-
 def add_secs_to_time(timeval, secs_to_add):
     dummy_date = datetime.date(1, 1, 1)
     full_datetime = datetime.datetime.combine(dummy_date, timeval)
@@ -30,8 +27,6 @@ def add_secs_to_time(timeval, secs_to_add):
 class SchedulerState(object):
 
     DEFAULT_KEEP_ALIVE_DELAY = 60  # in second
-    DEFAULT_USER_OCCUPATION = 120  # in second
-    DEFAULT_APP_SCHEDULE_TIME = 15  # in minutes
     KEY_DAY_TABLE = 'frontage_day_table'
     CITY = 'data/bordeaux_user.sun'
 
@@ -51,8 +46,6 @@ class SchedulerState(object):
     KEY_OFF_TIME = 'astronomical_twilight_begin'
     KEY_DEFAULT_APP_CURRENT_UUID = 'key_default_app_current_uuid'
 
-    KEY_SCHEDULED_APP_TIME = 'frontage_scheduler_app_time'
-
     # admin override app
     KEY_FORCED_APP = 'frontage_forced_app'
     # App started by user, (queued)
@@ -64,24 +57,39 @@ class SchedulerState(object):
     @staticmethod
     def get_expires_value():
         session = session_factory()
-        expires = session.query(ConfigModel).first()
+        expires = session.query(ConfigModel).first().expires_delay
         session.close()
-        if expires:
-            return expires.expires_delay
-        return TASK_EXPIRATION
+        return expires
 
     @staticmethod
-    def set_expires_value(value=TASK_EXPIRATION):
+    def get_default_fap_lifetime():
+        session = session_factory()
+        lifetime = session.query(ConfigModel).first().default_app_lifetime
+        session.close()
+        return lifetime
 
+    @staticmethod
+    def set_expires_value(value):
         session = session_factory()
         app = session.query(ConfigModel).first()
         if not app:
-            conf = ConfigModel(expires_delay=value)
+            conf = ConfigModel()
             session.add(conf)
-            session.commit()
         else:
             app.expires_delay = value
+        session.commit()
+        session.close()
 
+    @staticmethod
+    def set_default_fap_lifetime(value):
+        session = session_factory()
+        app = session.query(ConfigModel).first()
+        if not app:
+            conf = ConfigModel()
+            session.add(conf)
+        else:
+            app.default_app_lifetime = max(5, int(value))
+        session.commit()
         session.close()
 
     @staticmethod
@@ -103,8 +111,6 @@ class SchedulerState(object):
 
     @staticmethod
     def get_forced_app():
-        # add callback on frocer_app_task_launcher to set variable to false
-        # when done
         return redis_get(SchedulerState.KEY_FORCED_APP, False) == 'True'
 
     @staticmethod
@@ -395,8 +401,8 @@ class SchedulerState(object):
     def set_default_scheduled_app_params(app_name, app_params):
         if not app_params:
             app_params = None
+        session = session_factory()
         try:
-            session = session_factory()
             fap = session.query(FappModel).filter_by(name=app_name).first()
             if not fap:
                 return False
@@ -409,8 +415,8 @@ class SchedulerState(object):
 
     @staticmethod
     def get_default_scheduled_app_params(app_name, serialized=True):
+        session = session_factory()
         try:
-            session = session_factory()
             fap = session.query(FappModel).filter_by(name=app_name).first()
             if not fap:
                 return False

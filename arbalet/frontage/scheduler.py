@@ -36,7 +36,7 @@ class Scheduler(object):
         session = session_factory()
         config = session.query(ConfigModel).first()
         if not config:
-            conf = ConfigModel(expires_delay=60)
+            conf = ConfigModel()
             session.add(conf)
             session.commit()
 
@@ -66,10 +66,6 @@ class Scheduler(object):
                      RandomFlashing.__name__: RandomFlashing()}
 
         SchedulerState.set_registered_apps(self.apps)
-        # Set schduled time for app, in minutes
-        redis.set(SchedulerState.KEY_SCHEDULED_APP_TIME,
-                  SchedulerState.DEFAULT_APP_SCHEDULE_TIME)
-    # def start_ne
 
     def keep_alive_waiting_app(self):
         queue = SchedulerState.get_user_app_queue()
@@ -144,8 +140,10 @@ class Scheduler(object):
                         'params': default_scheduled_app.default_params,
                         'expires': default_scheduled_app.duration}
 
-            if not next_app['expires'] or next_app['expires'] == 0:
-                next_app['expires'] = (15 * 60)
+            #if not next_app['expires'] or next_app['expires'] == 0: # TODO restore when each default app has a duration
+            #    next_app['expires'] = SchedulerState.get_default_fap_lifetime()
+
+            next_app['expires'] = SchedulerState.get_default_fap_lifetime()
             start_default_fap.apply_async(args=[next_app], queue='userapp')
             SchedulerState.wait_task_to_start()
             print_flush("## Starting {} [DEFAULT]".format(next_app['name']))
@@ -246,7 +244,7 @@ class Scheduler(object):
                     # expires => in seconde
                     next_app['expires'] = default_scheduled_app.duration
                     if not next_app['expires'] or next_app['expires'] == 0:
-                        next_app['expires'] = (15 * 60)
+                        next_app['expires'] = SchedulerState.get_default_fap_lifetime()
                     start_default_fap.apply_async(args=[next_app], queue='userapp')
                     SchedulerState.wait_task_to_start()
                     print_flush("## Starting {} [DEFAULT]".format(next_app['name']))

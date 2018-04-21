@@ -113,6 +113,20 @@ def admin_set_state(user):
 
     return jsonify(done=True)
 
+@blueprint.route('/b/admin/settings', methods=['POST'])
+@authentication_required
+def admin_set_settings(user):
+    try:
+        lifetime = int(request.get_json().get('default_lifetime'))
+    except (ValueError, KeyError):
+        return jsonify(done=False)
+    else:
+        SchedulerState.set_default_fap_lifetime(lifetime)
+        return jsonify(done=True)
+
+@blueprint.route('/b/admin/settings', methods=['GET'])
+def admin_get_settings():
+    return jsonify(default_lifetime=SchedulerState.get_default_fap_lifetime())
 
 class AppQueueView(Resource):
     @authentication_required
