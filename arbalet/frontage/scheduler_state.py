@@ -348,7 +348,7 @@ class SchedulerState(object):
     @staticmethod
     def get_next_default_app():
         index = int(redis_get(SchedulerState.KEY_DEFAULT_APP_CURRENT_INDEX, 0))
-        apps = SchedulerState.get_default_scheduled_app(serialized=False, todict=False)
+        apps = SchedulerState.get_default_scheduled_apps()
         try:
             app = apps[index]
         except IndexError:
@@ -374,7 +374,7 @@ class SchedulerState(object):
         session.close()
 
     @staticmethod
-    def get_default_scheduled_app(serialized=False, todict=True):
+    def get_default_scheduled_apps(serialized=False):
         # Get model form DB
         apps = []
         session = session_factory()
@@ -382,12 +382,10 @@ class SchedulerState(object):
             if serialized:
                 apps.append(serialize(to_dict(f)))
             else:
-                if todict:
-                    apps.append(to_dict(f))
-                else:
-                    if f.default_params:
-                        f.default_params = json.loads(f.default_params)
-                    apps.append(f)
+                app = to_dict(f)
+                app['default_params'] = json.loads(app['default_params'])
+                apps.append(app)
+
         session.close()
         return apps
 
@@ -395,6 +393,9 @@ class SchedulerState(object):
     def set_default_scheduled_app_params(app_name, app_params):
         if not app_params:
             app_params = None
+        elif isinstance(app_params, dict):
+            app_params = json.dumps(app_params)
+
         session = session_factory()
         try:
             fap = session.query(FappModel).filter_by(name=app_name).first()

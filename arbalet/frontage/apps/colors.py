@@ -39,38 +39,30 @@ class Colors(Fap):
                 line.append(self.generator(self.durations_min, int((2.0 / self.rate.sleep_dur)), duration, self.colors))
             self.generators.append(line)
 
-    def select_colors(self, params, c_params):
-        self.colors = []
-        param_color = params.get('colors', False)
-
-        # we convert to list if needed
-        if param_color and isinstance(param_color, str):
-            params['colors'] = [param_color]
-
-        for c in params.get('colors', c_params.get('colors')):
-            if isinstance(c, (tuple, list, set)):
-                self.colors.append(rgb_to_hsv(c))
-            elif c in cnames:
-                self.colors.append(name_to_hsv(c))
-            else:
-                print(str(c) + ' is not a valid color')
-
     def load_animation(self, params):
-        if params and (params.get('uapp', False) in self.PARAMS_LIST['uapp']):
-            return animations[params['uapp']]
-        else:
-            return {}
+        # Get uapp from Fap name, it designates a generator (not really the animation that we assign to uapp)
+        # TODO refacto: the animation dict should contain a list of generators only, the rest are params
+        name = params['name']
+        if params or params.get('uapp', False) not in self.PARAMS_LIST['uapp']:
+            if name == 'SweepAsync':
+                params['uapp'] = 'swipe'
+            elif name == 'RandomFlashing':
+                params['uapp'] = 'flashes'
+            elif name == 'SweepRand':
+                params['uapp'] = 'gender'
+        return animations[params['uapp']]
+
 
     def process_params(self, params):
         c_params = self.load_animation(params)
-
-        if self.rate:
-            del self.rate
         rate_hz = params.get('refresh_rate', c_params.get('rate'))
         self.rate = Rate(rate_hz)
         self.durations_min = params.get('dur_min', c_params.get('dur_min'))*rate_hz
         self.durations_max = params.get('dur_max', c_params.get('dur_max'))*rate_hz
-        self.select_colors(params, c_params)
+        colors = params.get("colors", c_params.get('colors', []))
+        if not isinstance(colors, (tuple, list, map)):
+            colors = [colors]
+        self.colors = [name_to_hsv(c.lower()) if isinstance(c, str) else c for c in colors]
 
     def run(self, params, expires_at=None):
         if not self.generator:

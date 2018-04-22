@@ -224,20 +224,20 @@ class AppDefaultParamView(Resource):
             abort(403, "Forbidden Bru")
         params = request.get_json().get('params', None)
 
-        return SchedulerState.set_default_scheduled_app_params(app_name, params)
+        return jsonify(done=SchedulerState.set_default_scheduled_app_params(app_name, params))
 
 
 class AppDefaultView(Resource):
     @authentication_required
     def get(self, user):
-        return SchedulerState.get_default_scheduled_app(serialized=True)
+        return SchedulerState.get_default_scheduled_apps(serialized=True)
 
     def delete(self, user):
         if not is_admin(user):
             abort(403, "Forbidden Bru")
         SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), False)
 
-        return SchedulerState.get_default_scheduled_app(serialized=True)
+        return SchedulerState.get_default_scheduled_apps(serialized=True)
 
     @authentication_required
     def post(self, user):
@@ -247,7 +247,7 @@ class AppDefaultView(Resource):
         app_state_bool = request.get_json().get('app_state', False)
         SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), app_state_bool)
 
-        return SchedulerState.get_default_scheduled_app(serialized=True)
+        return SchedulerState.get_default_scheduled_apps(serialized=True)
 
 
 class AppListView(Resource):
@@ -260,7 +260,7 @@ class AppListView(Resource):
             apps = {k: v for k, v in apps.items() if v['activated']}
 
         formated = []
-        defaults_apps = SchedulerState.get_default_scheduled_app(serialized=False)
+        defaults_apps = SchedulerState.get_default_scheduled_apps(serialized=False)
         defaults_apps_names = [x['name'] for x in defaults_apps]
         for x in apps:
             ext_app = apps[x]

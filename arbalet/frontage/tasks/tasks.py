@@ -51,6 +51,10 @@ def start_default_fap(app):
         datetime.datetime.now() +
         datetime.timedelta(
             seconds=app['expires']))
+
+    params = app['default_params'].copy()
+    params.update(app['params'])
+
     app['task_id'] = start_default_fap.request.id
     app['is_default'] = True
     app['username'] = '>>>default<<<'
@@ -59,7 +63,7 @@ def start_default_fap(app):
     SchedulerState.set_current_app(app)
     try:
         fap = globals()[app['name']]()
-        fap.run(params=app['params'])
+        fap.run(params=params)
     except Exception as e:
         print('--->APP>>')
         del fap

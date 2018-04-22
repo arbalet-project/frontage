@@ -136,17 +136,13 @@ class Scheduler(object):
     def start_default_app(self):
         default_scheduled_app = SchedulerState.get_next_default_app()
         if default_scheduled_app:
-            next_app = {'name': default_scheduled_app.name,
-                        'params': default_scheduled_app.default_params,
-                        'expires': default_scheduled_app.duration}
-
-            #if not next_app['expires'] or next_app['expires'] == 0: # TODO restore when each default app has a duration
-            #    next_app['expires'] = SchedulerState.get_default_fap_lifetime()
-
-            next_app['expires'] = SchedulerState.get_default_fap_lifetime()
-            start_default_fap.apply_async(args=[next_app], queue='userapp')
+            #if not default_scheduled_app['expires'] or default_scheduled_app['expires'] == 0: # TODO restore when each default app has a duration
+            #    default_scheduled_app['expires'] = SchedulerState.get_default_fap_lifetime()
+            default_scheduled_app['expires'] = SchedulerState.get_default_fap_lifetime()
+            default_scheduled_app['default_params']['name'] = default_scheduled_app['name']  # Fix for Colors (see TODO refactor in colors.py)
+            start_default_fap.apply_async(args=[default_scheduled_app], queue='userapp')
             SchedulerState.wait_task_to_start()
-            print_flush("## Starting {} [DEFAULT]".format(next_app['name']))
+            print_flush("## Starting {} [DEFAULT]".format(default_scheduled_app['name']))
 
     def check_app_scheduler(self):
         # check keep alive app (in user waiting app Q)
@@ -233,22 +229,7 @@ class Scheduler(object):
                 return True
             else:
                 # No task waiting, start defautl scheduler
-                default_scheduled_app = SchedulerState.get_next_default_app()
-                # defualt app are schedulled, and stopped auto when expire is outdated.
-                # any other app starrted by user has highter
-                if default_scheduled_app:
-                    next_app = {'name': default_scheduled_app.name,
-                                'params': default_scheduled_app.default_params,
-                                'username': '>>>default<<<',
-                                'is_default': True}
-                    # expires => in seconde
-                    next_app['expires'] = default_scheduled_app.duration
-                    if not next_app['expires'] or next_app['expires'] == 0:
-                        next_app['expires'] = SchedulerState.get_default_fap_lifetime()
-                    start_default_fap.apply_async(args=[next_app], queue='userapp')
-                    SchedulerState.wait_task_to_start()
-                    print_flush("## Starting {} [DEFAULT]".format(next_app['name']))
-                    return True
+                self.start_default_app()
         return False
 
     def print_scheduler_info(self):
