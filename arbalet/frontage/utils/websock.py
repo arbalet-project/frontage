@@ -74,4 +74,7 @@ class Websock(Thread):
         print('=====> Close Websock')
 
     def close(self):
+        print_flush('====== CLOSE WEBSOCKET NICELY /1 =========')
         self.web_socket.ws_server.close()
+        self.web_socket.ws_server.wait_close()
+        print_flush('====== CLOSE WEBSOCKET NICELY /2 =========')

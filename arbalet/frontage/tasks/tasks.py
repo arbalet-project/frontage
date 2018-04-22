@@ -70,6 +70,8 @@ def start_default_fap(app):
         print('Error when starting task ' + str(e))
         # raise e
     finally:
+        del fap
+        print('=====================> Close DEFAULT APP')
         SchedulerState.set_current_app({})
 
 
@@ -94,6 +96,7 @@ def start_fap(app):
         flask_log('Error when starting task ' + str(e))
         raise e
     finally:
+        del fap
         flask_log('--======================== ENDED START_APP')
         SchedulerState.set_current_app({})
 
