@@ -138,22 +138,32 @@ class AppQueueView(Resource):
 
         return '', 204
 
-
 class AppAdminRuningView(Resource):
     @authentication_required
     def post(self, user):
         name = request.get_json()['name']
-        params = request.get_json()['params']
+        params = request.get_json().get('params', {})
         expires = request.get_json().get('expires', SchedulerState.get_expires_value())
 
         if not SchedulerState.usable():
             print_flush("Frontage is not started")
             abort(400, "Frontage is not started")
         if is_admin(user):
-            SchedulerState.set_forced_app(name, params, expires)
-            return True
+            if SchedulerState.set_forced_app(name, params, expires):
+                return True
+            else:
+                abort(409, 'An app is already forced')
         else:
             abort(403, "Forbidden Bru")
+
+    @authentication_required
+    def delete(self, user):
+        if is_admin(user):
+            if not SchedulerState.stop_forced_app():
+                abort(404, "No such app")
+        else:
+            abort(400, "Forbidden Bru")
+        return '', 204
 
 
 class AppRuningView(Resource):
@@ -225,7 +235,6 @@ class AppDefaultParamView(Resource):
         params = request.get_json().get('params', None)
 
         return jsonify(done=SchedulerState.set_default_scheduled_app_params(app_name, params))
-
 
 class AppDefaultView(Resource):
     @authentication_required

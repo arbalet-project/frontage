@@ -123,10 +123,22 @@ class SchedulerState(object):
     def set_forced_app(app_name, params, expires=600):
         from tasks.tasks import start_forced_fap
         from apps.fap import Fap
-
+        if SchedulerState.get_forced_app():
+            return False
+        # TODO is a lock necessary here?
         SchedulerState.stop_app(SchedulerState.get_current_app(), Fap.CODE_CLOSE_APP, 'The admin started a forced app')
-        start_forced_fap.apply_async(
-            args=[app_name, 'FORCED', params], expires=expires)
+        start_forced_fap.apply_async(args=[app_name, 'FORCED', params], expires=expires)
+        redis.set(SchedulerState.KEY_FORCED_APP, 'True')
+        return True
+
+    @staticmethod
+    def stop_forced_app():
+        from apps.fap import Fap
+        if SchedulerState.get_forced_app():
+            SchedulerState.stop_app(SchedulerState.get_current_app(), Fap.CODE_CLOSE_APP, 'App unforced')
+            redis.set(SchedulerState.KEY_FORCED_APP, 'False')
+            return True
+        return False
 
     @staticmethod
     def set_registered_apps(apps):
@@ -443,7 +455,7 @@ class SchedulerState(object):
             return
 
         from tasks.celery import app
-        if not c_app['is_default']:
+        if not c_app.get('is_default', False):
             if stop_code and stop_message:
                 Websock.send_data(stop_code, stop_message, c_app['username'])
 
