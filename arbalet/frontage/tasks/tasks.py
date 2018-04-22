@@ -103,21 +103,15 @@ def start_fap(app):
 
 @celery.task
 def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
-    if redis_get(SchedulerState.KEY_FORCED_APP, False) == 'True':
-        print('-----------------------')
-        print(SchedulerState.get_current_app())
-        print('-----------------------')
-        print('A forced App is already running')
-        print('-----------------------')
-        return
-
     SchedulerState.set_app_started_at()
     app_struct = {
         'name': fap_name,
         'username': user_name,
         'params': params,
         'task_id': start_forced_fap.request.id,
-        'started_at': datetime.datetime.now().isoformat()}
+        'started_at': datetime.datetime.now().isoformat(),
+        'is_default': False,
+        'expire_at': str(datetime.datetime.now() + datetime.timedelta(weeks=52))}
     SchedulerState.set_current_app(app_struct)
     if fap_name:
         try:

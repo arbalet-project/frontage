@@ -165,30 +165,28 @@ class Scheduler(object):
 
         # Is a app running ?
         if c_app:
-            # is expire soon ?
-            if not c_app['is_default'] and now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
-                if not SchedulerState.get_expire_soon():
-                    Fap.send_expires_soon(EXPIRE_SOON_DELAY)
-            # is the current_app expired ?
-            if self.app_is_expired(c_app) or c_app.get('is_default', False):
-                # is the current_app a FORCED_APP ?
-                if redis_get(SchedulerState.KEY_FORCED_APP, False) == 'True':
-                    SchedulerState.stop_app(c_app)
-                    return
-                # is some user-app are waiting in queue ?
-                if len(queue) > 0:
-                    next_app = queue[0]
-                    self.stop_current_app_start_next(queue, c_app, next_app)
-                    return
-                else:
-                    # is a defautl scheduled app ?
-                    if c_app.get('is_default', False) and self.app_is_expired(c_app):
-                        print_flush('===> Stoping Default Scheduled app')
-                        SchedulerState.stop_app(c_app)
+            # Make sure the current app is not forced
+            if not SchedulerState.get_forced_app():
+                # is expire soon ?
+                if not c_app.get('is_default', False) and now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
+                    if not SchedulerState.get_expire_soon():
+                        Fap.send_expires_soon(EXPIRE_SOON_DELAY)
+                # is the current_app expired ?
+                if self.app_is_expired(c_app) or c_app.get('is_default', False):
+                    # is some user-app are waiting in queue ?
+                    if len(queue) > 0:
+                        next_app = queue[0]
+                        self.stop_current_app_start_next(queue, c_app, next_app)
                         return
-                    # it's a USER_APP, we let it running, do nothing
                     else:
-                        pass
+                        # is a defautl scheduled app ?
+                        if c_app.get('is_default', False) and self.app_is_expired(c_app):
+                            print_flush('===> Stoping Default Scheduled app')
+                            SchedulerState.stop_app(c_app)
+                            return
+                        # it's a USER_APP, we let it running, do nothing
+                        else:
+                            pass
         else:
             # is an user-app waiting in queue to be started ?
             if len(queue) > 0:
@@ -210,7 +208,7 @@ class Scheduler(object):
         now = datetime.datetime.now()
         if c_app:
             # expire soon
-            if not c_app['is_default'] and now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
+            if not c_app.get('is_default', False) and now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
                 if not SchedulerState.get_expire_soon():
                     Fap.send_expires_soon(EXPIRE_SOON_DELAY)
             # expire
