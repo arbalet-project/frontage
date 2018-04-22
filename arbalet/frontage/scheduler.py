@@ -31,6 +31,16 @@ class Scheduler(object):
     def __init__(self, port=33460, hardware=True, simulator=True):
         print_flush('---> Waiting for frontage connection...')
         clear_all_task()
+
+        # Create initial data in DB
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        if not conf:
+            cm = ConfigModel()
+            session.add(cm)
+            session.commit()
+            session.close()
+
         self.frontage = Frontage(port, hardware)
 
         session = session_factory()
