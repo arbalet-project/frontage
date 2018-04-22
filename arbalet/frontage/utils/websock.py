@@ -1,9 +1,7 @@
 import asyncio
 import websockets
 import json
-import random
 
-from time import sleep
 from utils.red import redis, redis_get
 from threading import Thread
 from server.flaskutils import print_flush
@@ -20,12 +18,13 @@ class Websock(Thread):
         Thread.__init__(self)
 
     @staticmethod
-    def send_data(code, message):
+    def send_data(code, message, username=None):
         print_flush("###############################################################################")
         print_flush("Send : [code={0}] [message={1}]".format(code, message))
         print_flush("###############################################################################")
         redis.set(KEY_WS_SEND, json.dumps({'code': code,
-                                           'message': message}))
+                                           'message': message,
+                                           'username': username}))
 
     @staticmethod
     def get_data():

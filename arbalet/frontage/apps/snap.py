@@ -33,15 +33,15 @@ class Snap(Fap):
     ACTIVATED = False
     OFF = "Éteindre"
 
-    def __init__(self, port=33450):
-        Fap.__init__(self)
+    def __init__(self, username=None):
+        Fap.__init__(self, username)
 
         self.flask = Flask(__name__)
         self.current_auth_nick = self.OFF
         self.nicknames = {}
         self.lock = RLock()
         CORS(self.flask)
-        self.port = int(port)
+        self.port = int(33450)
         self.loop = None
         self.route()
 

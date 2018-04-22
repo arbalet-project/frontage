@@ -39,11 +39,11 @@ class Snake(Fap):
 
     PARAMS_LIST = {}
 
-    def __init__(self):
+    def __init__(self, username=None):
         self.PARAMS_LIST = {'speed': 0.15,
                             'food': 3}
 
-        Fap.__init__(self)
+        Fap.__init__(self, username)
 
         self.DIRECTION = DOWN
         self.HEAD = (2, 2)

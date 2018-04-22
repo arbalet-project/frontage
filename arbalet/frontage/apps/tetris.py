@@ -12,14 +12,11 @@
     Copyright 2015 Yoan Mollard - Arbalet project - http://github.com/arbalet-project
     License: GPL version 3 http://www.gnu.org/licenses/gpl.html
 """
-import random
-import numpy
 import time
 
 from apps.fap import Fap
 from apps.actions import Actions
 from utils.colors import name_to_rgb
-from copy import deepcopy
 
 from random import randrange as rand
 from time import sleep
@@ -32,27 +29,29 @@ rows =        19
 tetris_shapes = [
     [[1, 1, 1],
      [0, 1, 0]],
-    
+
     [[0, 2, 2],
      [2, 2, 0]],
-    
+
     [[3, 3, 0],
      [0, 3, 3]],
-    
+
     [[4, 0, 0],
      [4, 4, 4]],
-    
+
     [[0, 0, 5],
      [5, 5, 5]],
-    
+
     [[6, 6, 6, 6]],
-    
+
     [[7, 7],
      [7, 7]]
 ]
 
+
 def rotate_clockwise(shape):
     return [[shape[y][x] for y in range(len(shape))] for x in range(len(shape[0]) - 1, -1, -1)]
+
 
 def check_collision(board, shape, offset):
     off_x, off_y = offset
@@ -65,62 +64,66 @@ def check_collision(board, shape, offset):
                 return True
     return False
 
+
 def remove_row(board, row):
     del board[row]
     return [[0 for i in range(cols)]] + board
-    
+
+
 def join_matrixes(mat1, mat2, mat2_off):
     off_x, off_y = mat2_off
     for cy, row in enumerate(mat2):
         for cx, val in enumerate(row):
-            mat1[cy+off_y-1    ][cx+off_x] += val
+            mat1[cy + off_y - 1][cx + off_x] += val
     return mat1
 
+
 def new_board():
-    board = [[ 0 for x in range(cols) ] for y in range(rows)]
+    board = [[0 for x in range(cols)] for y in range(rows)]
     return board
+
 
 class Tetris(Fap):
     PLAYABLE = True
     ACTIVATED = True
     PARAMS_LIST = {}
 
-    def __init__(self):
-        super(Tetris, self).__init__()
+    def __init__(self, username=None):
+        super(Tetris, self).__init__(username)
         self.PARAMS_LIST = {'speed': 0.15}
         self.colors = ['black', 'deeppink', 'green', 'darkred', 'orangered', 'darkblue', 'cyan', 'yellow']
         self.next_stone = tetris_shapes[rand(len(tetris_shapes))]
         self.init_game()
-    
+
     def new_stone(self):
         self.stone = self.next_stone[:]
         self.next_stone = tetris_shapes[rand(len(tetris_shapes))]
         self.stone_x = int(cols / 2 - len(self.stone[0])/2)
         self.stone_y = 0
-        
+
         if check_collision(self.board, self.stone, (self.stone_x, self.stone_y)):
             self.gameover = True
-    
+
     def init_game(self):
         self.board = new_board()
         self.new_stone()
         self.level = 1.
         self.score = 0
         self.lines = 0
-    
+
     def draw_matrix(self, matrix, offset):
         off_x, off_y  = offset
         for y, row in enumerate(matrix):
             for x, val in enumerate(row):
                 if val >0: self.model.set_pixel(x + off_x, y + off_y, name_to_rgb(self.colors[val]))
-    
+
     def add_cl_lines(self, n):
         linescores = [0, 40, 100, 300, 1200]
         self.lines += n
         self.score += linescores[n] * self.level
         if self.lines >= self.level*6:
             self.level += 1
-    
+
     def move(self, delta_x):
         if not self.gameover:
             new_x = self.stone_x + delta_x
@@ -132,7 +135,7 @@ class Tetris(Fap):
                                    self.stone,
                                    (new_x, self.stone_y)):
                 self.stone_x = new_x
-    
+
     def drop(self, manual):
         if not self.gameover:
             self.score += 1 if manual else 0
@@ -157,12 +160,12 @@ class Tetris(Fap):
                 self.add_cl_lines(cleared_rows)
                 return True
         return False
-    
+
     def insta_drop(self):
         if not self.gameover:
             while(not self.drop(True)):
                 pass
-    
+
     def rotate_stone(self):
         if not self.gameover:
             new_stone = rotate_clockwise(self.stone)
@@ -175,7 +178,7 @@ class Tetris(Fap):
         if self.gameover:
             self.init_game()
             self.gameover = False
-    
+
     def handle_message(self, data, path=None):
         self.needs_update = True
         if data == Actions.K_UP:
@@ -189,10 +192,10 @@ class Tetris(Fap):
 
     def update_and_sleep(self):
         self.needs_update = True
-        for i in range(int(1/(self.level*0.05))):
+        for i in range(int(1 / (self.level * 0.05))):
             if self.needs_update:
                 self.model.set_all('black')
-                self.draw_matrix(self.board, (0,0))
+                self.draw_matrix(self.board, (0, 0))
                 self.draw_matrix(self.stone, (self.stone_x, self.stone_y))
                 self.send_model()
                 self.needs_update = False
@@ -209,10 +212,10 @@ class Tetris(Fap):
         while not self.gameover:
             self.drop(False)
             self.update_and_sleep()
-        
+
         self.send_game_over()
         time.sleep(1)
         self.flash()
         time.sleep(1)
-        #self.send_close_app()
+        # self.send_close_app()
 

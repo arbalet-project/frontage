@@ -8,8 +8,8 @@ from json import loads
 
 class SweepRand(Colors):
 
-    def __init__(self):
-        Colors.__init__(self, gen_sweep_rand)
+    def __init__(self, username=None):
+        Colors.__init__(self, gen_sweep_rand, username)
         self.PARAMS_LIST['uapp'] = ['african', 'gender', 'teddy', 'warm']
 
     def handle_message(self, data, path=None): # noqa

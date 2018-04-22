@@ -96,7 +96,6 @@ class Scheduler(object):
         sunrise = SchedulerState.get_scheduled_off_time()
         sunset = SchedulerState.get_scheduled_on_time()
 
-
         if sunset > sunrise:
             sunrise = sunrise + datetime.timedelta(days=1)
 
@@ -131,12 +130,15 @@ class Scheduler(object):
 
     def stop_current_app_start_next(self, queue, c_app, next_app):
         print_flush('===> REVOKING APP, someone else turn')
+        print_flush('====> stop_current_app_start_next')
         SchedulerState.stop_app(c_app, Fap.CODE_EXPIRE, 'someone else turn')
         # Start app
+        SchedulerState.set_event_lock(True)
         start_fap.apply_async(args=[next_app], queue='userapp')
+
         print_flush("## Starting {} [case A]".format(next_app['name']))
         # Remove app form waiting Q
-        SchedulerState.pop_user_app_queue(queue)
+        # SchedulerState.pop_user_app_queue(queue)
 
     def app_is_expired(self, c_app):
         now = datetime.datetime.now()
@@ -146,7 +148,7 @@ class Scheduler(object):
     def start_default_app(self):
         default_scheduled_app = SchedulerState.get_next_default_app()
         if default_scheduled_app:
-            #if not default_scheduled_app['expires'] or default_scheduled_app['expires'] == 0: # TODO restore when each default app has a duration
+            # if not default_scheduled_app['expires'] or default_scheduled_app['expires'] == 0: # TODO restore when each default app has a duration
             #    default_scheduled_app['expires'] = SchedulerState.get_default_fap_lifetime()
             default_scheduled_app['expires'] = SchedulerState.get_default_fap_lifetime()
             default_scheduled_app['default_params']['name'] = default_scheduled_app['name']  # Fix for Colors (see TODO refactor in colors.py)
@@ -168,7 +170,7 @@ class Scheduler(object):
             # is expire soon ?
             if not c_app['is_default'] and now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
                 if not SchedulerState.get_expire_soon():
-                    Fap.send_expires_soon(EXPIRE_SOON_DELAY)
+                    Fap.send_expires_soon(EXPIRE_SOON_DELAY, c_app['username'])
             # is the current_app expired ?
             if self.app_is_expired(c_app) or c_app.get('is_default', False):
                 # is the current_app a FORCED_APP ?
@@ -192,55 +194,13 @@ class Scheduler(object):
         else:
             # is an user-app waiting in queue to be started ?
             if len(queue) > 0:
+                SchedulerState.set_event_lock(True)
                 start_fap.apply_async(args=[queue[0]], queue='userapp')
-                print_flush("## Starting {}".format(queue[0]['name']))
-                SchedulerState.pop_user_app_queue(queue)
-            # start default scheduled_app
+                print_flush(" Starting {}".format(queue[0]['name']))
+                # SchedulerState.pop_user_app_queue(queue)
+                # start default scheduled_app
             else:
                 self.start_default_app()
-
-    def check_scheduler(self):
-        if SchedulerState.get_forced_app():
-            return False
-
-        self.keep_alive_waiting_app()
-        queue = SchedulerState.get_user_app_queue()
-        c_app = SchedulerState.get_current_app()
-        # one task already running
-        now = datetime.datetime.now()
-        if c_app:
-            # expire soon
-            if not c_app['is_default'] and now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
-                if not SchedulerState.get_expire_soon():
-                    Fap.send_expires_soon(EXPIRE_SOON_DELAY)
-            # expire
-            # if now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f")):
-            #     if not SchedulerState.get_expire():
-            #         Fap.send_expires()
-            # Someone wait for his own task ?
-            if len(queue) > 0:
-                next_app = queue[0]
-                if now > datetime.datetime.strptime(
-                        c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") or c_app['is_default']:
-                    print_flush('===> REVOKING APP, someone else turn')
-                    SchedulerState.stop_app(c_app, Fap.CODE_EXPIRE, 'someone else turn')
-                    # Start app
-                    start_fap.apply_async(args=[next_app], queue='userapp')
-                    print_flush("## Starting {} [case A]".format(next_app['name']))
-                    # Remove app form waiting Q
-                    SchedulerState.pop_user_app_queue(queue)
-                    return True
-        else:
-            # no app runing, app are waiting in queue. We start one
-            if len(queue) > 0:
-                start_fap.apply_async(args=[queue[0]], queue='userapp')
-                print_flush("## Starting {} [case B]".format(queue[0]['name']))
-                SchedulerState.pop_user_app_queue(queue)
-                return True
-            else:
-                # No task waiting, start defautl scheduler
-                self.start_default_app()
-        return False
 
     def print_scheduler_info(self):
         self.frontage.update()
@@ -274,9 +234,12 @@ class Scheduler(object):
         self.frontage.start()
         self.count = 0
         while True:
-            self.run_scheduler()
-            self.print_scheduler_info()
-            sleep(0.5)
+            if SchedulerState.is_event_lock():
+                sleep(0.1)
+            else:
+                self.run_scheduler()
+                self.print_scheduler_info()
+                sleep(0.1)
 
 
 def load_day_table(file_name):

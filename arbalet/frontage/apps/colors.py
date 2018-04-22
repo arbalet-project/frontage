@@ -21,8 +21,8 @@ class Colors(Fap):
     #                     'sweep_async': gen_sweep_async,
     #                     'sweep_rand': gen_sweep_rand }
 
-    def __init__(self, gen):
-        Fap.__init__(self)
+    def __init__(self, gen, username):
+        Fap.__init__(self, username)
         self.rate = None
         self.PARAMS_LIST = {}
         self.generator = gen

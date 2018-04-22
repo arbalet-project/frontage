@@ -41,6 +41,7 @@ class SchedulerState(object):
     KEY_NOTICE_EXPIRE = 'key_notice_expire'
     KEY_SUN_STATE = 'frontage_sunstate'
     KEY_REGISTERED_APP = 'frontage_registered_app'
+    KEY_EVENT_LOCK = 'key_event_lock'
     KEY_APP_STARTED_AT = 'frontage_app_started_at'
     KEY_ON_TIME = 'astronomical_twilight_end'
     KEY_OFF_TIME = 'astronomical_twilight_begin'
@@ -353,7 +354,7 @@ class SchedulerState(object):
             app = apps[index]
         except IndexError:
             return None
-        index = (index+1) % len(apps)
+        index = (index + 1) % len(apps)
         redis.set(SchedulerState.KEY_DEFAULT_APP_CURRENT_INDEX, index)
         return app
 
@@ -444,7 +445,7 @@ class SchedulerState(object):
         from tasks.celery import app
         if not c_app['is_default']:
             if stop_code and stop_message:
-                Websock.send_data(stop_code, stop_message)
+                Websock.send_data(stop_code, stop_message, c_app['username'])
 
         sleep(0.1)
         # revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
@@ -456,9 +457,19 @@ class SchedulerState(object):
     def pop_user_app_queue(queue=None):
         if not queue:
             queue = SchedulerState.get_user_app_queue()
+        if not queue:
+            return
         p = queue.pop(0)
         redis.set(SchedulerState.KEY_USERS_Q, json.dumps(queue))
         return p
+
+    @staticmethod
+    def set_event_lock(val):
+        redis.set(SchedulerState.KEY_EVENT_LOCK, val)
+
+    @staticmethod
+    def is_event_lock():
+        return redis_get(SchedulerState.KEY_EVENT_LOCK, 'False') == 'True'
 
     @staticmethod
     def clear_user_app_queue():

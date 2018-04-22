@@ -6,8 +6,8 @@ from .colors import Colors
 
 class SweepAsync(Colors):
 
-    def __init__(self):
-        Colors.__init__(self, gen_sweep_async)
+    def __init__(self, username=None):
+        Colors.__init__(self, gen_sweep_async, username)
         self.PARAMS_LIST['uapp'] = ['swipe']
 
     def run(self, params, expires_at=None):

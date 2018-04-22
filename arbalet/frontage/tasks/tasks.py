@@ -62,7 +62,7 @@ def start_default_fap(app):
 
     SchedulerState.set_current_app(app)
     try:
-        fap = globals()[app['name']]()
+        fap = globals()[app['name']](app['username'])
         fap.run(params=params)
     except Exception as e:
         print('--->APP>>')
@@ -71,8 +71,8 @@ def start_default_fap(app):
         # raise e
     finally:
         del fap
-        print('=====================> Close DEFAULT APP')
         SchedulerState.set_current_app({})
+        print('=====================> Close DEFAULT APP')
 
 
 @celery.task
@@ -85,11 +85,13 @@ def start_fap(app):
     app['is_default'] = False
     app['task_id'] = start_fap.request.id
     app['started_at'] = datetime.datetime.now().isoformat()
-
+    SchedulerState.pop_user_app_queue()
     SchedulerState.set_current_app(app)
+    SchedulerState.set_event_lock(False)
+
     try:
         flask_log('[start_fap.apply_async] ===========> start run')
-        fap = globals()[app['name']]()
+        fap = globals()[app['name']](app['username'])
         fap.run(params=app['params'], expires_at=app['expire_at'])
     except Exception as e:
         flask_log('--->APP>>')
@@ -97,8 +99,8 @@ def start_fap(app):
         raise e
     finally:
         del fap
-        flask_log('--======================== ENDED START_APP')
         SchedulerState.set_current_app({})
+        flask_log('--======================== ENDED START_APP')
 
 
 @celery.task
@@ -121,7 +123,7 @@ def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
     SchedulerState.set_current_app(app_struct)
     if fap_name:
         try:
-            fap = globals()[fap_name]()
+            fap = globals()[fap_name](app['username'])
             redis.set(SchedulerState.KEY_FORCED_APP, True)
             fap.run(params=params)
             return True
