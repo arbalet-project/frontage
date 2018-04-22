@@ -42,14 +42,15 @@ class Colors(Fap):
     def load_animation(self, params):
         # Get uapp from Fap name, it designates a generator (not really the animation that we assign to uapp)
         # TODO refacto: the animation dict should contain a list of generators only, the rest are params
-        name = params['name']
-        if params or params.get('uapp', False) not in self.PARAMS_LIST['uapp']:
-            if name == 'SweepAsync':
-                params['uapp'] = 'swipe'
-            elif name == 'RandomFlashing':
-                params['uapp'] = 'flashes'
-            elif name == 'SweepRand':
-                params['uapp'] = 'gender'
+        if 'name' in params:
+            name = params['name']
+            if params or params.get('uapp', False) not in self.PARAMS_LIST['uapp']:
+                if name == 'SweepAsync':
+                    params['uapp'] = 'swipe'
+                elif name == 'RandomFlashing':
+                    params['uapp'] = 'flashes'
+                elif name == 'SweepRand':
+                    params['uapp'] = 'gender'
         return animations[params['uapp']]
 
 
