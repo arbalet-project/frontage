@@ -156,7 +156,7 @@ class Scheduler(object):
         # Is a app running ?
         if c_app:
             # is expire soon ?
-            if now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
+            if not c_app['is_default'] and now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
                 if not SchedulerState.get_expire_soon():
                     Fap.send_expires_soon(EXPIRE_SOON_DELAY)
             # is the current_app expired ?
@@ -200,7 +200,7 @@ class Scheduler(object):
         now = datetime.datetime.now()
         if c_app:
             # expire soon
-            if now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
+            if not c_app['is_default'] and now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
                 if not SchedulerState.get_expire_soon():
                     Fap.send_expires_soon(EXPIRE_SOON_DELAY)
             # expire
@@ -233,9 +233,8 @@ class Scheduler(object):
         return False
 
     def print_scheduler_info(self):
-        sleep(0.1)
         self.frontage.update()
-        if self.count % 50 == 0:
+        if self.count % 10 == 0:
             print_flush("-------- Current App")
             print_flush(SchedulerState.get_current_app())
             print_flush("-------- Enable State")
@@ -267,6 +266,7 @@ class Scheduler(object):
         while True:
             self.run_scheduler()
             self.print_scheduler_info()
+            sleep(0.5)
 
 
 def load_day_table(file_name):
