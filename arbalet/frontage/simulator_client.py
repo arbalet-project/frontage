@@ -7,11 +7,9 @@
     Copyright 2015 Yoan Mollard - Arbalet project - http://github.com/arbalet-project
     License: GPL version 3 http://www.gnu.org/licenses/gpl.html
 """
-import socket
-import struct
 import sys
 
-from time import sleep
+import pika
 from os import environ
 from pygame import color, event, display, draw, Rect, QUIT
 from pygame.time import Clock
@@ -24,7 +22,6 @@ def print_flush(s):
     print(s)
     sys.stdout.flush()
 
-
 class Simulator(object):
     def __init__(self, row=4, col=19, port=33460):
         factor_sim = 40
@@ -35,104 +32,77 @@ class Simulator(object):
         self.border_thickness = 1
         self.cell_height = factor_sim
         self.cell_width = factor_sim
+        self.channel = None
         self.display = None
-        self.closed = False
+        self.running = False
 
         # Create the Window, load its title, icon
         environ['SDL_VIDEO_CENTERED'] = '1'
 
-        while not self.start_socket(port):
-            print('Next connection try in 3 sec')
-            sleep(3)
-
         self.display = display.set_mode((self.sim_width, self.sim_height), 0, 32)
-        # try:
-        #    self.icon = load_extended(join(dirname(img_resources_path), 'icon.png'))
-        # except error:
-        #    pass
-        # else:
-        #    display.set_icon(self.icon)
         display.set_caption("Arbalet Frontage simulator", "Arbalet")
 
-    def start_socket(self, port):
-        print('->Start Connecting...')
-        print('Port: ' + str(port))
-        try:
-            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.client.connect(("127.0.0.1", port))
-            self.client.settimeout(0.05)
-        except socket.error as e:
-            print(str(e))
-            return False
-        print('->Connected')
-
-        return True
-
     def update(self):
-        if not self.closed:
-            for e in event.get():
-                if e.type == QUIT:
-                    return False
-            self.display.lock()
-            try:
-                for w in range(self.model.width):
-                    for h in range(self.model.height):
-                        pixel = self.model[h, w]
-                        self.display.fill(color.Color(int(pixel[0]), int(pixel[1]), int(pixel[2])),
-                                          Rect(w * self.cell_width,
-                                               h * self.cell_height,
-                                               self.cell_width,
-                                               self.cell_height))
-
-                # Draw vertical lines
-                for w in range(self.model.width):
-                    draw.line(self.display, color.Color(40, 40, 40), (w * self.cell_width, 0),
-                              (w * self.cell_width, self.sim_height), self.border_thickness)
-                # Draw horizontal lines
+        self.display.lock()
+        try:
+            for w in range(self.model.width):
                 for h in range(self.model.height):
-                    draw.line(self.display, color.Color(40, 40, 40), (0, h * self.cell_height),
-                              (self.sim_width, h * self.cell_height), self.border_thickness)
+                    pixel = self.model[h, w]
+                    self.display.fill(color.Color(int(pixel[0]*255), int(pixel[1]*255), int(pixel[2]*255)),
+                                      Rect(w * self.cell_width,
+                                           h * self.cell_height,
+                                           self.cell_width,
+                                           self.cell_height))
 
-                display.update()
-            finally:
-                self.display.unlock()
-                return True
+            # Draw vertical lines
+            for w in range(self.model.width):
+                draw.line(self.display, color.Color(40, 40, 40), (w * self.cell_width, 0),
+                          (w * self.cell_width, self.sim_height), self.border_thickness)
+            # Draw horizontal lines
+            for h in range(self.model.height):
+                draw.line(self.display, color.Color(40, 40, 40), (0, h * self.cell_height),
+                          (self.sim_width, h * self.cell_height), self.border_thickness)
 
-    def raw_to_model(self, raw):
-        i = 0
-        for row in range(self.model.height):
-            for col in range(self.model.width):
-                self.model[row, col] = (raw[i], raw[i+1], raw[i+2])
-                i += 3
+            display.update()
+        finally:
+            self.display.unlock()
+            return True
+
+    def callback(self, ch, method, properties, body):
+        self.model.set_from_json(body.decode('ascii'))
+        self.update()
+        for e in event.get():
+            if e.type == QUIT:
+                self.close()
 
     def run(self):
-        while True:
-            try:
-                resp = self.client.recv(self.model.width*self.model.height*3)
-            except socket.timeout:
-                pass
-            else:
-                if resp != "":
-                    # print_flush(resp)
-                    # print_flush("*****")
-                    raw = struct.unpack("!{}B".format(self.model.width*self.model.height*3), resp)
-                    self.raw_to_model(raw)
-                    self.update()
-            for e in event.get():
-                if e.type == QUIT:
-                    self.close()
-                    return None
-            self.clock.tick(50)
+        # These are the public credentials for dev environment
+        credentials = pika.PlainCredentials('frontage', 'uHm65hK6]yfabDwUUksqeFDbOu')
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=credentials))
+        self.channel = connection.channel()
+
+        self.channel.exchange_declare(exchange='pixels', exchange_type='fanout')
+
+        result = self.channel.queue_declare(exclusive=True)
+        queue_name = result.method.queue
+
+        self.channel.queue_bind(exchange='pixels', queue=queue_name)
+
+        print('Waiting for pixel data.')
+
+        self.channel.basic_consume(self.callback, queue=queue_name, no_ack=True)
+        self.channel.start_consuming()
 
 
     def close(self):
-        if not self.closed:
-            self.display.lock()
-            try:
-                display.quit()
-                self.closed = True
-            finally:
-                self.display.unlock()
+        if self.channel is not None:
+            self.channel.stop_consuming()
+
+        self.display.lock()
+        try:
+            display.quit()
+        finally:
+            self.display.unlock()
 
 
 if __name__ == '__main__':

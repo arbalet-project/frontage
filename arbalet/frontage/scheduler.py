@@ -28,7 +28,7 @@ EXPIRE_SOON_DELAY = 5
 
 class Scheduler(object):
 
-    def __init__(self, port=33460, hardware=True, simulator=True):
+    def __init__(self):
         print_flush('---> Waiting for frontage connection...')
         clear_all_task()
 
@@ -41,7 +41,7 @@ class Scheduler(object):
             session.commit()
             session.close()
 
-        self.frontage = Frontage(port, hardware)
+        self.frontage = Frontage()
 
         session = session_factory()
         config = session.query(ConfigModel).first()
@@ -251,7 +251,6 @@ class Scheduler(object):
         return False
 
     def print_scheduler_info(self):
-        self.frontage.update()
         if self.count % 10 == 0:
             print_flush("-------- Current App")
             print_flush(SchedulerState.get_current_app())
@@ -299,7 +298,7 @@ def load_day_table(file_name):
 if __name__ == '__main__':
     try:
         load_day_table(SchedulerState.CITY)
-        scheduler = Scheduler(hardware=True)
+        scheduler = Scheduler()
         scheduler.run()
         print_flush('=== Scheduler Stop ===')
     except Exception as e:

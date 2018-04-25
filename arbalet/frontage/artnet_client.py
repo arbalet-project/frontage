@@ -1,8 +1,6 @@
-import socket
-import struct
-import sys
-
-from time import sleep
+import pika
+from os import environ
+from model import Model
 from numpy import array
 from artnet import dmx
 
@@ -10,16 +8,9 @@ from artnet import dmx
 __all__ = ['ArtnetClient']
 
 
-def print_flush(s):
-    print(s)
-    sys.stdout.flush()
-
-
 class ArtnetClient(object):
-    def __init__(self, row=4, col=19, port=33460):
-        self.width = col
-        self.height = row
-        self.closed = False
+    def __init__(self, col=19, row=4):
+        self.model = Model(row, col)
 
          # row, column -> (DMX universe, DMX address)
         self.mapping = array([[[ 7, 18],
@@ -102,11 +93,9 @@ class ArtnetClient(object):
         self.num_pixels = row*col
         self.num_universes = 8
         self.dmx = None
-        self.data = [[0]*512]*self.num_universes  # self.data[universe][dmx_address] = dmx_value 
+        self.data = [[0]*512]*self.num_universes  # self.data[universe][dmx_address] = dmx_value
+        self.credentials = pika.PlainCredentials(environ['RABBITMQ_DEFAULT_USER'], environ['RABBITMQ_DEFAULT_PASS'])
 
-        while not self.start_socket(port):
-            print('Next connection try in 3 sec')
-            sleep(3)
 
     def start_dmx(self):
         if self.dmx is None:
@@ -114,57 +103,46 @@ class ArtnetClient(object):
             self.dmx = dmx.Controller("2.255.255.255", universes=self.num_universes, fps=15)
             self.dmx.start()
 
-    def stop_dmx(self):
+    def close_dmx(self):
         if self.dmx is not None:
             self.dmx.close_socket()
             self.dmx = None
 
-    def start_socket(self, port):
-        print('->Start Connecting...')
-        print('Port: ' + str(port))
-        try:
-            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.client.connect(("127.0.0.1", port))
-            self.client.settimeout(0.05)
-        except socket.error as e:
-            print(str(e))
-            return False
-        print('->Connected')
-        return True
-
-    def update(self, raw):
-        if not self.closed and self.dmx is not None:
-            i = 0
-            for row in range(self.height):
-                for col in range(self.width):
+    def callback(self, ch, method, properties, body):
+        self.model.set_from_json(body.decode('ascii'))
+        if self.dmx is not None:
+            for row in range(self.model.height):
+                for col in range(self.model.width):
                     universe, address = self.mapping[row, col]
-                    r, g, b = raw[i], raw[i+1], raw[i+2]
-                    self.data[universe][address] = r
-                    self.data[universe][address+1] = g
-                    self.data[universe][address+2] = b
+                    r, g, b = self.model[row, col]
+                    self.data[universe][address] = min(255, max(0, int(r*255)))
+                    self.data[universe][address+1] = min(255, max(0, int(g*255)))
+                    self.data[universe][address+2] = min(255, max(0, int(b*255)))
                     #if row==0 and col==0: print(universe, address, r, g, b)
-                i += 3
-
             for universe in range(len(self.data)):
                 self.dmx.add(iter([self.data[universe]]), universe)
 
     def run(self):
         self.start_dmx()
-        while not self.closed:
-            try:
-                resp = self.client.recv(self.width*self.height*3)
-            except socket.timeout:
-                pass
-            else:
-                if resp != "":
-                    # print_flush(resp)
-                    # print_flush("*****")
-                    raw = struct.unpack("!{}B".format(self.width*self.height*3), resp)
-                    self.update(raw)
-        self.close_dmx()
+        try:
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=self.credentials))
+            self.channel = connection.channel()
 
-    def close_socket(self):
-        self.closed = True
+            self.channel.exchange_declare(exchange='pixels', exchange_type='fanout')
+
+            result = self.channel.queue_declare(exclusive=True)
+            queue_name = result.method.queue
+
+            self.channel.queue_bind(exchange='pixels', queue=queue_name)
+
+            print('Waiting for pixel data.')
+
+            self.channel.basic_consume(self.callback, queue=queue_name, no_ack=True)
+            self.channel.start_consuming()
+        except Exception as e:
+            self.close_dmx()
+            raise e
+
 
 
 if __name__ == '__main__':
