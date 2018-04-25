@@ -76,6 +76,7 @@ class Simulator(object):
                 self.close()
 
     def run(self):
+        self.update()
         # These are the public credentials for dev environment
         credentials = pika.PlainCredentials('frontage', 'uHm65hK6]yfabDwUUksqeFDbOu')
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=credentials))

@@ -105,7 +105,7 @@ class ArtnetClient(object):
 
     def close_dmx(self):
         if self.dmx is not None:
-            self.dmx.close_socket()
+            self.dmx.stop()
             self.dmx = None
 
     def callback(self, ch, method, properties, body):
