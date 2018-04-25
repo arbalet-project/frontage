@@ -28,7 +28,7 @@ class Fap(object):
         self.max_time = None
         self.params = None
         self.username = username
-
+        self.ws = None
         self.model = Model(4, 19)
 
     def run(self):
@@ -110,9 +110,9 @@ class Fap(object):
         return struct
 
     def __del__(self):
-        print('----CLOSE----')
-        self.ws.close()
-        time.sleep(0.2)
+        if self.ws is not None:
+            self.ws.close()
+            time.sleep(0.2)
         print('----CLOSED----')
         # CHANNEL.queue_delete(queue=SchedulerState.KEY_MODEL)
         # RABBIT_CONNECTION.close()
