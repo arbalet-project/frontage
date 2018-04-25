@@ -1,0 +1,20 @@
+[Unit]
+Description=Arbalet Art-Net publisher Autostart
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/arbalet/Arbalet/frontage/arbalet/frontage
+ExecStart=/usr/bin/python3 artnet_client.py
+StandardOutput=journal
+KillSignal=SIGINT
+SuccessExitStatus=SIGINT
+RestartSec=10
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+# Keep a new line at EOF
+
