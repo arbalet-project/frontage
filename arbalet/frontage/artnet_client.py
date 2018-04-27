@@ -93,7 +93,7 @@ class ArtnetClient(object):
         self.num_pixels = row*col
         self.num_universes = 8
         self.dmx = None
-        self.data = [[0]*512]*self.num_universes  # self.data[universe][dmx_address] = dmx_value
+        self.data = [[0]*512 for u in range(self.num_universes)]  # self.data[universe][dmx_address] = dmx_value
         self.credentials = pika.PlainCredentials(environ['RABBITMQ_DEFAULT_USER'], environ['RABBITMQ_DEFAULT_PASS'])
 
 
