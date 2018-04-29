@@ -94,8 +94,8 @@ class ArtnetClient(object):
         self.num_universes = 8
         self.dmx = None
         self.data = [[0]*512 for u in range(self.num_universes)]  # self.data[universe][dmx_address] = dmx_value
-        self.credentials = pika.PlainCredentials(environ['RABBITMQ_DEFAULT_USER'], environ['RABBITMQ_DEFAULT_PASS'])
-
+        credentials = pika.PlainCredentials(environ['RABBITMQ_DEFAULT_USER'], environ['RABBITMQ_DEFAULT_PASS'])
+        self.params = pika.ConnectionParameters(host='localhost', credentials=credentials, connection_attempts = 1000)
 
     def start_dmx(self):
         if self.dmx is None:
@@ -125,7 +125,7 @@ class ArtnetClient(object):
     def run(self):
         self.start_dmx()
         try:
-            connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=self.credentials))
+            connection = pika.BlockingConnection(self.params)
             self.channel = connection.channel()
 
             self.channel.exchange_declare(exchange='pixels', exchange_type='fanout')
