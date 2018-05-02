@@ -8,13 +8,13 @@ from server.extensions import rest_api
 from server.flaskutils import print_flush
 from flask_expects_json import expects_json
 
+PROTOCOL_VERSION = 1   # Version of protocol betwwen front and back. Mismatch = ask the user to update
 
 blueprint = Blueprint('views', __name__)
 
-
 @blueprint.route('/status/is_up', methods=['GET'])
 def is_up():
-    return jsonify(is_up=True)
+    return jsonify(is_up=True, protocol_version=PROTOCOL_VERSION)
 
 
 LOGIN_SCHEMA = {
