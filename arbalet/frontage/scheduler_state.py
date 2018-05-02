@@ -122,11 +122,11 @@ class SchedulerState(object):
     @staticmethod
     def set_forced_app(app_name, params, expires=600):
         from tasks.tasks import start_forced_fap
-        from apps.fap import Fap
+        # from apps.fap import Fap
         if SchedulerState.get_forced_app():
             return False
         # TODO is a lock necessary here?
-        SchedulerState.stop_app(SchedulerState.get_current_app(), Fap.CODE_CLOSE_APP, 'The admin started a forced app')
+        SchedulerState.stop_app(SchedulerState.get_current_app(), 1, 'The admin started a forced app')
         start_forced_fap.apply_async(args=[app_name, 'FORCED', params], expires=expires)
         redis.set(SchedulerState.KEY_FORCED_APP, 'True')
         return True

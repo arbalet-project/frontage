@@ -118,7 +118,7 @@ def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
     SchedulerState.set_current_app(app_struct)
     if fap_name:
         try:
-            fap = globals()[fap_name](app['username'])
+            fap = globals()[fap_name](app_struct['username'])
             redis.set(SchedulerState.KEY_FORCED_APP, True)
             fap.run(params=params)
             return True

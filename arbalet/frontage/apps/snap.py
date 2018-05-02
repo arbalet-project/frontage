@@ -19,7 +19,7 @@ from functools import wraps
 
 from threading import RLock
 
-from tornado.wsgi import WSGIContainer
+# from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 
@@ -138,6 +138,8 @@ class Snap(Fap):
         return rand_id
 
     def run(self, params, expires_at=None):
+        from tornado.wsgi import WSGIContainer
+        
         self.erase_all()
         self.loop = IOLoop()
         http_server = HTTPServer(WSGIContainer(self.flask))
