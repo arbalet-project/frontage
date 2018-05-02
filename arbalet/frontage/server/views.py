@@ -169,6 +169,8 @@ class AppAdminRuningView(Resource):
 class AppRuningView(Resource):
     @authentication_required
     def get(self, user):
+        while SchedulerState.is_event_lock():
+            pass
         return jsonify(SchedulerState.get_current_app())
 
     @authentication_required
@@ -184,6 +186,7 @@ class AppRuningView(Resource):
                     abort(400, "You are not the owner of the current app")
         else:
             print("Tried to delete an app while no one was running, ignoring delete request.")
+            abort(400, "No app found. No delete.")
         return '', 204
 
     @authentication_required

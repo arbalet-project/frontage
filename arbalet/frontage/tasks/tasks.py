@@ -61,6 +61,7 @@ def start_default_fap(app):
     app['started_at'] = datetime.datetime.now().isoformat()
 
     SchedulerState.set_current_app(app)
+    SchedulerState.set_event_lock(False)
     try:
         fap = globals()[app['name']](app['username'])
         fap.run(params=params)

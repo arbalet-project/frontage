@@ -130,13 +130,14 @@ class Scheduler(object):
             self.frontage.erase_all()
 
     def stop_current_app_start_next(self, queue, c_app, next_app):
+        SchedulerState.set_event_lock(True)
         print_flush('===> REVOKING APP, someone else turn')
         SchedulerState.stop_app(c_app, Fap.CODE_EXPIRE, 'someone else turn')
         # Start app
         start_fap.apply_async(args=[next_app], queue='userapp')
         print_flush("## Starting {} [case A]".format(next_app['name']))
         # Remove app form waiting Q
-        SchedulerState.pop_user_app_queue(queue)
+        # SchedulerState.pop_user_app_queue(queue)
 
     def app_is_expired(self, c_app):
         now = datetime.datetime.now()
@@ -150,6 +151,7 @@ class Scheduler(object):
             #    default_scheduled_app['expires'] = SchedulerState.get_default_fap_lifetime()
             default_scheduled_app['expires'] = SchedulerState.get_default_fap_lifetime()
             default_scheduled_app['default_params']['name'] = default_scheduled_app['name']  # Fix for Colors (see TODO refactor in colors.py)
+            SchedulerState.set_event_lock(True)
             start_default_fap.apply_async(args=[default_scheduled_app], queue='userapp')
             SchedulerState.wait_task_to_start()
             print_flush("## Starting {} [DEFAULT]".format(default_scheduled_app['name']))
