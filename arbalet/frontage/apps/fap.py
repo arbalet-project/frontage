@@ -1,6 +1,7 @@
 import time
+import pika
 
-from utils.red import redis
+from os import environ
 from scheduler_state import SchedulerState
 from model import Model
 # from rabbit import CHANNEL, RABBIT_CONNECTION
@@ -19,7 +20,6 @@ class Fap(object):
     PLAYABLE = False
     ACTIVATED = True
     ENABLE = True
-    CNT = 0
     LOCK = RWLock()
     LOCK_WS = RWLock()
 
@@ -30,6 +30,12 @@ class Fap(object):
         self.username = username
         self.ws = None
         self.model = Model(4, 19)
+
+        credentials = pika.PlainCredentials(environ.get('RABBITMQ_DEFAULT_USER'), environ.get('RABBITMQ_DEFAULT_PASS'))
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbit', credentials=credentials))
+        #####   Channel used for emiting  model to scheduler
+        self.channel = self.connection.channel()
+        self.channel.exchange_declare(exchange='model', exchange_type='fanout')
 
     def run(self):
         raise NotImplementedError("Fap.run() must be overidden")
@@ -53,11 +59,6 @@ class Fap(object):
     def start_socket(self):
         self.ws = Websock(self, '0.0.0.0', 8124)
         self.ws.start()
-        # start_server = websockets.serve(self._handle_message, '0.0.0.0', 8124)
-        # print('====> Start WebSocket')
-        # while True:
-        #     asyncio.get_event_loop().run_until_complete(start_server)
-        #     asyncio.get_event_loop().run_forever()
 
     def flash(self, duration=4., speed=1.5):
         """
@@ -85,19 +86,16 @@ class Fap(object):
             rate.sleep()
 
     def send_model(self):
-        # self.CNT += 1
-        # print(self.CNT)
         if not self.LOCK.acquire_write(2):
             print('Wait for RWLock for too long in Bufferize...Stopping')
             return
-        redis.publish(SchedulerState.KEY_MODEL, self.model.json())
-
-        # CHANNEL.basic_publish(exchange='',
-        #     routing_key=SchedulerState.KEY_MODEL,
-        #     body=self.model.json())
-        # redis.set(SchedulerState.KEY_MODEL, self.model.json())
-
-        self.LOCK.release()
+        try:
+            self.channel.basic_publish(exchange='model', routing_key='', body=self.model.json())
+        except:
+            print('FAP Cannot send model to scheduler')
+            return
+        finally:
+            self.LOCK.release()
 
     def jsonify(self):
         struct = {}
@@ -114,5 +112,3 @@ class Fap(object):
             self.ws.close()
             time.sleep(0.2)
         print('----CLOSED----')
-        # CHANNEL.queue_delete(queue=SchedulerState.KEY_MODEL)
-        # RABBIT_CONNECTION.close()

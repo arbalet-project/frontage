@@ -35,7 +35,6 @@ class SchedulerState(object):
     # KEY_APP_START_LOCK = 'key_app_start_lock'
     KEY_USABLE = 'frontage_usable'
     KEY_ENABLE_STATE = 'frontage_enable_state'
-    KEY_MODEL = 'frontage_model'
     KEY_FRONTAGE_ON_OFF = 'key_frontage_on_off'
     KEY_NOTICE_EXPIRE_SOON = 'key_notice_expire_soon'
     KEY_NOTICE_EXPIRE = 'key_notice_expire'

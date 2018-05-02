@@ -130,14 +130,13 @@ class ArtnetClient(object):
 
             self.channel.exchange_declare(exchange='pixels', exchange_type='fanout')
 
-            result = self.channel.queue_declare(exclusive=True)
+            result = self.channel.queue_declare(exclusive=True, arguments={"x-max-length": 1})
             queue_name = result.method.queue
 
             self.channel.queue_bind(exchange='pixels', queue=queue_name)
-
-            print('Waiting for pixel data.')
-
             self.channel.basic_consume(self.callback, queue=queue_name, no_ack=True)
+
+            print('Waiting for pixel data on queue "{}".'.format(queue_name))
             self.channel.start_consuming()
         except Exception as e:
             self.close_dmx()
