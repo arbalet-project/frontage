@@ -133,6 +133,7 @@ class Scheduler(object):
         SchedulerState.set_event_lock(True)
         print_flush('===> REVOKING APP, someone else turn')
         SchedulerState.stop_app(c_app, Fap.CODE_EXPIRE, 'someone else turn')
+        self.frontage.fade_out()
         # Start app
         start_fap.apply_async(args=[next_app], queue='userapp')
         print_flush("## Starting {} [case A]".format(next_app['name']))
@@ -187,6 +188,7 @@ class Scheduler(object):
                     if c_app.get('is_default', False) and self.app_is_expired(c_app):
                         print_flush('===> Stoping Default Scheduled app')
                         SchedulerState.stop_app(c_app)
+                        self.frontage.fade_out()
                         return
                     # it's a USER_APP, we let it running, do nothing
                     else:
@@ -194,6 +196,7 @@ class Scheduler(object):
                         if c_app.get('is_default', False) and self.app_is_expired(c_app):
                             print_flush('===> Stoping Default Scheduled app')
                             SchedulerState.stop_app(c_app)
+                            self.frontage.fade_out()
                             return
                         # it's a USER_APP, we let it running, do nothing
                         else:
@@ -234,6 +237,7 @@ class Scheduler(object):
                         c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") or c_app['is_default']:
                     print_flush('===> REVOKING APP, someone else turn')
                     SchedulerState.stop_app(c_app, Fap.CODE_EXPIRE, 'someone else turn')
+                    self.frontage.fade_out()
                     # Start app
                     start_fap.apply_async(args=[next_app], queue='userapp')
                     print_flush("## Starting {} [case A]".format(next_app['name']))

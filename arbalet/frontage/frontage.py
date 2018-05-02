@@ -15,12 +15,14 @@ __all__ = ['Frontage']
 
 class Frontage(Thread):
     RATE_HZ = 40
+    FADE_OUT_NUM_FRAMES = 20
 
     def __init__(self, height=4, width=19):
         Thread.__init__(self)
         self.model = Model(height, width)
         self.rate = Rate(self.RATE_HZ)
         self.frontage_running = False
+        self.fade_out_idx = 0
 
     def __getitem__(self, row):
         return self.model.__getitem__(row)
@@ -36,6 +38,9 @@ class Frontage(Thread):
 
     def erase_all(self):
         self.set_all(0, 0, 0)
+
+    def fade_out(self):
+        self.fade_out_idx = self.FADE_OUT_NUM_FRAMES
 
     def run(self):
         credentials = pika.PlainCredentials(environ.get('RABBITMQ_DEFAULT_USER'), environ.get('RABBITMQ_DEFAULT_PASS'))
@@ -56,8 +61,10 @@ class Frontage(Thread):
         while self.frontage_running:
             # ASYNCHRONOUS END FRAME UPDATE LOOP
             method, properties, body = self.channel_app_model.basic_get(queue=queue_name, no_ack=True)
-            # if FADE OUT
-            if body is not None:
+            if self.fade_out_idx > 0:
+                self.model = self.model.__mul__(0.9)
+                self.fade_out_idx -= 1
+            elif body is not None:
                 self.model.set_from_json(body)
             if self.frontage_running:
                 self.channel_pixels.basic_publish(exchange='pixels', routing_key='', body=self.model.json())
