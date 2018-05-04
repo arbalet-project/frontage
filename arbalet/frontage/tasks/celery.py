@@ -1,53 +1,10 @@
 from __future__ import absolute_import
 
-import datetime
-
 from server.extensions import celery
 from server.app import create_app
-from scheduler_state import SchedulerState
 
 app = celery
 app.init_app(create_app())
-
-SUNRISE = ''
-
-
-@app.on_after_configure.connect
-def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(
-        60.0,
-        check_sunrise_sunset.s()
-    )
-
-
-@app.task
-def check_sunrise_sunset():
-    # print('[CELERY] {PERIODIC} Check Sunrise & Sunset}')
-
-    # state = redis_get(SchedulerState.KEY_SUN_STATE)
-    now = datetime.datetime.now().time()
-    on_at = SchedulerState.get_scheduled_on_time().time()
-    off_at = SchedulerState.get_scheduled_off_time().time()
-
-    if not SchedulerState.get_enable_state() == 'scheduled':
-        print('---->Not scheduled')
-        return True
-    if now < off_at:
-        SchedulerState.set_usable(True)
-    elif now > off_at and now < on_at:
-        SchedulerState.set_usable(False)
-    elif now > off_at and now > on_at:
-        SchedulerState.set_usable(True)
-
-    # if state == SchedulerState.KEY_SUNRISE:
-    #     if now.time() > SchedulerState.get_sundown().time():
-    #         state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNDOWN)
-    #         SchedulerState.set_usable(True)
-    # else:
-    #     if now.time() > SchedulerState.get_sunrise().time():
-    #         state = redis.set(SchedulerState.KEY_SUN_STATE, SchedulerState.KEY_SUNRISE)
-    #         SchedulerState.set_usable(False)
-    return True
 
 
 def get_celery_worker_status():
