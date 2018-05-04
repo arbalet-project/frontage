@@ -89,7 +89,60 @@ class ArtnetClient(object):
                                 [ 1, 27],
                                 [ 1, 24],
                                 [ 1, 21]]])
-        
+
+        self.back_mapping = array([[(7, 0),
+                                  (7, 3),
+                                  (7, 6),
+                                  (7, 9),
+                                  (7, 12),
+                                  (7, 15),
+                                  (6, 18),
+                                  (6, 15),
+                                  (6, 12),
+                                  (6, 9),
+                                  (6, 6),
+                                  (6, 3),
+                                  (6, 0)],
+                                 [(5, 0),
+                                  (5, 3),
+                                  (5, 6),
+                                  (5, 9),
+                                  (5, 12),
+                                  (5, 15),
+                                  (4, 18),
+                                  (4, 15),
+                                  (4, 12),
+                                  (4, 9),
+                                  (4, 6),
+                                  (4, 3),
+                                  (4, 0)],
+                                 [(2, 0),
+                                  (2, 3),
+                                  (2, 6),
+                                  (2, 9),
+                                  (2, 12),
+                                  (2, 15),
+                                  (3, 18),
+                                  (3, 15),
+                                  (3, 12),
+                                  (3, 9),
+                                  (3, 6),
+                                  (3, 3),
+                                  (3, 0)],
+                                 [(0, 0),
+                                  (0, 3),
+                                  (0, 6),
+                                  (0, 9),
+                                  (0, 12),
+                                  (0, 15),
+                                  (1, 18),
+                                  (1, 15),
+                                  (1, 12),
+                                  (1, 9),
+                                  (1, 6),
+                                  (1, 3),
+                                  (1, 0)]])
+
         self.num_pixels = row*col
         self.num_universes = 8
         self.dmx = None
@@ -119,6 +172,15 @@ class ArtnetClient(object):
                     self.data[universe][address+1] = min(255, max(0, int(g*255)))
                     self.data[universe][address+2] = min(255, max(0, int(b*255)))
                     #if row==0 and col==0: print(universe, address, r, g, b)
+
+            for row in range(self.back_mapping.shape[0]):
+                for col in range(self.back_mapping.shape[1]):
+                    universe, address = self.back_mapping[row, col]
+                    r, g, b = self.model[row, col]
+                    self.data[universe][address] = min(255, max(0, int(r*255)))
+                    self.data[universe][address+1] = min(255, max(0, int(g*255)))
+                    self.data[universe][address+2] = min(255, max(0, int(b*255)))
+
             for universe in range(len(self.data)):
                 self.dmx.add(iter([self.data[universe]]), universe)
 
