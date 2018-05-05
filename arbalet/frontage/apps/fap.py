@@ -91,9 +91,9 @@ class Fap(object):
             return
         try:
             self.channel.basic_publish(exchange='model', routing_key='', body=self.model.json())
-        except:
+        except Exception as e:
             print('FAP Cannot send model to scheduler')
-            return
+            raise e
         finally:
             self.LOCK.release()
 
