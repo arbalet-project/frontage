@@ -12,6 +12,7 @@ PROTOCOL_VERSION = 1   # Version of protocol betwwen front and back. Mismatch = 
 
 blueprint = Blueprint('views', __name__)
 
+
 @blueprint.route('/status/is_up', methods=['GET'])
 def is_up():
     return jsonify(is_up=True, protocol_version=PROTOCOL_VERSION)
@@ -89,6 +90,7 @@ def admin_enabled_scheduler(user):
                    state=SchedulerState.get_enable_state(),
                    current_time=datetime.datetime.now().isoformat())
 
+
 @blueprint.route('/b/admin/cal', methods=['GET'])
 def admin_cal_at():
     return jsonify(on=SchedulerState.get_forced_on_time(),
@@ -113,6 +115,7 @@ def admin_set_state(user):
 
     return jsonify(done=True)
 
+
 @blueprint.route('/b/admin/settings', methods=['POST'])
 @authentication_required
 def admin_set_settings(user):
@@ -124,9 +127,11 @@ def admin_set_settings(user):
         SchedulerState.set_default_fap_lifetime(lifetime)
         return jsonify(done=True)
 
+
 @blueprint.route('/b/admin/settings', methods=['GET'])
 def admin_get_settings():
     return jsonify(default_lifetime=SchedulerState.get_default_fap_lifetime())
+
 
 class AppQueueView(Resource):
     @authentication_required
@@ -137,6 +142,7 @@ class AppQueueView(Resource):
             abort(400, "Forbidden Bru")
 
         return '', 204
+
 
 class AppAdminRuningView(Resource):
     @authentication_required
@@ -239,6 +245,7 @@ class AppDefaultParamView(Resource):
 
         return jsonify(done=SchedulerState.set_default_scheduled_app_params(app_name, params))
 
+
 class AppDefaultView(Resource):
     @authentication_required
     def get(self, user):
@@ -285,6 +292,13 @@ class AppListView(Resource):
 @authentication_required
 def app_position(user):
     return jsonify(position=SchedulerState.get_user_position(user))
+
+
+@blueprint.route('/b/apps/iamalive', methods=['POST'])
+@authentication_required
+def set_is_alive_current_app(user):
+    SchedulerState.set_is_alive_current_app(user['username'])
+    return jsonify(pouet='pouet')
 
 
 @blueprint.route('/b/apps/position', methods=['DELETE'])

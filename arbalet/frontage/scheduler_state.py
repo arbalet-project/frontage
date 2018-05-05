@@ -27,6 +27,7 @@ def add_secs_to_time(timeval, secs_to_add):
 class SchedulerState(object):
 
     DEFAULT_KEEP_ALIVE_DELAY = 60  # in second
+    DEFAULT_CURRENT_APP_KEEP_ALIVE_DELAY = 15  # in second
     KEY_DAY_TABLE = 'frontage_day_table'
     CITY = 'data/bordeaux_user.sun'
 
@@ -516,6 +517,12 @@ class SchedulerState(object):
                 redis.set(SchedulerState.KEY_USERS_Q, json.dumps(queue))
                 return True
         return False
+
+    @staticmethod
+    def set_is_alive_current_app(username):
+        c_app = SchedulerState.get_current_app()
+        c_app['last_alive'] = time.time()
+        SchedulerState.set_current_app(c_app)
 
     @staticmethod
     def get_user_queue():

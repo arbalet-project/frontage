@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import datetime
 import sys
+import time
 
 from time import sleep
 
@@ -57,6 +58,7 @@ def start_default_fap(app):
 
     app['task_id'] = start_default_fap.request.id
     app['is_default'] = True
+    app['last_alive'] = time.time()
     app['username'] = '>>>default<<<'
     app['started_at'] = datetime.datetime.now().isoformat()
 
@@ -112,6 +114,7 @@ def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
         'username': user_name,
         'params': params,
         'task_id': start_forced_fap.request.id,
+        'last_alive': time.time(),
         'started_at': datetime.datetime.now().isoformat(),
         'is_default': False,
         'expire_at': str(datetime.datetime.now() + datetime.timedelta(weeks=52))}
