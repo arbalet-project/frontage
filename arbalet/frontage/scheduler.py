@@ -88,7 +88,7 @@ class Scheduler(object):
                 queue.remove(c_app)
 
     def keep_alive_current_app(self, current_app):
-        if time.time() > (current_app['last_alive'] + SchedulerState.DEFAULT_CURRENT_APP_KEEP_ALIVE_DELAY):
+        if not current_app.get('is_default', False) and time.time() > (current_app['last_alive'] + SchedulerState.DEFAULT_CURRENT_APP_KEEP_ALIVE_DELAY):
             SchedulerState.stop_app(current_app, Fap.CODE_EXPIRE, 'someone else turn')
             return True
         return False
