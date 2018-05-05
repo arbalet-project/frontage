@@ -138,6 +138,7 @@ class Snap(Fap):
         return rand_id
 
     def run(self, params, expires_at=None):
+        self.start_socket()
         from tornado.wsgi import WSGIContainer
         
         self.erase_all()
