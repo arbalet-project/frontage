@@ -126,6 +126,7 @@ class SchedulerState(object):
         if SchedulerState.get_forced_app():
             return False
         # TODO is a lock necessary here?
+        SchedulerState.set_event_lock(True)
         SchedulerState.stop_app(SchedulerState.get_current_app(), 1, 'The admin started a forced app')
         start_forced_fap.apply_async(args=[app_name, 'FORCED', params], expires=expires)
         redis.set(SchedulerState.KEY_FORCED_APP, 'True')

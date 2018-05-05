@@ -173,6 +173,9 @@ class Scheduler(object):
             if self.keep_alive_current_app(c_app):
                 return
             # is expire soon ?
+            if 'is_default' not in c_app:
+                print('NO IS_DEFAULT in CURRENT_APP !')
+                raise ValueError('NO IS_DEFAULT in CURRENT_APP !')
             if not c_app['is_default'] and now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
                 if not SchedulerState.get_expire_soon():
                     Fap.send_expires_soon(EXPIRE_SOON_DELAY, c_app['username'])
@@ -247,6 +250,7 @@ class Scheduler(object):
         self.count = 0
         while True:
             if SchedulerState.is_event_lock():
+                print_flush('Locked')
                 sleep(0.1)
             else:
                 self.run_scheduler()

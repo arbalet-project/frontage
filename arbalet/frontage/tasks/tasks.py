@@ -39,6 +39,7 @@ def clear_all_task():
         revoke(current_task.request.id, terminate=True)
     sleep(0.5)
     SchedulerState.set_current_app({})
+    SchedulerState.set_event_lock(False)
 
 
 @celery.task
@@ -119,6 +120,7 @@ def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
         'is_default': False,
         'expire_at': str(datetime.datetime.now() + datetime.timedelta(weeks=52))}
     SchedulerState.set_current_app(app_struct)
+    SchedulerState.set_event_lock(False)
     if fap_name:
         try:
             fap = globals()[fap_name](app_struct['username'])
