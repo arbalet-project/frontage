@@ -286,7 +286,7 @@ def set_is_alive_current_app(user):
 @blueprint.route('/b/apps/quit', methods=['GET'])
 @authentication_required
 def delete(user):
-       c_app = SchedulerState.get_current_app()
+    c_app = SchedulerState.get_current_app()
     if 'username' in c_app:
         if is_admin(user):
             SchedulerState.stop_app(c_app)
