@@ -180,22 +180,6 @@ class AppRuningView(Resource):
         return jsonify(SchedulerState.get_current_app())
 
     @authentication_required
-    def delete(self, user):
-        c_app = SchedulerState.get_current_app()
-        if 'username' in c_app:
-            if is_admin(user):
-                SchedulerState.stop_app(c_app)
-            else:
-                if c_app['username'] == user['username']:
-                    SchedulerState.stop_app(c_app)
-                else:
-                    abort(400, "You are not the owner of the current app")
-        else:
-            print("Tried to delete an app while no one was running, ignoring delete request.")
-            abort(400, "No app found. No delete.")
-        return '', 204
-
-    @authentication_required
     def post(self, user):
         name = request.get_json()['name']
         params = request.get_json().get('params', {})
@@ -293,15 +277,30 @@ class AppListView(Resource):
 def app_position(user):
     return jsonify(position=SchedulerState.get_user_position(user))
 
-
 @blueprint.route('/b/apps/iamalive', methods=['POST'])
 @authentication_required
 def set_is_alive_current_app(user):
     SchedulerState.set_is_alive_current_app(user['username'])
     return jsonify(pouet='pouet')
 
+@blueprint.route('/b/apps/quit', methods=['GET'])
+@authentication_required
+def delete(user):
+       c_app = SchedulerState.get_current_app()
+    if 'username' in c_app:
+        if is_admin(user):
+            SchedulerState.stop_app(c_app)
+        else:
+            if c_app['username'] == user['username']:
+                SchedulerState.stop_app(c_app)
+            else:
+                abort(400, "You are not the owner of the current app")
+    else:
+        print("Tried to delete an app while no one was running, ignoring delete request.")
+        abort(400, "No app found. Nothing to quit.")
+    return '', 204
 
-@blueprint.route('/b/apps/position', methods=['DELETE'])
+@blueprint.route('/b/queue/quit', methods=['GET'])
 @authentication_required
 def remove_from_queue(user):
     if SchedulerState.remove_user_position(user):
