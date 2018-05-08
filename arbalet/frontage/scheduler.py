@@ -98,9 +98,6 @@ class Scheduler(object):
         sunrise = SchedulerState.get_scheduled_off_time()
         sunset = SchedulerState.get_scheduled_on_time()
 
-        if sunset > sunrise:
-            sunrise = sunrise + datetime.timedelta(days=1)
-
         if sunset < now and now < sunrise:
             SchedulerState.set_frontage_on(True)
         else:
@@ -220,23 +217,24 @@ class Scheduler(object):
 
     def print_scheduler_info(self):
         if self.count % 10 == 0:
-            print_flush("-------- Current App")
-            print_flush(SchedulerState.get_current_app())
+            print_flush(" ========== Scheduling ==========")
             print_flush("-------- Enable State")
             print_flush(SchedulerState.get_enable_state())
+            print_flush("-------- Is Frontage Up?")
+            print_flush(SchedulerState.is_frontage_on())
             print_flush("-------- Usable?")
             print_flush(SchedulerState.usable())
-            print_flush("Is Frontage Up?")
-            print_flush(SchedulerState.is_frontage_on())
+            print_flush("-------- Current App")
+            print_flush(SchedulerState.get_current_app())
+            print_flush('Forced App ?' + str(SchedulerState.get_forced_app() == 'True'))
             print_flush("---------- Waiting Queue")
             print_flush(SchedulerState.get_user_app_queue())
-            print_flush('Forced App ?' + str(SchedulerState.get_forced_app() == 'True'))
-            print_flush("---------- Sunrise")
-            print_flush(SchedulerState.get_scheduled_off_time())
-            print_flush(SchedulerState.get_forced_off_time())
-            print_flush("---------- Sunset")
-            print_flush(SchedulerState.get_scheduled_on_time())
-            print_flush(" ========== Scheduling ==========")
+            if SchedulerState.get_enable_state() == 'scheduled':
+                print_flush('Forced App ?', SchedulerState.get_forced_app() == 'True')
+                print_flush("---------- Scheduled ON")
+                print_flush(SchedulerState.get_scheduled_on_time())
+                print_flush("---------- Scheduled OFF")
+                print_flush(SchedulerState.get_scheduled_off_time())
         self.count += 1
 
     def run(self):

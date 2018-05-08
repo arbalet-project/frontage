@@ -265,7 +265,7 @@ class SchedulerState(object):
     # ----
 
     @staticmethod
-    def get_scheduled_off_time():
+    def _get_scheduled_off_time():
         forced_off_time = SchedulerState.get_forced_off_time()
         if forced_off_time:
             try:
@@ -274,18 +274,38 @@ class SchedulerState(object):
                 SchedulerState.set_forced_off_time('')
             else:
                 now = datetime.datetime.now()
-                forced_sunrise_dt = now.replace(hour=forced_off_time.hour, minute=forced_off_time.minute,
-                                                second=0, microsecond=0)
-                return forced_sunrise_dt
-        at = datetime.datetime.now().strftime('%Y-%m-%d')
-        v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(
-            SchedulerState.KEY_OFF_TIME, datetime.datetime.now().isoformat())
-        sunrise = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
+                off_time = now.replace(hour=forced_off_time.hour, minute=forced_off_time.minute, second=0, microsecond=0)
+        else:
+            at = datetime.datetime.now().strftime('%Y-%m-%d')
+            v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(
+                SchedulerState.KEY_OFF_TIME, datetime.datetime.now().isoformat())
 
-        return sunrise + datetime.timedelta(hours=float(SchedulerState.get_sunrise_offset()))
+            off_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
+            off_time = off_time + datetime.timedelta(hours=float(SchedulerState.get_sunrise_offset()))
+        return off_time
+
+    @staticmethod
+    def get_scheduled_off_time():
+        off_time = SchedulerState._get_scheduled_off_time()
+        on_time = SchedulerState._get_scheduled_on_time()
+        now = datetime.datetime.now()
+
+        if on_time > off_time and now > off_time:
+            off_time = off_time + datetime.timedelta(days=1)
+        return off_time
 
     @staticmethod
     def get_scheduled_on_time():
+        off_time = SchedulerState._get_scheduled_off_time()
+        on_time = SchedulerState._get_scheduled_on_time()
+        now = datetime.datetime.now()
+
+        if on_time > off_time and now < off_time:
+            on_time = on_time + datetime.timedelta(days=-1)
+        return on_time
+
+    @staticmethod
+    def _get_scheduled_on_time():
         forced_on_time = SchedulerState.get_forced_on_time()
         if forced_on_time:
             try:
@@ -300,8 +320,8 @@ class SchedulerState(object):
         at = datetime.datetime.now().strftime('%Y-%m-%d')
         v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(
             SchedulerState.KEY_ON_TIME, datetime.datetime.now().isoformat())
-        sunset = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
-        return sunset + datetime.timedelta(hours=float(SchedulerState.get_sundown_offset()))
+        on_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
+        return on_time + datetime.timedelta(hours=float(SchedulerState.get_sundown_offset()))
 
     @staticmethod
     def get_current_app():
