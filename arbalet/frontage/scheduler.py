@@ -23,7 +23,7 @@ from db.models import ConfigModel
 from db.base import session_factory
 
 
-EXPIRE_SOON_DELAY = 5
+EXPIRE_SOON_DELAY = 90
 
 
 class Scheduler(object):
