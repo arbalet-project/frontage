@@ -18,12 +18,6 @@ case "$1" in
         FLASK_APP=server_app.py flask run --port 8123  --with-threads --host '0.0.0.0'
         echo "---> END"
         ;;
-    worker)
-        cd /usr/src/app/
-        /wait-for-it.sh rabbit:5672
-        # celery -A tasks beat &
-        exec celery -A tasks worker -B --loglevel=DEBUG -l debug
-        ;;
     scheduler)
         echo "---> Starting Scheduler"
         cd /usr/src/app/

@@ -47,16 +47,6 @@ services:
       - 8124:8124
       - 33450:33450
     command: ["queue"]
-  worker:
-    build: .
-    volumes:
-      - ./arbalet/frontage:/usr/src/app
-    env_file: .env-dev
-    links:
-      - rabbit:rabbit
-      - redis:redis
-      - postgres:postgres
-    command: ["worker"]
   postgres:
     image: postgres
     env_file: .env-dev
