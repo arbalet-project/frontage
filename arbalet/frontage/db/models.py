@@ -69,7 +69,7 @@ class ConfigModel(Base):
         self.offset_sunrise = 0
         self.default_app_lifetime = 15 * 60
 
-        self.expires_delay = 120
+        self.expires_delay = 180
 
     def __repr__(self):
         return '<ConfigModel %r (%r) (%r)>' % (

@@ -183,7 +183,7 @@ class AppRuningView(Resource):
     def post(self, user):
         name = request.get_json()['name']
         params = request.get_json().get('params', {})
-        expires = request.get_json().get('expires', 20)
+        expires = SchedulerState.get_expires_value()
         if not SchedulerState.usable():
             print_flush("Frontage is not started")
             abort(400, "Frontage is not started")
