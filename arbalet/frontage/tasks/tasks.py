@@ -28,9 +28,6 @@ class TestApp():
 
 def clear_all_task():
     celery.control.purge()
-    if current_task:
-        revoke(current_task.request.id, terminate=True)
-    sleep(0.5)
     SchedulerState.set_current_app({})
     SchedulerState.set_event_lock(False)
 
