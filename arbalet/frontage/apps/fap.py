@@ -111,4 +111,3 @@ class Fap(object):
         if self.ws is not None:
             self.ws.close()
             time.sleep(0.2)
-        print('----CLOSED----')

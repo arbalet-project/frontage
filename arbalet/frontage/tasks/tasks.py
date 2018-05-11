@@ -2,14 +2,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import datetime
-import sys
 import time
 
-from time import sleep
+from logging import INFO
 
 from server.extensions import celery
-from celery.task.control import revoke
-from celery import current_task
+from celery.utils.log import get_task_logger
 from server.flaskutils import print_flush
 
 from scheduler_state import SchedulerState
@@ -22,17 +20,11 @@ from apps.snake import Snake
 from apps.tetris import Tetris
 from apps.snap import Snap
 
-
 class TestApp():
     def run(self, params):
         print('[TASK] Running a test app. Im doing nothing at all')
         while True:
             pass
-
-
-def flask_log(msg):
-    print(msg, file=sys.stderr)
-
 
 def clear_all_task():
     celery.control.purge()
@@ -96,17 +88,13 @@ def start_fap(app):
     SchedulerState.set_event_lock(False)
 
     try:
-        flask_log('[start_fap.apply_async] ===========> start run')
         fap = globals()[app['name']](app['username'])
         fap.run(params=app['params'], expires_at=app['expire_at'])
     except Exception as e:
-        flask_log('--->APP>>')
-        flask_log('Error when starting task ' + str(e))
         raise e
     finally:
         del fap
         SchedulerState.set_current_app({})
-        flask_log('--======================== ENDED START_APP')
 
 
 @celery.task

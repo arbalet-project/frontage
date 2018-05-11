@@ -7,15 +7,11 @@
 """
 import sys
 import petname
-import socket
 from json import dumps, loads
 
 from flask import Flask
 from flask import request
 from flask_cors import CORS
-from flask import render_template
-from flask import Response
-from functools import wraps
 
 from threading import RLock
 

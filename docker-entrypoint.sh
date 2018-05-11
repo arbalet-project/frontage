@@ -14,7 +14,6 @@ case "$1" in
         export FLASK_DEBUG=1
         /wait-for-it.sh rabbit:5672
         echo "---> Start EXEC"
-        # exec /usr/local/bin/python server.py port 8123
         FLASK_APP=server_app.py flask run --port 8123  --with-threads --host '0.0.0.0'
         echo "---> END"
         ;;
@@ -22,14 +21,12 @@ case "$1" in
         echo "---> Starting Scheduler"
         cd /usr/src/app/
         /wait-for-it.sh rabbit:5672
-        # celery -A tasks beat &
         exec /usr/local/bin/python scheduler.py
         ;;
     queue)
         cd /usr/src/app/
         /wait-for-it.sh rabbit:5672
-        exec celery -A tasks worker --concurrency=1 -Q userapp -n workerqueue --loglevel=DEBUG -l debug
-        #--loglevel=DEBUG -l debug
+        exec celery -A tasks worker --concurrency=1 -Q userapp --loglevel=INFO
         ;;
     *)
         echo "Please specify argument (prod|dev) [ARGS..]";
