@@ -99,3 +99,6 @@ ENV/
 .mypy_cache/
 
 arbalet/frontage/celerybeat.pid
+postgresdata
+.idea
+
