@@ -149,13 +149,12 @@ class AppAdminRuningView(Resource):
     def post(self, user):
         name = request.get_json()['name']
         params = request.get_json().get('params', {})
-        expires = request.get_json().get('expires', SchedulerState.get_expires_value())
 
         if not SchedulerState.usable():
             print_flush("Frontage is not started")
             abort(400, "Frontage is not started")
         if is_admin(user):
-            if SchedulerState.set_forced_app(name, params, expires):
+            if SchedulerState.set_forced_app_request(name, params):
                 return True
             else:
                 abort(409, 'An app is already forced')
@@ -165,14 +164,14 @@ class AppAdminRuningView(Resource):
     @authentication_required
     def delete(self, user):
         if is_admin(user):
-            if not SchedulerState.stop_forced_app():
+            if not SchedulerState.stop_forced_app_request():
                 abort(404, "No such app")
         else:
             abort(400, "Forbidden Bru")
         return '', 204
 
 
-class AppRuningView(Resource):
+class AppRunningView(Resource):
     @authentication_required
     def get(self, user):
         while SchedulerState.is_event_lock():
@@ -189,8 +188,7 @@ class AppRuningView(Resource):
             abort(400, "Frontage is not started")
 
         try:
-            return SchedulerState.start_scheduled_app(
-                user['username'], name, params, expires)
+            return SchedulerState.start_user_app_request(user['username'], name, params, expires)
         except Exception as e:
             print_flush(str(e))
             abort(403, str(e))
@@ -289,10 +287,10 @@ def delete(user):
     c_app = SchedulerState.get_current_app()
     if 'username' in c_app:
         if is_admin(user):
-            SchedulerState.stop_app(c_app)
+            SchedulerState.stop_app_request()
         else:
             if c_app['username'] == user['username']:
-                SchedulerState.stop_app(c_app)
+                SchedulerState.stop_app_request()
             else:
                 abort(400, "You are not the owner of the current app")
     else:
@@ -325,6 +323,6 @@ rest_api.add_resource(AppDefaultParamView, '/b/apps/default/<string:app_name>')
 rest_api.add_resource(AppDefaultListView, '/b/apps/default')
 
 rest_api.add_resource(AppAdminRuningView, '/b/apps/admin/running')
-rest_api.add_resource(AppRuningView, '/b/apps/running')
+rest_api.add_resource(AppRunningView, '/b/apps/running')
 rest_api.add_resource(AppQueueView, '/b/apps/queue')
 rest_api.add_resource(AppListView, '/b/apps')

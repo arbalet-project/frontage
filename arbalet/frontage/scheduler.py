@@ -6,7 +6,7 @@ import time
 from time import sleep
 from utils.red import redis, redis_get
 from frontage import Frontage
-from tasks.tasks import start_fap, start_default_fap, clear_all_task
+from tasks.tasks import start_fap, start_default_fap, start_forced_fap, clear_all_task
 from scheduler_state import SchedulerState
 
 from apps.fap import Fap
@@ -129,18 +129,19 @@ class Scheduler(object):
 
     def stop_current_app_start_next(self, queue, c_app, next_app):
         SchedulerState.set_event_lock(True)
-        print_flush('===> REVOKING APP, someone else turn')
+        print_flush('===> LOCKING 1')
+
+        print_flush('===> REVOKING APP')
         SchedulerState.stop_app(c_app, Fap.CODE_EXPIRE, 'someone else turn')
         self.frontage.fade_out()
         # Start app
         start_fap.apply_async(args=[next_app], queue='userapp')
-        print_flush("## Starting {} [case A]".format(next_app['name']))
+        print_flush("## Starting {} [stop_current_app_start_next]".format(next_app['name']))
         # Remove app form waiting Q
         # SchedulerState.pop_user_app_queue(queue)
 
     def app_is_expired(self, c_app):
         now = datetime.datetime.now()
-
         return now > datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f")
 
     def start_default_app(self):
@@ -151,6 +152,8 @@ class Scheduler(object):
             default_scheduled_app['expires'] = SchedulerState.get_default_fap_lifetime()
             default_scheduled_app['default_params']['name'] = default_scheduled_app['name']  # Fix for Colors (see TODO refactor in colors.py)
             SchedulerState.set_event_lock(True)
+            print_flush('===> LOCKING 2')
+
             start_default_fap.apply_async(args=[default_scheduled_app], queue='userapp')
             SchedulerState.wait_task_to_start()
             print_flush("## Starting {} [DEFAULT]".format(default_scheduled_app['name']))
@@ -164,8 +167,15 @@ class Scheduler(object):
         c_app = SchedulerState.get_current_app()  # Current running app
         now = datetime.datetime.now()
 
+        forced_app = SchedulerState.get_forced_app_request()
+
         # Is a app running ?
         if c_app:
+            if len(forced_app) > 0 and not SchedulerState.get_forced_app():
+                SchedulerState.clear_user_app_queue()
+                SchedulerState.set_event_lock(True)
+                SchedulerState.stop_app(SchedulerState.get_current_app(), Fap.CODE_CLOSE_APP, 'The admin started a forced app')
+                return
             # do we kill an old app no used ? ?
             if self.keep_alive_current_app(c_app):
                 return
@@ -179,7 +189,7 @@ class Scheduler(object):
             # is the current_app expired ?
             if self.app_is_expired(c_app) or c_app.get('is_default', False):
                 # is the current_app a FORCED_APP ?
-                if redis_get(SchedulerState.KEY_FORCED_APP, False) == 'True':
+                if SchedulerState.get_forced_app():
                     SchedulerState.stop_app(c_app)
                     return
                 # is some user-app are waiting in queue ?
@@ -206,14 +216,20 @@ class Scheduler(object):
                         else:
                             pass
         else:
+            if len(forced_app) > 0 and not SchedulerState.get_forced_app():
+                print_flush("## Starting {} [FORCED]".format(forced_app['name']))
+                SchedulerState.clear_forced_app_request()
+                start_forced_fap.apply_async(args=[forced_app])
+                redis.set(SchedulerState.KEY_FORCED_APP, 'True')
+                return
             # is an user-app waiting in queue to be started ?
-            if len(queue) > 0:
+            elif len(queue) > 0:
                 SchedulerState.set_event_lock(True)
                 start_fap.apply_async(args=[queue[0]], queue='userapp')
-                print_flush(" Starting {}".format(queue[0]['name']))
-                # start default scheduled_app
+                print_flush(" Starting {} [QUEUE]".format(queue[0]['name']))
+                return
             else:
-                self.start_default_app()
+                return self.start_default_app()
 
     def print_scheduler_info(self):
         if self.count % 10 == 0:
@@ -226,11 +242,10 @@ class Scheduler(object):
             print_flush(SchedulerState.usable())
             print_flush("-------- Current App")
             print_flush(SchedulerState.get_current_app())
-            print_flush('Forced App ?' + str(SchedulerState.get_forced_app() == 'True'))
+            print_flush('Forced App ?', SchedulerState.get_forced_app())
             print_flush("---------- Waiting Queue")
             print_flush(SchedulerState.get_user_app_queue())
             if SchedulerState.get_enable_state() == 'scheduled':
-                print_flush('Forced App ?', SchedulerState.get_forced_app() == 'True')
                 print_flush("---------- Scheduled ON")
                 print_flush(SchedulerState.get_scheduled_on_time())
                 print_flush("---------- Scheduled OFF")

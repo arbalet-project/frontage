@@ -49,11 +49,12 @@ class SchedulerState(object):
 
     # admin override app
     KEY_FORCED_APP = 'frontage_forced_app'
+    KEY_STOP_APP_REQUEST = 'frontage_stop_app_request'
+    KEY_FORCED_APP_REQUEST = 'frontage_forced_app_request'
     # App started by user, (queued)
     KEY_USERS_Q = 'frontage_users_q'
 
     KEY_CURRENT_RUNNING_APP = 'frontage_current_running_app'
-    """KEY_CURRENT_USER = 'frontage_current_user'"""
 
     @staticmethod
     def get_expires_value():
@@ -115,23 +116,32 @@ class SchedulerState(object):
         return redis_get(SchedulerState.KEY_FORCED_APP, False) == 'True'
 
     @staticmethod
+    def get_forced_app_request():
+        return json.loads(redis_get(SchedulerState.KEY_FORCED_APP_REQUEST, '{}'))
+
+    @staticmethod
+    def clear_forced_app_request():
+        redis.set(SchedulerState.KEY_FORCED_APP_REQUEST, '{}')
+
+    @staticmethod
     def wait_task_to_start():
         while not SchedulerState.get_current_app():
             sleep(0.1)
 
     @staticmethod
-    def set_forced_app(app_name, params, expires=600):
-        from tasks.tasks import start_forced_fap
+    def set_forced_app_request(app_name, params):
         # from apps.fap import Fap
         if SchedulerState.get_forced_app():
             return False
-        # TODO is a lock necessary here?
-        SchedulerState.set_event_lock(True)
-        SchedulerState.clear_user_app_queue()
-        SchedulerState.stop_app(SchedulerState.get_current_app(), 1, 'The admin started a forced app')
-        start_forced_fap.apply_async(args=[app_name, 'FORCED', params], expires=expires)
-        redis.set(SchedulerState.KEY_FORCED_APP, 'True')
+        redis.set(SchedulerState.KEY_FORCED_APP_REQUEST, json.dumps({'name': app_name, 'params': params}))
         return True
+
+    @staticmethod
+    def stop_forced_app_request():
+        if not SchedulerState.get_forced_app():
+            return False
+        else:
+            redis.set(SchedulerState.KEY_STOP_APP_REQUEST, 'True')
 
     @staticmethod
     def stop_forced_app():
@@ -164,6 +174,7 @@ class SchedulerState(object):
     def get_available_apps():
         return json.loads(redis.get(SchedulerState.KEY_REGISTERED_APP))
 
+    @staticmethod
     def set_frontage_on(value):
         redis.set(SchedulerState.KEY_FRONTAGE_ON_OFF, value)
 
@@ -471,13 +482,17 @@ class SchedulerState(object):
         redis.get(SchedulerState.KEY_APP_STARTED_AT)
 
     @staticmethod
+    def stop_app_request():
+        redis.set(SchedulerState.KEY_STOP_APP_REQUEST, 'True')
+
+    @staticmethod
     def stop_app(c_app, stop_code=None, stop_message=None):
         # flask_log(" ========= STOP_APP ====================")
         if not c_app:
             return
 
         from tasks.celery import app
-        if not c_app.get('is_default', False):
+        if not c_app.get('is_default', False) and not c_app.get('is_forced', False):
             if stop_code and stop_message:
                 Websock.send_data(stop_code, stop_message, c_app['username'])
 
@@ -551,7 +566,7 @@ class SchedulerState(object):
         return json.loads(redis_get(SchedulerState.KEY_USERS_Q, '[]'))
 
     @staticmethod
-    def start_scheduled_app(username, app_name, params, expires):
+    def start_user_app_request(username, app_name, params, expires):
         # from tasks.tasks import start_fap
         # Check Queue
         queue = SchedulerState.get_user_queue()

@@ -10,6 +10,7 @@ from time import sleep
 from server.extensions import celery
 from celery.task.control import revoke
 from celery import current_task
+from server.flaskutils import print_flush
 
 from scheduler_state import SchedulerState
 from utils.red import redis, redis_get
@@ -108,12 +109,15 @@ def start_fap(app):
 
 
 @celery.task
-def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
+def start_forced_fap(fap):
     SchedulerState.set_app_started_at()
+    name = fap['name']
+    params = fap['params']
+
     app_struct = {
-        'name': fap_name,
-        'username': user_name,
-        'params': params,
+        'name': name,
+        'username': '>>>>FORCED<<<<',
+        'params': fap['params'],
         'task_id': start_forced_fap.request.id,
         'last_alive': time.time(),
         'started_at': datetime.datetime.now().isoformat(),
@@ -121,16 +125,13 @@ def start_forced_fap(fap_name=None, user_name='Anonymous', params=None):
         'expire_at': str(datetime.datetime.now() + datetime.timedelta(weeks=52))}
     SchedulerState.set_current_app(app_struct)
     SchedulerState.set_event_lock(False)
-    if fap_name:
-        try:
-            fap = globals()[fap_name](app_struct['username'])
-            redis.set(SchedulerState.KEY_FORCED_APP, True)
-            fap.run(params=params)
-            return True
-        except Exception as e:
-            print('Error when starting task ' + str(e))
-            raise
-        finally:
-            redis.set(SchedulerState.KEY_FORCED_APP, False)
-            SchedulerState.set_current_app({})
-    return True
+    try:
+        fap = globals()[name](app_struct['username'])
+        fap.run(params=params)
+        return True
+    except Exception as e:
+        print('Error when starting task ' + str(e))
+        raise
+    finally:
+        redis.set(SchedulerState.KEY_FORCED_APP, 'False')
+        SchedulerState.set_current_app({})
