@@ -55,5 +55,13 @@ services:
       - 5544:5432
     volumes:
       - db-data:/var/lib/postgresql/data
+  snap:
+    image: nginx
+    build: snap
+    env_file: .env-dev
+    restart: always
+    ports:
+      - 8080:80
+
 volumes:
   db-data:
