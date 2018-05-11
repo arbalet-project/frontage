@@ -1,8 +1,5 @@
-from __future__ import print_function
-
 import json
 import datetime
-import sys
 import time
 
 from time import sleep
@@ -10,12 +7,8 @@ from utils.red import redis, redis_get
 from db.models import FappModel, ConfigModel
 from db.base import session_factory
 from db.tools import to_dict, serialize
-from utils.websock import Websock
 
-
-def flask_log(msg):
-    print(msg, file=sys.stderr)
-
+from server.flaskutils import print_flush
 
 def add_secs_to_time(timeval, secs_to_add):
     dummy_date = datetime.date(1, 1, 1)
@@ -96,7 +89,6 @@ class SchedulerState(object):
 
     @staticmethod
     def set_expire_soon(value=True):
-        flask_log('==== Set Expire Soon')
         redis.set(SchedulerState.KEY_NOTICE_EXPIRE_SOON, value)
 
     @staticmethod
@@ -142,15 +134,6 @@ class SchedulerState(object):
             return False
         else:
             redis.set(SchedulerState.KEY_STOP_APP_REQUEST, 'True')
-
-    @staticmethod
-    def stop_forced_app():
-        from apps.fap import Fap
-        if SchedulerState.get_forced_app():
-            SchedulerState.stop_app(SchedulerState.get_current_app(), Fap.CODE_CLOSE_APP, 'App unforced')
-            redis.set(SchedulerState.KEY_FORCED_APP, 'False')
-            return True
-        return False
 
     @staticmethod
     def set_registered_apps(apps):
@@ -486,23 +469,6 @@ class SchedulerState(object):
         redis.set(SchedulerState.KEY_STOP_APP_REQUEST, 'True')
 
     @staticmethod
-    def stop_app(c_app, stop_code=None, stop_message=None):
-        # flask_log(" ========= STOP_APP ====================")
-        if not c_app:
-            return
-
-        from tasks.celery import app
-        if not c_app.get('is_default', False) and not c_app.get('is_forced', False):
-            if stop_code and stop_message:
-                Websock.send_data(stop_code, stop_message, c_app['username'])
-
-        sleep(0.1)
-        # revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
-        # app.control.revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
-        app.control.revoke(c_app['task_id'], terminate=True)
-        sleep(0.05)
-
-    @staticmethod
     def pop_user_app_queue(queue=None):
         if not queue:
             queue = SchedulerState.get_user_app_queue()
@@ -586,9 +552,7 @@ class SchedulerState(object):
                       'task_id': None,
                       'last_alive': time.time(),
                       'expire_at': None}
-        # Actually starting app
-        # t = start_fap.apply_async(args=[app_name, username, params, expires], queue='userapp', potato='fghbjndfghj')
-        # Add to queue starting app
+
         queue.append(app_struct)
         redis.set(SchedulerState.KEY_USERS_Q, json.dumps(queue))
 

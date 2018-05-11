@@ -21,6 +21,7 @@ from utils.sentry_client import SENTRY
 from server.flaskutils import print_flush
 from db.models import ConfigModel
 from db.base import session_factory
+from utils.websock import Websock
 
 
 EXPIRE_SOON_DELAY = 30
@@ -89,7 +90,7 @@ class Scheduler(object):
 
     def keep_alive_current_app(self, current_app):
         if not current_app.get('is_default', False) and time.time() > (current_app['last_alive'] + SchedulerState.DEFAULT_CURRENT_APP_KEEP_ALIVE_DELAY):
-            SchedulerState.stop_app(current_app, Fap.CODE_EXPIRE, 'someone else turn')
+            self.stop_app(current_app, Fap.CODE_EXPIRE, 'someone else turn')
             return True
         return False
 
@@ -105,13 +106,31 @@ class Scheduler(object):
 
     def disable_frontage(self):
         SchedulerState.clear_user_app_queue()
-        SchedulerState.stop_app(SchedulerState.get_current_app(),
+        self.stop_app(SchedulerState.get_current_app(),
                                 Fap.CODE_CLOSE_APP,
                                 'The admin started a forced app')
 
+    def stop_app(self, c_app, stop_code=None, stop_message=None):
+        # flask_log(" ========= STOP_APP ====================")
+        if not c_app:
+            return
+
+        from tasks.celery import app
+        if not c_app.get('is_default', False) and not c_app.get('is_forced', False):
+            if stop_code and stop_message:
+                Websock.send_data(stop_code, stop_message, c_app['username'])
+
+        sleep(0.1)
+        # revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
+        # app.control.revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
+        app.control.revoke(c_app['task_id'], terminate=True)
+        self.frontage.fade_out()
+
+        sleep(0.05)
+
     def run_scheduler(self):
         # check usable value, based on ON/OFF AND if a forced app is running
-        SchedulerState.set_usable((not SchedulerState.get_forced_app() == 'True') and SchedulerState.is_frontage_on())
+        SchedulerState.set_usable((not SchedulerState.get_forced_app()) and SchedulerState.is_frontage_on())
         enable_state = SchedulerState.get_enable_state()
         if enable_state == 'scheduled':
             self.check_on_off_table()
@@ -132,8 +151,7 @@ class Scheduler(object):
         print_flush('===> LOCKING 1')
 
         print_flush('===> REVOKING APP')
-        SchedulerState.stop_app(c_app, Fap.CODE_EXPIRE, 'someone else turn')
-        self.frontage.fade_out()
+        self.stop_app(c_app, Fap.CODE_EXPIRE, 'someone else turn')
         # Start app
         start_fap.apply_async(args=[next_app], queue='userapp')
         print_flush("## Starting {} [stop_current_app_start_next]".format(next_app['name']))
@@ -173,8 +191,7 @@ class Scheduler(object):
         if c_app:
             if len(forced_app) > 0 and not SchedulerState.get_forced_app():
                 SchedulerState.clear_user_app_queue()
-                SchedulerState.set_event_lock(True)
-                SchedulerState.stop_app(SchedulerState.get_current_app(), Fap.CODE_CLOSE_APP, 'The admin started a forced app')
+                self.stop_app(SchedulerState.get_current_app(), Fap.CODE_CLOSE_APP, 'The admin started a forced app')
                 return
             # do we kill an old app no used ? ?
             if self.keep_alive_current_app(c_app):
@@ -190,7 +207,7 @@ class Scheduler(object):
             if self.app_is_expired(c_app) or c_app.get('is_default', False):
                 # is the current_app a FORCED_APP ?
                 if SchedulerState.get_forced_app():
-                    SchedulerState.stop_app(c_app)
+                    self.stop_app(c_app)
                     return
                 # is some user-app are waiting in queue ?
                 if len(queue) > 0:
@@ -201,16 +218,14 @@ class Scheduler(object):
                     # is a defautl scheduled app ?
                     if c_app.get('is_default', False) and self.app_is_expired(c_app):
                         print_flush('===> Stoping Default Scheduled app')
-                        SchedulerState.stop_app(c_app)
-                        self.frontage.fade_out()
+                        self.stop_app(c_app)
                         return
                     # it's a USER_APP, we let it running, do nothing
                     else:
                         # is a defautl scheduled app ?
                         if c_app.get('is_default', False) and self.app_is_expired(c_app):
                             print_flush('===> Stoping Default Scheduled app')
-                            SchedulerState.stop_app(c_app)
-                            self.frontage.fade_out()
+                            self.stop_app(c_app)
                             return
                         # it's a USER_APP, we let it running, do nothing
                         else:
@@ -275,7 +290,6 @@ def load_day_table(file_name):
     with open(file_name, 'r') as f:
         SUN_TABLE = json.loads(f.read())
         redis.set(SchedulerState.KEY_DAY_TABLE, json.dumps(SUN_TABLE))
-
 
 if __name__ == '__main__':
     try:
