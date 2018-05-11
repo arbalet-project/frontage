@@ -108,6 +108,10 @@ class SchedulerState(object):
         return redis_get(SchedulerState.KEY_FORCED_APP, False) == 'True'
 
     @staticmethod
+    def get_close_app_request():
+        return redis_get(SchedulerState.KEY_STOP_APP_REQUEST, False) == 'True'
+
+    @staticmethod
     def get_forced_app_request():
         return json.loads(redis_get(SchedulerState.KEY_FORCED_APP_REQUEST, '{}'))
 
@@ -134,6 +138,7 @@ class SchedulerState(object):
             return False
         else:
             redis.set(SchedulerState.KEY_STOP_APP_REQUEST, 'True')
+            return True
 
     @staticmethod
     def set_registered_apps(apps):

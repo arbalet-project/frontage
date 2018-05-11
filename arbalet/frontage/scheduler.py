@@ -149,15 +149,12 @@ class Scheduler(object):
 
     def stop_current_app_start_next(self, queue, c_app, next_app):
         SchedulerState.set_event_lock(True)
-        print_flush('===> LOCKING 1')
-
         print_flush('===> REVOKING APP')
-        self.stop_app(c_app, Fap.CODE_EXPIRE, 'someone else turn')
+        self.stop_app(c_app, Fap.CODE_EXPIRE, 'Someone else turn')
         # Start app
-        start_fap.apply_async(args=[next_app], queue='userapp')
         print_flush("## Starting {} [stop_current_app_start_next]".format(next_app['name']))
-        # Remove app form waiting Q
-        # SchedulerState.pop_user_app_queue(queue)
+        start_fap.apply_async(args=[next_app], queue='userapp')
+        SchedulerState.wait_task_to_start()
 
     def app_is_expired(self, c_app):
         now = datetime.datetime.now()
@@ -171,11 +168,10 @@ class Scheduler(object):
             default_scheduled_app['expires'] = SchedulerState.get_default_fap_lifetime()
             default_scheduled_app['default_params']['name'] = default_scheduled_app['name']  # Fix for Colors (see TODO refactor in colors.py)
             SchedulerState.set_event_lock(True)
-            print_flush('===> LOCKING 2')
 
+            print_flush("## Starting {} [DEFAULT]".format(default_scheduled_app['name']))
             start_default_fap.apply_async(args=[default_scheduled_app], queue='userapp')
             SchedulerState.wait_task_to_start()
-            print_flush("## Starting {} [DEFAULT]".format(default_scheduled_app['name']))
 
     def check_app_scheduler(self):
         # check keep alive app (in user waiting app Q)
@@ -190,18 +186,20 @@ class Scheduler(object):
 
         # Is a app running ?
         if c_app:
+            if SchedulerState.get_close_app_request():
+                self.stop_app(c_app, None, 'Executing requested app closure')
+                redis.set(SchedulerState.KEY_CURRENT_RUNNING_APP, '{}')
+                redis.set(SchedulerState.KEY_STOP_APP_REQUEST, 'False')
+                return
             if len(forced_app) > 0 and not SchedulerState.get_forced_app():
                 SchedulerState.clear_user_app_queue()
-                self.stop_app(SchedulerState.get_current_app(), Fap.CODE_CLOSE_APP, 'The admin started a forced app')
+                self.stop_app(c_app, Fap.CODE_CLOSE_APP, 'The admin started a forced app')
                 return
             # do we kill an old app no used ? ?
             if self.keep_alive_current_app(c_app):
                 return
             # is expire soon ?
-            if 'is_default' not in c_app:
-                print('NO IS_DEFAULT in CURRENT_APP !')
-                raise ValueError('NO IS_DEFAULT in CURRENT_APP !')
-            if not c_app['is_default'] and now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
+            if not c_app.get('is_default', False) and now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
                 if not SchedulerState.get_expire_soon():
                     Fap.send_expires_soon(EXPIRE_SOON_DELAY, c_app['username'])
             # is the current_app expired ?
@@ -234,6 +232,7 @@ class Scheduler(object):
         else:
             if len(forced_app) > 0 and not SchedulerState.get_forced_app():
                 print_flush("## Starting {} [FORCED]".format(forced_app['name']))
+                SchedulerState.set_event_lock(True)
                 SchedulerState.clear_forced_app_request()
                 start_forced_fap.apply_async(args=[forced_app], queue='userapp')
                 redis.set(SchedulerState.KEY_FORCED_APP, 'True')
