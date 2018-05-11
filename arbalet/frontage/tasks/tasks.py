@@ -42,7 +42,6 @@ def clear_all_task():
     SchedulerState.set_current_app({})
     SchedulerState.set_event_lock(False)
 
-
 @celery.task
 def start_default_fap(app):
     SchedulerState.set_app_started_at()
@@ -60,6 +59,7 @@ def start_default_fap(app):
 
     app['task_id'] = start_default_fap.request.id
     app['is_default'] = True
+    app['is_forced'] = False
     app['last_alive'] = time.time()
     app['username'] = '>>>default<<<'
     app['started_at'] = datetime.datetime.now().isoformat()
@@ -88,6 +88,7 @@ def start_fap(app):
         datetime.timedelta(
             seconds=app['expires']))
     app['is_default'] = False
+    app['is_forced'] = False
     app['task_id'] = start_fap.request.id
     app['started_at'] = datetime.datetime.now().isoformat()
     SchedulerState.pop_user_app_queue()
@@ -114,7 +115,7 @@ def start_forced_fap(fap):
     name = fap['name']
     params = fap['params']
 
-    app_struct = {
+    app = {
         'name': name,
         'username': '>>>>FORCED<<<<',
         'params': fap['params'],
@@ -122,11 +123,12 @@ def start_forced_fap(fap):
         'last_alive': time.time(),
         'started_at': datetime.datetime.now().isoformat(),
         'is_default': False,
+        'is_forced': True,
         'expire_at': str(datetime.datetime.now() + datetime.timedelta(weeks=52))}
-    SchedulerState.set_current_app(app_struct)
+    SchedulerState.set_current_app(app)
     SchedulerState.set_event_lock(False)
     try:
-        fap = globals()[name](app_struct['username'])
+        fap = globals()[name](app['username'])
         fap.run(params=params)
         return True
     except Exception as e:

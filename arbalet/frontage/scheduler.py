@@ -89,8 +89,9 @@ class Scheduler(object):
                 queue.remove(c_app)
 
     def keep_alive_current_app(self, current_app):
-        if not current_app.get('is_default', False) and time.time() > (current_app['last_alive'] + SchedulerState.DEFAULT_CURRENT_APP_KEEP_ALIVE_DELAY):
-            self.stop_app(current_app, Fap.CODE_EXPIRE, 'someone else turn')
+        if not current_app.get('is_default', False) and not current_app.get('is_forced', False) and \
+                        time.time() > (current_app['last_alive'] + SchedulerState.DEFAULT_CURRENT_APP_KEEP_ALIVE_DELAY):
+            self.stop_app(current_app, Fap.CODE_EXPIRE, 'User has disappeared')
             return True
         return False
 
@@ -234,7 +235,7 @@ class Scheduler(object):
             if len(forced_app) > 0 and not SchedulerState.get_forced_app():
                 print_flush("## Starting {} [FORCED]".format(forced_app['name']))
                 SchedulerState.clear_forced_app_request()
-                start_forced_fap.apply_async(args=[forced_app])
+                start_forced_fap.apply_async(args=[forced_app], queue='userapp')
                 redis.set(SchedulerState.KEY_FORCED_APP, 'True')
                 return
             # is an user-app waiting in queue to be started ?
