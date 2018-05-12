@@ -118,7 +118,7 @@ class Scheduler(object):
 
         from tasks.celery import app
         if not c_app.get('is_default', False) and not c_app.get('is_forced', False):
-            if stop_code and stop_message:
+            if stop_code and stop_message and 'username' in c_app:
                 Websock.send_data(stop_code, stop_message, c_app['username'])
 
         sleep(0.1)
