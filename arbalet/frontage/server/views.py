@@ -133,18 +133,17 @@ def admin_get_settings():
     return jsonify(default_lifetime=SchedulerState.get_default_fap_lifetime())
 
 
-class AppQueueView(Resource):
-    @authentication_required
-    def delete(self, user):
-        if is_admin(user):
-            SchedulerState.clear_user_app_queue()
-        else:
-            abort(400, "Forbidden Bru")
+@blueprint.route('/b/apps/queue/clear', methods=['GET'])
+@authentication_required
+def admin_clear_queue(user):
+    if is_admin(user):
+        SchedulerState.clear_user_app_queue()
+    else:
+        abort(400, "Forbidden Bru")
+    return '', 204
 
-        return '', 204
 
-
-class AppAdminRuningView(Resource):
+class AppAdminRunningView(Resource):
     @authentication_required
     def post(self, user):
         req = request.get_json()
@@ -166,8 +165,9 @@ class AppAdminRuningView(Resource):
         else:
             abort(403, "Forbidden Bru")
 
+    @blueprint.route('/b/apps/admin/quit', methods=['GET'])
     @authentication_required
-    def delete(self, user):
+    def admin_app_quit(self, user):
         if is_admin(user):
             if not SchedulerState.stop_forced_app_request():
                 abort(404, "No such app")
@@ -238,13 +238,6 @@ class AppDefaultView(Resource):
     def get(self, user):
         return SchedulerState.get_default_scheduled_apps(serialized=True)
 
-    def delete(self, user):
-        if not is_admin(user):
-            abort(403, "Forbidden Bru")
-        SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), False)
-
-        return SchedulerState.get_default_scheduled_apps(serialized=True)
-
     @authentication_required
     def post(self, user):
         if not is_admin(user):
@@ -288,7 +281,7 @@ def set_is_alive_current_app(user):
 
 @blueprint.route('/b/apps/quit', methods=['GET'])
 @authentication_required
-def delete(user):
+def quit_user_app(user):
     c_app = SchedulerState.get_current_app()
     if 'username' in c_app:
         if is_admin(user):
@@ -299,7 +292,7 @@ def delete(user):
             else:
                 abort(400, "You are not the owner of the current app")
     else:
-        print("Tried to delete an app while no one was running, ignoring delete request.")
+        print("Tried to quit an app while no one was running, ignoring request.")
         abort(400, "No app found. Nothing to quit.")
     return '', 204
 
@@ -327,7 +320,6 @@ rest_api.add_resource(AppDefaultView, '/b/apps/default/')
 rest_api.add_resource(AppDefaultParamView, '/b/apps/default/<string:app_name>')
 rest_api.add_resource(AppDefaultListView, '/b/apps/default')
 
-rest_api.add_resource(AppAdminRuningView, '/b/apps/admin/running')
+rest_api.add_resource(AppAdminRunningView, '/b/apps/admin/running')
 rest_api.add_resource(AppRunningView, '/b/apps/running')
-rest_api.add_resource(AppQueueView, '/b/apps/queue')
 rest_api.add_resource(AppListView, '/b/apps')
