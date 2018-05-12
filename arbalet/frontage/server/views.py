@@ -147,15 +147,20 @@ class AppQueueView(Resource):
 class AppAdminRuningView(Resource):
     @authentication_required
     def post(self, user):
-        name = request.get_json()['name']
-        params = request.get_json().get('params', {})
+        req = request.get_json()
+        if 'name' not in req:
+            abort(400, 'Missing application name')
+
+        name = req['name']
+        params = req.get('params', {})
 
         if not SchedulerState.usable():
             print_flush("Frontage is not started")
             abort(400, "Frontage is not started")
         if is_admin(user):
-            if SchedulerState.set_forced_app_request(name, params):
-                return True
+            response = SchedulerState.set_forced_app_request(name, params)
+            if response:
+                return response
             else:
                 abort(409, 'An app is already forced')
         else:

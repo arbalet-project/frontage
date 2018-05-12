@@ -128,9 +128,13 @@ class SchedulerState(object):
     def set_forced_app_request(app_name, params):
         # from apps.fap import Fap
         if SchedulerState.get_forced_app():
-            return False
+            return {}
+
         redis.set(SchedulerState.KEY_FORCED_APP_REQUEST, json.dumps({'name': app_name, 'params': params}))
-        return True
+
+        return {
+            'keep_alive_delay': SchedulerState.DEFAULT_KEEP_ALIVE_DELAY,
+            'queued': True}
 
     @staticmethod
     def stop_forced_app_request():
