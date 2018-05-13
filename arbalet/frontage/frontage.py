@@ -14,7 +14,7 @@ __all__ = ['Frontage']
 
 
 class Frontage(Thread):
-    RATE_HZ = 40
+    RATE_HZ = 30
     FADE_OUT_NUM_FRAMES = 20
 
     def __init__(self, height=4, width=19):
