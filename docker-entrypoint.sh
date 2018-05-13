@@ -14,7 +14,7 @@ case "$1" in
         export FLASK_DEBUG=1
         /wait-for-it.sh rabbit:5672
         echo "---> Start EXEC"
-        FLASK_APP=server_app.py flask run --port 8123  --with-threads --host '0.0.0.0' --loglevel=DEBUG
+        FLASK_APP=server_app.py flask run --port 8123  --with-threads --host '0.0.0.0'
         echo "---> END"
         ;;
     scheduler)
