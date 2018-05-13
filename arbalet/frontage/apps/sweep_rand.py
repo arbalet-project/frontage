@@ -10,7 +10,7 @@ class SweepRand(Colors):
 
     def __init__(self, username=None):
         Colors.__init__(self, gen_sweep_rand, username)
-        self.PARAMS_LIST['uapp'] = ['african', 'gender', 'teddy', 'warm']
+        self.PARAMS_LIST['uapp'] = ['road', 'gender', 'cold', 'warm']
 
     def handle_message(self, data, path=None): # noqa
         if not self.LOCK_WS.acquire_write(2):
