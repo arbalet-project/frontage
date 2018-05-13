@@ -60,10 +60,21 @@ class Colors(Fap):
         self.rate = Rate(rate_hz)
         self.durations_min = params.get('dur_min', c_params.get('dur_min'))*rate_hz
         self.durations_max = params.get('dur_max', c_params.get('dur_max'))*rate_hz
+
         colors = params.get("colors", c_params.get('colors', []))
         if not isinstance(colors, (tuple, list, map)):
             colors = [colors]
-        self.colors = [name_to_hsv(c.lower()) if isinstance(c, str) else c for c in colors]
+
+        self.colors = []
+        for c in colors:
+            if isinstance(c, str):
+                try:
+                    color = name_to_hsv(c.lower())
+                except KeyError:
+                    color = (0, 0, 0)
+            else:
+                color = c
+            self.colors.append(color)
 
     def run(self, params, expires_at=None):
         if not self.generator:
