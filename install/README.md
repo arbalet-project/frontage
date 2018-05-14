@@ -23,7 +23,14 @@ sudo systemctl enable artnet.service
 
 sudo systemctl edit artnet  # Add a [Service] section with the 2 rabbitMQ credential strings
 
+# Network config for 16.04
 sudo cp interfaces /etc/network/interfaces
+
+# Network config for Netplan 18.04
+sudo cp 10-arbalet.yaml /etc/netplan/10-arbalet.yaml
+sudo netplan apply
+
+# DNS, hostname and DHCP
 sudo apt install dnsmasq
 sudo cp dnsmasq.conf /etc/dnsmasq.conf
 sudo cp hosts /etc/hosts
