@@ -1,0 +1,15 @@
+[Unit]
+Description=Sentry server
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/arbalet/Arbalet/frontage/sentry
+ExecStart=docker-compose up
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target
+
+# Keep a new line at EOF
