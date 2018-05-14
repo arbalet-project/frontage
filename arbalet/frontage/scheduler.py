@@ -7,6 +7,7 @@ from time import sleep
 from utils.red import redis, redis_get
 from frontage import Frontage
 from tasks.tasks import start_fap, start_default_fap, start_forced_fap, clear_all_task
+from collections import OrderedDict
 from scheduler_state import SchedulerState
 
 from apps.fap import Fap
@@ -68,13 +69,15 @@ class Scheduler(object):
         self.queue = None
         # Struct { ClassName : Instance, ClassName: Instance }
         # app.__class__.__name__
-        self.apps = {Flags.__name__: Flags(),
-                     SweepAsync.__name__: SweepAsync(),
-                     Snake.__name__: Snake(),
-                     SweepRand.__name__: SweepRand(),
-                     Snap.__name__: Snap(),
-                     Tetris.__name__: Tetris(),
-                     RandomFlashing.__name__: RandomFlashing()}
+        self.apps = OrderedDict([
+            (Flags.__name__, Flags()),
+            (Tetris.__name__, Tetris()),
+            (Snake.__name__, Snake()),
+            (Snap.__name__, Snap()),
+            (RandomFlashing.__name__, RandomFlashing()),
+            (SweepRand.__name__, SweepRand()),
+            (SweepAsync.__name__, SweepAsync())
+        ])
 
         SchedulerState.set_registered_apps(self.apps)
 
