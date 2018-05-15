@@ -6,7 +6,7 @@ After=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=/home/arbalet/Arbalet/frontage/sentry
-ExecStart=docker-compose up
+ExecStart=/usr/bin/docker-compose up
 StandardOutput=journal
 
 [Install]
