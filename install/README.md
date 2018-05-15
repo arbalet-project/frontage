@@ -39,7 +39,29 @@ sudo cp hostname /etc/hostname
 sudo reboot
 ```
 
-Following commands are useful to manager services:
+# Sentry config
+```
+cd Arbalet/frontage/sentry
+docker-compose run --rm web config generate-secret-key
+nano docker-compose.yml  # Add the Sentry's secret key to the environment file
+docker-compose run --rm web upgrade # Build the database. Use the interactive prompts to create a user account.
+```
+
+* Open a web browser to [192.168.0.42:9000](192.168.0.42:9000) and login
+* Set `Root URL [REQUIRED]` to http://192.168.0.42:9000 and some e-mail address
+* Go to `Select a project > New Project > Python > Project settings > Client Keys (DSN)` and paste the `DSN (Public)` in .env-dev (back)
+* Go to `Select a project > New Project > Angular > Project settings > Client Keys (DSN)` and paste the `DSN (Public)` in `environment.ts` (front)
+
+```
+cd ../install
+sudo cp sentry.service /lib/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable sentry.service
+
+sudo reboot
+```
+
+Following commands are useful to manage services:
 ```
 sudo service arbalet stop
 sudo service arbalet start
