@@ -116,7 +116,7 @@ class Scheduler(object):
 
     def stop_app(self, c_app, stop_code=None, stop_message=None):
         # flask_log(" ========= STOP_APP ====================")
-        if not c_app:
+        if not c_app or 'task_id' not in c_app:
             return
 
         from tasks.celery import app
