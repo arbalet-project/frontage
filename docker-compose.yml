@@ -2,8 +2,10 @@ version: '2'
 services:
   redis:
     image: "redis"
+    restart: unless-stopped
   rabbit:
     image: "rabbitmq:3-management"
+    restart: unless-stopped
     hostname: "rabbit"
     env_file: .env-dev
     ports:
@@ -11,6 +13,7 @@ services:
       - 15672:15672
   app:
     build: .
+    restart: unless-stopped
     volumes:
       - ./arbalet/frontage:/usr/src/app
     command: ["dev"]
@@ -23,6 +26,7 @@ services:
       - 8123:8123
   scheduler:
     build: .
+    restart: unless-stopped
     volumes:
       - ./arbalet/frontage:/usr/src/app
     env_file: .env-dev
@@ -36,6 +40,7 @@ services:
     command: ["scheduler"]
   queue:
     build: .
+    restart: unless-stopped
     volumes:
       - ./arbalet/frontage:/usr/src/app
     env_file: .env-dev
@@ -49,8 +54,8 @@ services:
     command: ["queue"]
   postgres:
     image: postgres
+    restart: unless-stopped
     env_file: .env-dev
-    restart: always
     ports:
       - 5544:5432
     volumes:
@@ -59,7 +64,7 @@ services:
     image: nginx
     build: snap
     env_file: .env-dev
-    restart: always
+    restart: unless-stopped
     ports:
       - 8080:80
 
