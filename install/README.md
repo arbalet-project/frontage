@@ -49,7 +49,7 @@ docker-compose run --rm web upgrade # Build the database. Use the interactive pr
 
 * Open a web browser to [192.168.0.42:9000](192.168.0.42:9000) and login
 * Set `Root URL [REQUIRED]` to http://192.168.0.42:9000 and some e-mail address
-* Go to `Select a project > New Project > Python > Project settings > Client Keys (DSN)` and paste the `DSN (Public)` in .env-dev (back)
+* Go to `Select a project > New Project > Python > Project settings > Client Keys (DSN)` and paste the `DSN` **(PRIVATE)** in .env-dev (back)
 * Go to `Select a project > New Project > Angular > Project settings > Client Keys (DSN)` and paste the `DSN (Public)` in `environment.ts` (front)
 
 ```
@@ -61,7 +61,7 @@ sudo systemctl enable sentry.service
 sudo reboot
 ```
 
-Following commands are useful to manage services:
+# Manage SystemD services
 ```
 sudo service arbalet stop
 sudo service arbalet start
