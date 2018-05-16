@@ -299,9 +299,6 @@ if __name__ == '__main__':
         load_day_table(SchedulerState.CITY)
         scheduler = Scheduler()
         scheduler.run()
-        print_flush('=== Scheduler Stop ===')
     except Exception as e:
-        print_flush('=== Scheduler Exception ===')
-        print_flush(e)
-        print_flush('===========================')
         SENTRY.captureException()
+        print(repr(e))
