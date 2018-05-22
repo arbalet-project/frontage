@@ -23,7 +23,7 @@ services:
       - rabbit:rabbit
       - postgres:postgres
     ports:
-      - 8123:8123
+      - 33405:33405
   scheduler:
     build: .
     restart: unless-stopped
@@ -49,7 +49,7 @@ services:
       - redis:redis
       - postgres:postgres
     ports:
-      - 8124:8124
+      - 33406:33406
       - 33450:33450
     command: ["queue"]
   postgres:

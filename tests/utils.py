@@ -5,7 +5,7 @@ import requests
 import pytest
 
 class Settings(object):
-    BASE_URL = "http://127.0.0.1:8123"
+    BASE_URL = "http://127.0.0.1:33405"
     ADMIN = {'username': 'frontageadmin', 'password': 'frontagepassword'}
     USER = {'username': '__XXX__'}
 

@@ -57,7 +57,7 @@ class Fap(object):
         Websock.send_data(Fap.CODE_EXPIRE_SOON, timeout_in_sec, username)
 
     def start_socket(self):
-        self.ws = Websock(self, '0.0.0.0', 8124)
+        self.ws = Websock(self, '0.0.0.0', 33406)
         self.ws.start()
 
     def flash(self, duration=4., speed=1.5):
