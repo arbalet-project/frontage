@@ -4,82 +4,38 @@ import datetime
 import time
 
 from time import sleep
-from utils.red import redis, redis_get
+from utils.red import redis
 from frontage import Frontage
 from tasks.tasks import start_fap, start_default_fap, start_forced_fap, clear_all_task
 from collections import OrderedDict
 from scheduler_state import SchedulerState
 
 from apps.fap import Fap
-from apps.flags import Flags
-from apps.random_flashing import RandomFlashing
-from apps.sweep_async import SweepAsync
-from apps.sweep_rand import SweepRand
-from apps.snap import Snap
-from apps.snake import Snake
-from apps.tetris import Tetris
+from db.base import Base
 from utils.sentry_client import SENTRY
 from server.flaskutils import print_flush
-from db.models import ConfigModel
-from db.base import session_factory
 from utils.websock import Websock
+from apps import *
 
 
 EXPIRE_SOON_DELAY = 30
 
 
 class Scheduler(object):
-
     def __init__(self):
-        print_flush('---> Waiting for frontage connection...')
         clear_all_task()
-
-        # Create initial data in DB
-        session = session_factory()
-        conf = session.query(ConfigModel).first()
-        if not conf:
-            cm = ConfigModel()
-            session.add(cm)
-            session.commit()
-            session.close()
-
-        self.frontage = Frontage()
-
-        session = session_factory()
-        config = session.query(ConfigModel).first()
-        if not config:
-            conf = ConfigModel()
-            session.add(conf)
-            session.commit()
-
-        expires = session.query(ConfigModel).all()
-        print_flush('--------- DB APP ---')
-        for e in expires:
-            print_flush(e)
-        session.close()
-        print_flush('--------------------')
 
         redis.set(SchedulerState.KEY_USERS_Q, '[]')
         redis.set(SchedulerState.KEY_FORCED_APP, False)
 
         # SchedulerState.set_current_app({})
-
-        # Dict { Name: ClassName, Start_at: XXX, End_at: XXX, task_id: XXX}
+        self.frontage = Frontage()
         self.current_app_state = None
         self.queue = None
-        # Struct { ClassName : Instance, ClassName: Instance }
-        # app.__class__.__name__
-        self.apps = OrderedDict([
-            (Flags.__name__, Flags()),
-            (Tetris.__name__, Tetris()),
-            (Snake.__name__, Snake()),
-            (Snap.__name__, Snap()),
-            (RandomFlashing.__name__, RandomFlashing()),
-            (SweepRand.__name__, SweepRand()),
-            (SweepAsync.__name__, SweepAsync())
-        ])
 
+        self.apps = OrderedDict([(app, globals()[app]()) for app in get_app_names()])
         SchedulerState.set_registered_apps(self.apps)
+
 
     def keep_alive_waiting_app(self):
         queue = SchedulerState.get_user_app_queue()
@@ -297,6 +253,7 @@ def load_day_table(file_name):
 if __name__ == '__main__':
     try:
         load_day_table(SchedulerState.CITY)
+        SchedulerState.check_db()
         scheduler = Scheduler()
         scheduler.run()
     except Exception as e:

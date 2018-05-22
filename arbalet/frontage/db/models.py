@@ -59,6 +59,9 @@ class ConfigModel(Base):
     expires_delay = Column(Integer)
     default_app_lifetime = Column(Integer)
 
+    admin_login = Column(String(36))
+    admin_hash = Column(String(512))
+
     def __init__(self):
         self.uniqid = str(uuid4())
         self.forced_sunset = ""

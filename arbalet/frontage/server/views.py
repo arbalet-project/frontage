@@ -2,7 +2,7 @@ import datetime
 
 from flask import request, jsonify, abort, Blueprint, g
 from flask_restful import Resource
-from utils.security import authentication_required, generate_user_token, is_admin
+from utils.security import authentication_required, generate_user_token, is_admin, verify_password
 from scheduler_state import SchedulerState
 from server.extensions import rest_api
 from server.flaskutils import print_flush
@@ -58,8 +58,9 @@ LOGIN_ADMIN_SCHEMA = {
 def login_admin():
     username = g.data.get('username', False)
     password = g.data.get('password', False)
+    auth_username, hash = SchedulerState.get_admin_credentials()
 
-    if ((username == 'frontageadmin') and password == 'frontagepassword'):
+    if (username == auth_username and verify_password(hash, password)):
         return jsonify(
             login=True,
             token=generate_user_token(

@@ -5,7 +5,7 @@ import time
 from time import sleep
 from utils.red import redis, redis_get
 from db.models import FappModel, ConfigModel
-from db.base import session_factory
+from db.base import session_factory, Base
 from db.tools import to_dict, serialize
 
 from server.flaskutils import print_flush
@@ -66,24 +66,16 @@ class SchedulerState(object):
     @staticmethod
     def set_expires_value(value):
         session = session_factory()
-        app = session.query(ConfigModel).first()
-        if not app:
-            conf = ConfigModel()
-            session.add(conf)
-        else:
-            app.expires_delay = value
+        conf = session.query(ConfigModel).first()
+        conf.expires_delay = value
         session.commit()
         session.close()
 
     @staticmethod
     def set_default_fap_lifetime(value):
         session = session_factory()
-        app = session.query(ConfigModel).first()
-        if not app:
-            conf = ConfigModel()
-            session.add(conf)
-        else:
-            app.default_app_lifetime = max(5, int(value))
+        config = session.query(ConfigModel).first()
+        config.default_app_lifetime = max(5, int(value))
         session.commit()
         session.close()
 
@@ -146,20 +138,9 @@ class SchedulerState(object):
 
     @staticmethod
     def set_registered_apps(apps):
-        # DB
-        session = session_factory()
-        db_apps = session.query(FappModel).all()
-        db_apps_names = [x.name for x in db_apps]
-
         struct = {}
         for fap in apps:
             struct[fap] = apps[fap].jsonify()
-            # not in db ? We create the fapp
-            if fap not in db_apps_names:
-                db_fap = FappModel(fap, is_scheduled=(not apps[fap].PLAYABLE))
-                session.add(db_fap)
-        session.commit()
-        session.close()
         redis.set(SchedulerState.KEY_REGISTERED_APP, json.dumps(struct))
 
     @staticmethod
@@ -373,6 +354,16 @@ class SchedulerState(object):
         # return True
 
     @staticmethod
+    def get_admin_credentials():
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        login = conf.admin_login
+        hash = conf.admin_hash
+        session.close()
+
+        return login, hash
+
+    @staticmethod
     def get_sunrise_offset():
         session = session_factory()
         conf = session.query(ConfigModel).first()
@@ -402,13 +393,8 @@ class SchedulerState(object):
 
         session = session_factory()
         app = session.query(FappModel).filter_by(name=app_name).first()
-        if not app:
-            fap = FappModel(app_name, is_scheduled=state)
-            session.add(fap)
-            session.commit()
-        else:
-            app.is_scheduled = state
-            session.commit()
+        app.is_scheduled = state
+        session.commit()
         session.close()
 
     @staticmethod
@@ -568,3 +554,14 @@ class SchedulerState(object):
         return {
             'keep_alive_delay': SchedulerState.DEFAULT_KEEP_ALIVE_DELAY,
             'queued': True}
+
+    @staticmethod
+    def check_db():
+        if ConfigModel.__tablename__ in [t.name for t in Base.metadata.sorted_tables]:
+            session = session_factory()
+            conf = session.query(ConfigModel).first()
+            if conf is not None:
+                return
+
+        raise ValueError("Database has not been initialized. "
+                         "Please run 'docker-compose run --rm app init' before starting the scheduler")
