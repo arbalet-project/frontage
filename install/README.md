@@ -36,6 +36,9 @@ sudo cp dnsmasq.conf /etc/dnsmasq.conf
 sudo cp hosts /etc/hosts
 sudo cp hostname /etc/hostname
 
+cd ..
+docker-compose run --rm app init # Create your admin password here
+
 sudo reboot
 ```
 
@@ -61,10 +64,16 @@ sudo systemctl enable sentry.service
 sudo reboot
 ```
 
-# Manage SystemD services
+# Manage services
 ```
 sudo service arbalet stop
 sudo service arbalet start
 sudo systemctl status arbalet.service
 sudo journalctl -u arbalet -f
+
+```
+
+```
+docker-compose run --rm app set_admin_credentials  # Change your admin password
+docker-compose run --rm app reset  # Factory reset (Dropping DB)
 ```
