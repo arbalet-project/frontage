@@ -184,7 +184,7 @@ class Tetris(Fap):
         if data == Actions.K_UP:
             self.rotate_stone()
         elif data == Actions.K_DOWN:
-            self.drop(True)
+            self.insta_drop()
         elif data == Actions.K_RIGHT:
             self.move(-1)
         elif data == Actions.K_LEFT:
