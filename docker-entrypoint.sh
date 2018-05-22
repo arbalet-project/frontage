@@ -8,27 +8,24 @@ case "$1" in
         echo "---> Starting in PRODUCTION mode"
         cd /usr/src/app/
         /wait-for-it.sh rabbit:5672
-        exec /usr/local/bin/gunicorn server_app:app -w 5 -b :33405
+        /usr/local/bin/gunicorn server_app:app -w 5 -b :33405
         ;;
     dev)
         echo "---> Starting in DEV mode"
         cd /usr/src/app/
         export FLASK_DEBUG=1
         /wait-for-it.sh rabbit:5672
-        echo "---> Start EXEC"
         flask run --port 33405  --with-threads --host '0.0.0.0'
-        echo "---> END"
         ;;
     scheduler)
-        echo "---> Starting Scheduler"
         cd /usr/src/app/
         /wait-for-it.sh rabbit:5672
-        exec /usr/local/bin/python scheduler.py
+        /usr/local/bin/python scheduler.py
         ;;
     queue)
         cd /usr/src/app/
         /wait-for-it.sh rabbit:5672
-        exec celery -A tasks worker --concurrency=1 -Q userapp --loglevel=INFO
+        celery -A tasks worker --concurrency=1 -Q userapp --loglevel=INFO
         ;;
     reset)
         cd /usr/src/app/
@@ -49,4 +46,4 @@ case "$1" in
 
 esac
 
-exit 0;
+exit $?;

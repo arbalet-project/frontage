@@ -19,6 +19,7 @@ class Frontage(Thread):
 
     def __init__(self, height=4, width=19):
         Thread.__init__(self)
+        self.setDaemon(True)
         self.model = Model(height, width)
         self.rate = Rate(self.RATE_HZ)
         self.frontage_running = False

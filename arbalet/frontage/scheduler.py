@@ -32,7 +32,7 @@ class Scheduler(object):
         self.frontage = Frontage()
         self.current_app_state = None
         self.queue = None
-
+        self.count = 0
         self.apps = OrderedDict([(app, globals()[app]()) for app in get_app_names()])
         SchedulerState.set_registered_apps(self.apps)
 
@@ -207,6 +207,7 @@ class Scheduler(object):
 
     def print_scheduler_info(self):
         if self.count % 10 == 0:
+            self.count = 0
             print_flush(" ========== Scheduling ==========")
             print_flush("-------- Enable State")
             print_flush(SchedulerState.get_enable_state())
@@ -234,15 +235,19 @@ class Scheduler(object):
         # usable = SchedulerState.usable()
         print_flush('[SCHEDULER] Entering loop')
         self.frontage.start()
-        self.count = 0
-        while True:
-            if SchedulerState.is_event_lock():
-                print_flush('Locked')
+        try:
+            while True:
+                if SchedulerState.is_event_lock():
+                    print_flush('Locked')
+                else:
+                    self.run_scheduler()
+                    self.print_scheduler_info()
                 sleep(0.1)
-            else:
-                self.run_scheduler()
-                self.print_scheduler_info()
-                sleep(0.1)
+        except:
+            raise
+        finally:
+            pass
+            self.frontage.close()
 
 
 def load_day_table(file_name):
@@ -256,6 +261,6 @@ if __name__ == '__main__':
         SchedulerState.check_db()
         scheduler = Scheduler()
         scheduler.run()
-    except Exception as e:
+    except:
         SENTRY.captureException()
-        print(repr(e))
+        raise   # Re-raise since Docker will restart the scheduler
