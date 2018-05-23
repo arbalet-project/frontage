@@ -35,6 +35,7 @@ sudo apt install dnsmasq
 sudo cp dnsmasq.conf /etc/dnsmasq.conf
 sudo cp hosts /etc/hosts
 sudo cp hostname /etc/hostname
+sudo cp resolv.conf /etc/resolv.conf
 
 cd ..
 docker-compose run --rm app init # Create your admin password here
