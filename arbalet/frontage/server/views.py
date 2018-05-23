@@ -145,7 +145,7 @@ def admin_clear_queue(user):
 
 @blueprint.route('/b/apps/admin/running', methods=['POST'])
 @authentication_required
-def admin_app_force(self, user):
+def admin_app_force(user):
     req = request.get_json()
     if 'name' not in req:
         abort(400, 'Missing application name')
