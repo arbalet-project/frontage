@@ -107,7 +107,7 @@ class Fap(object):
         struct['max_time'] = self.max_time
         return struct
 
-    def __del__(self):
+    def close(self):
         if self.ws is not None:
             self.ws.close()
             time.sleep(0.2)

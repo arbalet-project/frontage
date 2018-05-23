@@ -55,18 +55,12 @@ def start_default_fap(app):
 
     SchedulerState.set_current_app(app)
     SchedulerState.set_event_lock(False)
+    fap = globals()[app['name']](app['username'])
     try:
-        fap = globals()[app['name']](app['username'])
         fap.run(params=params)
-    except Exception as e:
-        print('--->APP>>')
-        del fap
-        print('Error when starting task ' + str(e))
-        # raise e
     finally:
-        del fap
+        fap.close()
         SchedulerState.set_current_app({})
-        print('=====================> Close DEFAULT APP')
 
 
 @celery.task
@@ -83,14 +77,12 @@ def start_fap(app):
     SchedulerState.pop_user_app_queue()
     SchedulerState.set_current_app(app)
     SchedulerState.set_event_lock(False)
+    fap = globals()[app['name']](app['username'])
 
     try:
-        fap = globals()[app['name']](app['username'])
         fap.run(params=app['params'], expires_at=app['expire_at'])
-    except Exception as e:
-        raise e
     finally:
-        del fap
+        fap.close()
         SchedulerState.set_current_app({})
 
 
@@ -112,13 +104,11 @@ def start_forced_fap(fap):
         'expire_at': str(datetime.datetime.now() + datetime.timedelta(weeks=52))}
     SchedulerState.set_current_app(app)
     SchedulerState.set_event_lock(False)
+    fap = globals()[name](app['username'])
     try:
-        fap = globals()[name](app['username'])
         fap.run(params=params)
         return True
-    except Exception as e:
-        print('Error when starting task ' + str(e))
-        raise
     finally:
+        fap.close()
         redis.set(SchedulerState.KEY_FORCED_APP, 'False')
         SchedulerState.set_current_app({})

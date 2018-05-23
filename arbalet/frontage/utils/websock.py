@@ -11,11 +11,11 @@ KEY_WS_SEND = "KEY_WS_SEND"
 
 class Websock(Thread):
     def __init__(self, fap, host='0.0.0.0', port=9988):
+        Thread.__init__(self)
         self.fap = fap
         self.host = host
         self.port = port
         self.web_socket = None
-        Thread.__init__(self)
 
     @staticmethod
     def send_data(code, message, username=None):
@@ -75,5 +75,3 @@ class Websock(Thread):
     def close(self):
         print_flush('====== CLOSE WEBSOCKET NICELY /1 =========')
         self.web_socket.ws_server.close()
-        self.web_socket.ws_server.wait_close()
-        print_flush('====== CLOSE WEBSOCKET NICELY /2 =========')
