@@ -38,10 +38,11 @@ sudo cp resolv.conf /etc/resolv.conf
 # Initialize production environment
 cd ..
 nano .env  # Set random passwords
-sudo systemctl edit artnet  # Add a [Service] section with the 2 rabbitMQ credential strings
-docker-compose run --rm app init # Create your admin password here
+sudo systemctl edit artnet
+# Add a [Service] section with the 2 rabbitMQ credential strings, syntax is:
+# Environment="SOME_VAR="
+docker-compose -f docker-compose.prod.yml run --rm app init # Create your admin password here
 
-sudo reboot
 ```
 
 # Sentry config
@@ -54,8 +55,8 @@ docker-compose run --rm web upgrade # Build the database. Use the interactive pr
 
 * Open a web browser to [192.168.0.42:9000](192.168.0.42:9000) and login
 * Set `Root URL [REQUIRED]` to http://192.168.0.42:9000 and some e-mail address
-* Go to `Select a project > New Project > Python > Project settings > Client Keys (DSN)` and paste the `DSN` **(PRIVATE)** in .env (back)
-* Go to `Select a project > New Project > Angular > Project settings > Client Keys (DSN)` and paste the `DSN (Public)` in `environment.ts` (front)
+* Go to `New Project > Python > Project settings > Client Keys (DSN)` and paste the `DSN` **(PRIVATE)** in .env (back)
+* Go to `New Project > Angular > Project settings > Client Keys (DSN)` and paste the `DSN (Public)` in `environment.ts` (front)
 
 ```
 cd ../install
@@ -76,6 +77,12 @@ sudo journalctl -u arbalet -f
 ```
 
 ```
-docker-compose run --rm app set_admin_credentials  # Change your admin password
-docker-compose run --rm app reset  # Factory reset (Dropping DB)
+docker-compose -f docker-compose.prod.yml run --rm app set_admin_credentials  # Change your admin password
+docker-compose -f docker-compose.prod.yml run --rm app reset  # Factory reset (Dropping DB)
 ```
+
+# Troubleshooting
+```
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) FATAL:  password authentication failed for user "some_suer"
+```
+First make sure `.env` has non-empty random passwords. In case the prod server is being reinstalled, make sure you destroy all the volumes `docker-compose -f docker-compose.prod.yml down -v`. Also do not forget `-f` to specify the prod config.
