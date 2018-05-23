@@ -21,8 +21,6 @@ sudo systemctl daemon-reload
 sudo systemctl enable arbalet.service
 sudo systemctl enable artnet.service
 
-sudo systemctl edit artnet  # Add a [Service] section with the 2 rabbitMQ credential strings
-
 # Network config for 16.04
 sudo cp interfaces /etc/network/interfaces
 
@@ -37,7 +35,10 @@ sudo cp hosts /etc/hosts
 sudo cp hostname /etc/hostname
 sudo cp resolv.conf /etc/resolv.conf
 
+# Initialize production environment
 cd ..
+nano .env  # Set random passwords
+sudo systemctl edit artnet  # Add a [Service] section with the 2 rabbitMQ credential strings
 docker-compose run --rm app init # Create your admin password here
 
 sudo reboot
@@ -53,7 +54,7 @@ docker-compose run --rm web upgrade # Build the database. Use the interactive pr
 
 * Open a web browser to [192.168.0.42:9000](192.168.0.42:9000) and login
 * Set `Root URL [REQUIRED]` to http://192.168.0.42:9000 and some e-mail address
-* Go to `Select a project > New Project > Python > Project settings > Client Keys (DSN)` and paste the `DSN` **(PRIVATE)** in .env-dev (back)
+* Go to `Select a project > New Project > Python > Project settings > Client Keys (DSN)` and paste the `DSN` **(PRIVATE)** in .env (back)
 * Go to `Select a project > New Project > Angular > Project settings > Client Keys (DSN)` and paste the `DSN (Public)` in `environment.ts` (front)
 
 ```
