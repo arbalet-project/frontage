@@ -143,38 +143,37 @@ def admin_clear_queue(user):
         abort(400, "Forbidden Bru")
     return '', 204
 
+@blueprint.route('/b/apps/admin/running', methods=['POST'])
+@authentication_required
+def admin_app_force(self, user):
+    req = request.get_json()
+    if 'name' not in req:
+        abort(400, 'Missing application name')
 
-class AppAdminRunningView(Resource):
-    @authentication_required
-    def post(self, user):
-        req = request.get_json()
-        if 'name' not in req:
-            abort(400, 'Missing application name')
+    name = req['name']
+    params = req.get('params', {})
 
-        name = req['name']
-        params = req.get('params', {})
-
-        if not SchedulerState.usable():
-            print_flush("Frontage is not started")
-            abort(400, "Frontage is not started")
-        if is_admin(user):
-            response = SchedulerState.set_forced_app_request(name, params)
-            if response:
-                return response
-            else:
-                abort(409, 'An app is already forced')
+    if not SchedulerState.usable():
+        print_flush("Frontage is not started")
+        abort(400, "Frontage is not started")
+    if is_admin(user):
+        response = SchedulerState.set_forced_app_request(name, params)
+        if response:
+            return response
         else:
-            abort(403, "Forbidden Bru")
+            abort(409, 'An app is already forced')
+    else:
+        abort(403, "Forbidden Bru")
 
-    @blueprint.route('/b/apps/admin/quit', methods=['GET'])
-    @authentication_required
-    def admin_app_quit(self, user):
-        if is_admin(user):
-            if not SchedulerState.stop_forced_app_request():
-                abort(404, "No such app")
-        else:
-            abort(400, "Forbidden Bru")
-        return '', 204
+@blueprint.route('/b/apps/admin/quit', methods=['GET'])
+@authentication_required
+def admin_app_quit(user):
+    if is_admin(user):
+        if not SchedulerState.stop_forced_app_request():
+            abort(404, "No such app")
+    else:
+        abort(400, "Forbidden Bru")
+    return '', 204
 
 
 class AppRunningView(Resource):
@@ -321,6 +320,5 @@ rest_api.add_resource(AppDefaultView, '/b/apps/default/')
 rest_api.add_resource(AppDefaultParamView, '/b/apps/default/<string:app_name>')
 rest_api.add_resource(AppDefaultListView, '/b/apps/default')
 
-rest_api.add_resource(AppAdminRunningView, '/b/apps/admin/running')
 rest_api.add_resource(AppRunningView, '/b/apps/running')
 rest_api.add_resource(AppListView, '/b/apps')
