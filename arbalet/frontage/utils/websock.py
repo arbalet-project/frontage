@@ -20,7 +20,7 @@ class Websock(Thread):
     @staticmethod
     def send_data(code, message, username='', userid=''):
         print_flush("###############################################################################")
-        print_flush("Send : [code={0}] [message={1}]".format(code, message))
+        print_flush("Send : [code={0}] [message={1}] [username={2}] [userid={3}]".format(code, message, username, userid))
         print_flush("###############################################################################")
         redis.set(KEY_WS_SEND, json.dumps({'code': code,
                                            'message': message,

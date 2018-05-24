@@ -50,7 +50,7 @@ class Scheduler(object):
     def keep_alive_current_app(self, current_app):
         if not current_app.get('is_default', False) and not current_app.get('is_forced', False) and \
                         time.time() > (current_app['last_alive'] + SchedulerState.DEFAULT_CURRENT_APP_KEEP_ALIVE_DELAY):
-            self.stop_app(current_app, Fap.CODE_EXPIRE, 'User has disappeared')
+            self.stop_app(current_app, None, 'User has disappeared')
             return True
         return False
 
@@ -145,10 +145,12 @@ class Scheduler(object):
 
         # Is a app running ?
         if c_app:
-            if SchedulerState.get_close_app_request():
-                self.stop_app(c_app, None, 'Executing requested app closure')
+            close_request, close_userid = SchedulerState.get_close_app_request()
+            if close_request:
+                message = Fap.CODE_CLOSE_APP if close_userid != c_app['userid'] else None
+                self.stop_app(c_app, message, 'Executing requested app closure')
                 redis.set(SchedulerState.KEY_CURRENT_RUNNING_APP, '{}')
-                redis.set(SchedulerState.KEY_STOP_APP_REQUEST, 'False')
+                redis.set(SchedulerState.KEY_STOP_APP_REQUEST, '{}')
                 return
             if len(forced_app) > 0 and not SchedulerState.get_forced_app():
                 SchedulerState.clear_user_app_queue()

@@ -101,7 +101,11 @@ class SchedulerState(object):
 
     @staticmethod
     def get_close_app_request():
-        return redis_get(SchedulerState.KEY_STOP_APP_REQUEST, False) == 'True'
+        # Return (boolean, userid) = has a request been initiated? If yes, by who?
+        request = json.loads(redis_get(SchedulerState.KEY_STOP_APP_REQUEST, '{}'))
+        if 'userid' in request:
+            return True, request['userid']
+        return False, None
 
     @staticmethod
     def get_forced_app_request():
@@ -120,20 +124,17 @@ class SchedulerState(object):
     def set_forced_app_request(app_name, params):
         # from apps.fap import Fap
         if SchedulerState.get_forced_app():
-            return {}
+            return False
 
         redis.set(SchedulerState.KEY_FORCED_APP_REQUEST, json.dumps({'name': app_name, 'params': params}))
-
-        return {
-            'keep_alive_delay': SchedulerState.DEFAULT_KEEP_ALIVE_DELAY,
-            'queued': True}
+        return True
 
     @staticmethod
-    def stop_forced_app_request():
+    def stop_forced_app_request(user):
         if not SchedulerState.get_forced_app():
             return False
         else:
-            redis.set(SchedulerState.KEY_STOP_APP_REQUEST, 'True')
+            SchedulerState.stop_app_request(user)
             return True
 
     @staticmethod
@@ -460,8 +461,9 @@ class SchedulerState(object):
         redis.get(SchedulerState.KEY_APP_STARTED_AT)
 
     @staticmethod
-    def stop_app_request():
-        redis.set(SchedulerState.KEY_STOP_APP_REQUEST, 'True')
+    def stop_app_request(user):
+        # Store the user who initiated the request
+        redis.set(SchedulerState.KEY_STOP_APP_REQUEST, json.dumps(user))
 
     @staticmethod
     def pop_user_app_queue(queue=None):
@@ -517,10 +519,11 @@ class SchedulerState(object):
         return False
 
     @staticmethod
-    def set_is_alive_current_app():
+    def set_is_alive(user):
         c_app = SchedulerState.get_current_app()
-        c_app['last_alive'] = time.time()
-        SchedulerState.set_current_app(c_app)
+        if user['userid'] == c_app.get('userid', False):
+            c_app['last_alive'] = time.time()
+            SchedulerState.set_current_app(c_app)
 
     @staticmethod
     def get_user_queue():
@@ -528,18 +531,21 @@ class SchedulerState(object):
 
     @staticmethod
     def start_user_app_request(username, userid, app_name, params, expires):
-        # from tasks.tasks import start_fap
-        # Check Queue
         queue = SchedulerState.get_user_queue()
-        if next((x for x in queue if x['userid'] == userid), False):
-            raise Exception('User already in queue')
-
         c_app = SchedulerState.get_current_app()
+        removed_previous = True
 
+        # New request from the same user sweeps older ones
+        for i, job in enumerate(queue):
+            if job['userid'] == userid:
+                del queue[i]
+                removed_previous = True
+
+        # New request from the same user makes the current app expiring
         if c_app and c_app.get('userid', False) == userid:
-            if datetime.datetime.now() <= datetime.datetime.strptime(
-                    c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f"):
-                raise Exception('User is already the owner of the current app')
+            c_app['expire_at'] = str(datetime.datetime.now())
+            SchedulerState.set_current_app(c_app)
+            removed_previous = True
 
         app_struct = {'name': app_name,
                       'username': username,
@@ -553,10 +559,7 @@ class SchedulerState(object):
 
         queue.append(app_struct)
         redis.set(SchedulerState.KEY_USERS_Q, json.dumps(queue))
-
-        return {
-            'keep_alive_delay': SchedulerState.DEFAULT_KEEP_ALIVE_DELAY,
-            'queued': True}
+        return True, removed_previous
 
     @staticmethod
     def check_db():

@@ -85,7 +85,8 @@ ENABLE_SCHEMA = {
 def admin_enabled_scheduler(user):
     state = g.data.get('state', 'on')
     if state not in ['on', 'off', 'scheduled']:
-        abort(415)
+        abort(415, "Incorrect state")
+
     SchedulerState.set_enable_state(state)
     return jsonify(is_usable=SchedulerState.usable(),
                    state=SchedulerState.get_enable_state(),
@@ -138,9 +139,10 @@ def admin_get_settings():
 @authentication_required
 def admin_clear_queue(user):
     if is_admin(user):
+        SchedulerState.stop_app_request(user)
         SchedulerState.clear_user_app_queue()
     else:
-        abort(400, "Forbidden Bru")
+        abort(403, "Forbidden Bru")
     return '', 204
 
 @blueprint.route('/b/apps/admin/running', methods=['POST'])
@@ -148,20 +150,19 @@ def admin_clear_queue(user):
 def admin_app_force(user):
     req = request.get_json()
     if 'name' not in req:
-        abort(400, 'Missing application name')
+        abort(415, 'Missing application name')
 
     name = req['name']
     params = req.get('params', {})
 
-    if not SchedulerState.usable():
-        print_flush("Frontage is not started")
-        abort(400, "Frontage is not started")
+    forced = False
     if is_admin(user):
-        response = jsonify(**SchedulerState.set_forced_app_request(name, params))
-        if response:
-            return response
-        else:
-            abort(409, 'An app is already forced')
+        if SchedulerState.set_forced_app_request(name, params):
+            SchedulerState.clear_user_app_queue()
+            SchedulerState.stop_app_request(user)
+            forced = True
+        return jsonify(keep_alive_delay=SchedulerState.DEFAULT_KEEP_ALIVE_DELAY,
+                       forced=forced)
     else:
         abort(403, "Forbidden Bru")
 
@@ -169,10 +170,10 @@ def admin_app_force(user):
 @authentication_required
 def admin_app_quit(user):
     if is_admin(user):
-        if not jsonify(**SchedulerState.stop_forced_app_request()):
-            abort(404, "No such app")
+        removed = SchedulerState.stop_forced_app_request(user)
+        return jsonify(removed=removed)
     else:
-        abort(400, "Forbidden Bru")
+        abort(403, "Forbidden Bru")
     return '', 204
 
 
@@ -188,14 +189,10 @@ class AppRunningView(Resource):
         name = request.get_json()['name']
         params = request.get_json().get('params', {})
         expires = SchedulerState.get_expires_value()
-        if not SchedulerState.usable():
-            abort(400, "Arbalet cannot be used in current context")
 
-        try:
-            return SchedulerState.start_user_app_request(user['username'], user['userid'], name, params, expires)
-        except Exception as e:
-            print(repr(e))
-            abort(403, repr(e))
+        queued, removed_previous = SchedulerState.start_user_app_request(user['username'], user['userid'], name, params, expires)
+        return jsonify(queued=queued, removed_previous=removed_previous,
+                       keep_alive_delay=SchedulerState.DEFAULT_KEEP_ALIVE_DELAY)
 
 
 class ConfigView(Resource):
@@ -274,21 +271,18 @@ def app_position(user):
 @blueprint.route('/b/apps/iamalive', methods=['POST'])
 @authentication_required
 def set_is_alive_current_app(user):
-    SchedulerState.set_is_alive_current_app()
+    SchedulerState.set_is_alive(user)
     return jsonify(pouet='pouet')
 
 @blueprint.route('/b/apps/quit', methods=['GET'])
 @authentication_required
 def quit_user_app(user):
     c_app = SchedulerState.get_current_app()
-    if is_admin(user):
-        SchedulerState.stop_app_request()
-    else:
-        if c_app['userid'] == user['userid']:
-            SchedulerState.stop_app_request()
-        else:
-            abort(400, "You are not the owner of the current app")
-    return '', 204
+    removed = False
+    if is_admin(user) or c_app.get('userid', False) == user['userid']:
+        SchedulerState.stop_app_request(user)
+        removed = True
+    return jsonify(removed=removed)
 
 @blueprint.route('/b/queue/quit', methods=['GET'])
 @authentication_required
