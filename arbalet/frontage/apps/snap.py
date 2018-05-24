@@ -67,7 +67,7 @@ class Snap(Fap):
         if not is_admin(user):
             abort(403, "Forbidden Bru")
 
-        return dumps({"list_clients": list(self.nicknames.keys()) + [self.OFF], "selected_client":self.current_auth_nick})
+        return dumps({"list_clients": [self.OFF] + list(self.nicknames.keys()), "selected_client":self.current_auth_nick})
 
     @authentication_required
     def authorize(self, user):
@@ -75,12 +75,12 @@ class Snap(Fap):
             abort(403, "Forbidden Bru")
 
         data = loads(request.get_data().decode())   # {selected_client: ""}
-        if "selected_client" in data and data["selected_client"] in list(self.nicknames.keys()) + [self.OFF]:
+        if "selected_client" in data and data["selected_client"] in [self.OFF] + list(self.nicknames.keys()):
             with self.lock:
                 self.current_auth_nick = data["selected_client"]
                 self.erase_all()
             return dumps({"success": True, "message": "Client authorized successfully"})
-        abort(404, "No such client.")
+        return dumps({"success": False, "message": "No such client"})
 
     @staticmethod
     def scale(v):
