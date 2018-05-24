@@ -157,7 +157,7 @@ def admin_app_force(user):
         print_flush("Frontage is not started")
         abort(400, "Frontage is not started")
     if is_admin(user):
-        response = SchedulerState.set_forced_app_request(name, params)
+        response = jsonify(**SchedulerState.set_forced_app_request(name, params))
         if response:
             return response
         else:
@@ -169,7 +169,7 @@ def admin_app_force(user):
 @authentication_required
 def admin_app_quit(user):
     if is_admin(user):
-        if not SchedulerState.stop_forced_app_request():
+        if not jsonify(**SchedulerState.stop_forced_app_request()):
             abort(404, "No such app")
     else:
         abort(400, "Forbidden Bru")
