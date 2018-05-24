@@ -7,4 +7,4 @@ from apps.snake import Snake
 from apps.tetris import Tetris
 
 def get_app_names():
-    return ['Flags', 'RandomFlashing', 'SweepAsync', 'SweepRand', 'Snap', 'Snake', 'Tetris']
+    return ['Snap', 'Tetris', 'Snake', 'Flags', 'RandomFlashing', 'SweepRand', 'SweepAsync']
