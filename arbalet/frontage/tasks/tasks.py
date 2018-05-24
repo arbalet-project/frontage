@@ -89,6 +89,7 @@ def start_fap(app):
 
 @celery.task
 def start_forced_fap(fap):
+    SchedulerState.clear_user_app_queue()
     SchedulerState.set_app_started_at()
     name = fap['name']
     params = fap['params']
