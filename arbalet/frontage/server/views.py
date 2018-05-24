@@ -281,17 +281,13 @@ def set_is_alive_current_app(user):
 @authentication_required
 def quit_user_app(user):
     c_app = SchedulerState.get_current_app()
-    if 'username' in c_app:
-        if is_admin(user):
+    if is_admin(user):
+        SchedulerState.stop_app_request()
+    else:
+        if c_app['userid'] == user['userid']:
             SchedulerState.stop_app_request()
         else:
-            if c_app['username'] == user['username']:
-                SchedulerState.stop_app_request()
-            else:
-                abort(400, "You are not the owner of the current app")
-    else:
-        print("Tried to quit an app while no one was running, ignoring request.")
-        abort(400, "No app found. Nothing to quit.")
+            abort(400, "You are not the owner of the current app")
     return '', 204
 
 @blueprint.route('/b/queue/quit', methods=['GET'])
@@ -300,8 +296,7 @@ def remove_from_queue(user):
     if SchedulerState.remove_user_position(user):
         return jsonify(removed=True)
     else:
-        abort(404, "I can't find any app for you")
-    return jsonify(removed=False)
+        return jsonify(removed=False)
 
 
 @blueprint.route('/frontage/status', methods=['GET'])
