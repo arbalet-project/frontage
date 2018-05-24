@@ -88,8 +88,8 @@ class Tetris(Fap):
     ACTIVATED = True
     PARAMS_LIST = {}
 
-    def __init__(self, username=None):
-        super(Tetris, self).__init__(username)
+    def __init__(self, username, userid):
+        super(Tetris, self).__init__(username, userid)
         self.PARAMS_LIST = {'speed': 0.15}
         self.colors = ['black', 'deeppink', 'green', 'darkred', 'orangered', 'darkblue', 'cyan', 'yellow']
         self.next_stone = tetris_shapes[rand(len(tetris_shapes))]

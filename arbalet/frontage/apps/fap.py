@@ -23,11 +23,12 @@ class Fap(object):
     LOCK = RWLock()
     LOCK_WS = RWLock()
 
-    def __init__(self, username=None):
+    def __init__(self, username, userid):
         SchedulerState.set_expire_soon(False)
         self.max_time = None
         self.params = None
         self.username = username
+        self.userid = userid
         self.ws = None
         self.model = Model(4, 19)
 
@@ -41,20 +42,20 @@ class Fap(object):
         raise NotImplementedError("Fap.run() must be overidden")
 
     def send_close_app(self):
-        Websock.send_data(Fap.CODE_CLOSE_APP, 'CLOSING', self.username)
+        Websock.send_data(Fap.CODE_CLOSE_APP, 'CLOSING', self.username, self.userid)
 
     def send_game_over(self):
-        Websock.send_data(Fap.CODE_GAME_OVER, 'GAME_OVER', self.username)
+        Websock.send_data(Fap.CODE_GAME_OVER, 'GAME_OVER', self.username, self.userid)
 
     @staticmethod
-    def send_expires(username=None):
+    def send_expires(username='', userid=''):
         SchedulerState.set_expire(True)
-        Websock.send_data(Fap.CODE_EXPIRE, 'EXPIRE', username)
+        Websock.send_data(Fap.CODE_EXPIRE, 'EXPIRE', username, userid)
 
     @staticmethod
-    def send_expires_soon(timeout_in_sec, username=None):
+    def send_expires_soon(timeout_in_sec, username='', userid=''):
         SchedulerState.set_expire_soon(True)
-        Websock.send_data(Fap.CODE_EXPIRE_SOON, timeout_in_sec, username)
+        Websock.send_data(Fap.CODE_EXPIRE_SOON, timeout_in_sec, username, userid)
 
     def start_socket(self):
         self.ws = Websock(self, '0.0.0.0', 33406)

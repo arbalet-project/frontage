@@ -189,15 +189,13 @@ class AppRunningView(Resource):
         params = request.get_json().get('params', {})
         expires = SchedulerState.get_expires_value()
         if not SchedulerState.usable():
-            print_flush("Frontage is not started")
-            abort(400, "Frontage is not started")
+            abort(400, "Arbalet cannot be used in current context")
 
         try:
-            return SchedulerState.start_user_app_request(user['username'], name, params, expires)
+            return SchedulerState.start_user_app_request(user['username'], user['userid'], name, params, expires)
         except Exception as e:
-            print_flush(str(e))
-            abort(403, str(e))
-        # SchedulerState.set_forced_app(name, params, expires)
+            print(repr(e))
+            abort(403, repr(e))
 
 
 class ConfigView(Resource):
@@ -276,7 +274,7 @@ def app_position(user):
 @blueprint.route('/b/apps/iamalive', methods=['POST'])
 @authentication_required
 def set_is_alive_current_app(user):
-    SchedulerState.set_is_alive_current_app(user['username'])
+    SchedulerState.set_is_alive_current_app()
     return jsonify(pouet='pouet')
 
 @blueprint.route('/b/apps/quit', methods=['GET'])

@@ -51,11 +51,12 @@ def start_default_fap(app):
     app['is_forced'] = False
     app['last_alive'] = time.time()
     app['username'] = '>>>default<<<'
+    app['userid'] = '>>>default<<<'
     app['started_at'] = datetime.datetime.now().isoformat()
 
     SchedulerState.set_current_app(app)
     SchedulerState.set_event_lock(False)
-    fap = globals()[app['name']](app['username'])
+    fap = globals()[app['name']](app['username'], app['userid'])
     try:
         fap.run(params=params)
     finally:
@@ -77,7 +78,7 @@ def start_fap(app):
     SchedulerState.pop_user_app_queue()
     SchedulerState.set_current_app(app)
     SchedulerState.set_event_lock(False)
-    fap = globals()[app['name']](app['username'])
+    fap = globals()[app['name']](app['username'], app['userid'])
 
     try:
         fap.run(params=app['params'], expires_at=app['expire_at'])
@@ -95,6 +96,7 @@ def start_forced_fap(fap):
     app = {
         'name': name,
         'username': '>>>>FORCED<<<<',
+        'userid': '>>>>FORCED<<<<',
         'params': fap['params'],
         'task_id': start_forced_fap.request.id,
         'last_alive': time.time(),
@@ -104,7 +106,7 @@ def start_forced_fap(fap):
         'expire_at': str(datetime.datetime.now() + datetime.timedelta(weeks=52))}
     SchedulerState.set_current_app(app)
     SchedulerState.set_event_lock(False)
-    fap = globals()[name](app['username'])
+    fap = globals()[name](app['username'], app['userid'])
     try:
         fap.run(params=params)
         return True

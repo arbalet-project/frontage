@@ -29,8 +29,8 @@ class Snap(Fap):
     ACTIVATED = False
     OFF = "Éteindre"
 
-    def __init__(self, username=None):
-        Fap.__init__(self, username)
+    def __init__(self, username, userid):
+        Fap.__init__(self, username, userid)
 
         self.flask = Flask(__name__)
         self.current_auth_nick = self.OFF

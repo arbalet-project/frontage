@@ -496,9 +496,9 @@ class SchedulerState(object):
     def get_user_position(user):
         queue = SchedulerState.get_user_queue()
         i = 1
-        username = user['username']
+        userid = user['userid']
         for u in queue:
-            if u['username'] == username:
+            if u['userid'] == userid:
                 u['last_alive'] = time.time()
                 redis.set(SchedulerState.KEY_USERS_Q, json.dumps(queue))
                 return i
@@ -508,16 +508,16 @@ class SchedulerState(object):
     @staticmethod
     def remove_user_position(user):
         queue = SchedulerState.get_user_queue()
-        username = user['username']
+        userid = user['userid']
         for u in list(queue):
-            if u['username'] == username:
+            if u['userid'] == userid:
                 queue.remove(u)
                 redis.set(SchedulerState.KEY_USERS_Q, json.dumps(queue))
                 return True
         return False
 
     @staticmethod
-    def set_is_alive_current_app(username):
+    def set_is_alive_current_app():
         c_app = SchedulerState.get_current_app()
         c_app['last_alive'] = time.time()
         SchedulerState.set_current_app(c_app)
@@ -527,20 +527,23 @@ class SchedulerState(object):
         return json.loads(redis_get(SchedulerState.KEY_USERS_Q, '[]'))
 
     @staticmethod
-    def start_user_app_request(username, app_name, params, expires):
+    def start_user_app_request(username, userid, app_name, params, expires):
         # from tasks.tasks import start_fap
         # Check Queue
         queue = SchedulerState.get_user_queue()
-        if next((x for x in queue if x['username'] == username), False):
+        if next((x for x in queue if x['userid'] == userid), False):
             raise Exception('User already in queue')
+
         c_app = SchedulerState.get_current_app()
-        if c_app and c_app.get('username', False) == username:
+
+        if c_app and c_app.get('userid', False) == userid:
             if datetime.datetime.now() <= datetime.datetime.strptime(
                     c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f"):
                 raise Exception('User is already the owner of the current app')
 
         app_struct = {'name': app_name,
                       'username': username,
+                      'userid': userid,
                       'params': params,
                       'started_wait_at': datetime.datetime.now().isoformat(),
                       'expires': expires,

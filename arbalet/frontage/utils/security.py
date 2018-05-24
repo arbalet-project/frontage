@@ -1,5 +1,7 @@
 import jwt
 import datetime
+import string
+from random import choices
 
 from passlib.hash import pbkdf2_sha256
 from functools import wraps
@@ -101,6 +103,7 @@ def generate_user_token(username, is_admin=False):
     }
     payload['username'] = username
     payload['is_admin'] = is_admin
+    payload['userid'] = ''.join(choices(string.ascii_letters + string.digits, k=20))
 
     return jwt.encode(payload, PRIVATE_WEB_KEY, algorithm=TOKEN_ALGO).decode('utf-8')
 

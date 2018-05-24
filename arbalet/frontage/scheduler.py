@@ -33,7 +33,7 @@ class Scheduler(object):
         self.current_app_state = None
         self.queue = None
         self.count = 0
-        self.apps = OrderedDict([(app, globals()[app]()) for app in get_app_names()])
+        self.apps = OrderedDict([(app, globals()[app]('', '')) for app in get_app_names()])
         SchedulerState.set_registered_apps(self.apps)
 
 
@@ -77,8 +77,8 @@ class Scheduler(object):
 
         from tasks.celery import app
         if not c_app.get('is_default', False) and not c_app.get('is_forced', False):
-            if stop_code and stop_message and 'username' in c_app:
-                Websock.send_data(stop_code, stop_message, c_app['username'])
+            if stop_code and stop_message and 'userid' in c_app:
+                Websock.send_data(stop_code, stop_message, c_app['username'], c_app['userid'])
 
         sleep(0.1)
         # revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
@@ -160,7 +160,7 @@ class Scheduler(object):
             # is expire soon ?
             if not c_app.get('is_default', False) and now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
                 if not SchedulerState.get_expire_soon():
-                    Fap.send_expires_soon(EXPIRE_SOON_DELAY, c_app['username'])
+                    Fap.send_expires_soon(EXPIRE_SOON_DELAY, c_app['username'], c_app['userid'])
             # is the current_app expired ?
             if self.app_is_expired(c_app) or c_app.get('is_default', False):
                 # is the current_app a FORCED_APP ?

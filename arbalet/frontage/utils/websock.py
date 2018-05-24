@@ -18,13 +18,14 @@ class Websock(Thread):
         self.web_socket = None
 
     @staticmethod
-    def send_data(code, message, username=None):
+    def send_data(code, message, username='', userid=''):
         print_flush("###############################################################################")
         print_flush("Send : [code={0}] [message={1}]".format(code, message))
         print_flush("###############################################################################")
         redis.set(KEY_WS_SEND, json.dumps({'code': code,
                                            'message': message,
-                                           'username': username}))
+                                           'username': username,
+                                           'userid': userid}))
 
     @staticmethod
     def get_data():

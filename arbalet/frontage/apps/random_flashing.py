@@ -7,8 +7,8 @@ from json import loads
 
 class RandomFlashing(Colors):
 
-    def __init__(self, username=None):
-        Colors.__init__(self, gen_random_flashing, username)
+    def __init__(self, username, userid):
+        Colors.__init__(self, gen_random_flashing, username, userid)
         self.PARAMS_LIST['uapp'] = ['flashes']
 
 
