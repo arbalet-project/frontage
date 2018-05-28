@@ -10,15 +10,14 @@ with open('bordeaux.sun', 'w') as outfile:
 
     d = datetime.datetime.now()
     t = {}
-    for i in range(0, 365):
-        res = requests.get(url+'&date='+d.isoformat())
-        t[d.isoformat()] = res.json()['results']
-        print(res.json())
-        d = d + datetime.timedelta(days=1)
-        time.sleep(0.005)
+    for y in range(5):
+        for i in range(0, 365):
+            res = requests.get(url+'&date='+d.isoformat())
+            t[d.isoformat()] = res.json()['results']
+            print(res.json())
+            d = d + datetime.timedelta(days=1)
+            time.sleep(0.005)
 
-    print('---------------------')
-    print(t)
     outfile.write(json.dumps(t))
 
 
