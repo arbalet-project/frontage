@@ -377,15 +377,22 @@ class SchedulerState(object):
     # ============= DEFAULT SCHEDULED APP
     @staticmethod
     def get_next_default_app():
-        index = int(redis_get(SchedulerState.KEY_DEFAULT_APP_CURRENT_INDEX, 0))
         apps = SchedulerState.get_default_scheduled_apps()
+        num_apps = len(apps)
+
+        if num_apps == 0:
+            return None
+
+        index = int(redis_get(SchedulerState.KEY_DEFAULT_APP_CURRENT_INDEX, 0))
+        index = (index + 1) % num_apps
+        redis.set(SchedulerState.KEY_DEFAULT_APP_CURRENT_INDEX, index)
+
         try:
             app = apps[index]
         except IndexError:
             return None
-        index = (index + 1) % len(apps)
-        redis.set(SchedulerState.KEY_DEFAULT_APP_CURRENT_INDEX, index)
-        return app
+        else:
+            return app
 
     @staticmethod
     def set_default_scheduled_app_state(app_name, state):
