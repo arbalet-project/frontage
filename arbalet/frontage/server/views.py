@@ -89,6 +89,7 @@ def admin_enabled_scheduler(user):
 
     SchedulerState.set_enable_state(state)
     return jsonify(is_usable=SchedulerState.usable(),
+                   is_forced=SchedulerState.get_forced_app(),
                    state=SchedulerState.get_enable_state(),
                    current_time=datetime.datetime.now().isoformat())
 
@@ -296,6 +297,7 @@ def remove_from_queue(user):
 @blueprint.route('/frontage/status', methods=['GET'])
 def status():
     return jsonify(is_usable=SchedulerState.usable(),
+                   is_forced=SchedulerState.get_forced_app(),
                    next_on_time=SchedulerState.get_scheduled_on_time().isoformat(),
                    state=SchedulerState.get_enable_state(),
                    current_time=datetime.datetime.now().isoformat())
