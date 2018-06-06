@@ -296,8 +296,11 @@ def remove_from_queue(user):
 
 @blueprint.route('/frontage/status', methods=['GET'])
 def status():
+    c_app = SchedulerState.get_current_app()
+    c_app_name = c_app.get('name', '') if c_app else ''
     return jsonify(is_usable=SchedulerState.usable(),
                    is_forced=SchedulerState.get_forced_app(),
+                   current_app=c_app_name,
                    next_on_time=SchedulerState.get_scheduled_on_time().isoformat(),
                    state=SchedulerState.get_enable_state(),
                    current_time=datetime.datetime.now().isoformat())
