@@ -40,6 +40,7 @@ class Flags(Fap):
                             'japan',
                             'latvia',
                             'lebanon',
+                            'lgbtq',
                             'libya',
                             'liechtenstein',
                             'lituania',
@@ -325,6 +326,28 @@ class Flags(Fap):
         for c in range(8, 11):
             self.model.set_pixel(1, c, name_to_rgb('darkgreen'))
             self.model.set_pixel(2, c, name_to_rgb('darkgreen'))
+
+    def lgbtq(self):
+        self.model.set_column(0, (0.46, 0., 0.52))
+        self.model.set_column(1, (0.46, 0., 0.52))
+        self.model.set_column(2, (0.46, 0., 0.52))
+        self.model.set_column(3, (0., 0.3, 1.))
+        self.model.set_column(4, (0., 0.3, 1.))
+        self.model.set_column(5, (0., 0.3, 1.))
+        self.model.set_column(6, (0., 0.5, 0.16))
+        self.model.set_column(7, (0., 0.5, 0.16))
+        self.model.set_column(8, (0., 0.5, 0.16))
+        self.model.set_column(9, (1, 1, 0))
+        self.model.set_column(10, (1, 1, 0))
+        self.model.set_column(11, (1, 1, 0))
+        self.model.set_column(12, (1, 0.54, 0))
+        self.model.set_column(13, (1, 0.54, 0))
+        self.model.set_column(14, (1, 0.54, 0))
+        self.model.set_column(15, (1, 0, 0))
+        self.model.set_column(16, (1, 0, 0))
+        self.model.set_column(17, (1, 0, 0))
+        self.model.set_column(18, (0, 0, 0))
+
 
     def libya(self):
         self.model.set_line(0, (1, 0, 0))
