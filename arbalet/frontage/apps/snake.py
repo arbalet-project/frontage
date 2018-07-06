@@ -108,8 +108,6 @@ class Snake(Fap):
         while True:
             rate.sleep_dur = 1.0 / self.rate
             with self.model:
-                # No need anymore, thx to asyncio ;)
-                # self.process_events()
                 new_pos = ((self.HEAD[0] + self.DIRECTION[0]) % self.model.height, (self.HEAD[1] + self.DIRECTION[1]) % self.model.width)
                 # check
                 if new_pos in self.queue:
@@ -125,6 +123,7 @@ class Snake(Fap):
                     self.model.set_pixel(x, y, self.BG_COLOR)
                     self.process_extras(x, y)
                 else:
+                    self.send_message(Fap.CODE_SNAKE_ATE_APPLE)
                     del self.FOOD_POSITIONS[new_pos]
                     self.spawn_food(1)
                     self.rate += self.rate_increase

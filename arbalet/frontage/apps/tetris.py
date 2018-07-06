@@ -157,6 +157,8 @@ class Tetris(Fap):
                             break
                     else:
                         break
+                if cleared_rows > 0:
+                    self.send_message(Fap.CODE_TETRIS_CLEARED_ROW)
                 self.add_cl_lines(cleared_rows)
                 return True
         return False

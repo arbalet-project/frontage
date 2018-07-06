@@ -15,6 +15,8 @@ class Fap(object):
     CODE_GAME_OVER = 2
     CODE_EXPIRE = 3
     CODE_EXPIRE_SOON = 4
+    CODE_TETRIS_CLEARED_ROW = 10
+    CODE_SNAKE_ATE_APPLE = 11
 
     PARAMS_LIST = []
     PLAYABLE = False
@@ -46,6 +48,9 @@ class Fap(object):
 
     def send_game_over(self):
         Websock.send_data(Fap.CODE_GAME_OVER, 'GAME_OVER', self.username, self.userid)
+
+    def send_message(self, code):
+        Websock.send_data(code, 'Gamelife message', self.username, self.userid)
 
     @staticmethod
     def send_expires(username='', userid=''):
