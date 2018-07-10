@@ -73,7 +73,6 @@ class Snake(Fap):
         self.send_game_over()
         time.sleep(1)
         self.flash()
-        time.sleep(1)
 
     def process_extras(self, x=None, y=None):
         pass
@@ -109,27 +108,27 @@ class Snake(Fap):
             rate.sleep_dur = 1.0 / self.rate
             with self.model:
                 new_pos = ((self.HEAD[0] + self.DIRECTION[0]) % self.model.height, (self.HEAD[1] + self.DIRECTION[1]) % self.model.width)
-                # check
-                if new_pos in self.queue:
-                    # Game Over !!
-                    break
 
-                self.HEAD = new_pos
-                self.model.set_pixel(new_pos[0], new_pos[1], self.PIXEL_COLOR)
-                self.queue.append(new_pos)
-
-                if new_pos not in self.FOOD_POSITIONS:
-                    x, y = self.queue.pop(0)
-                    self.model.set_pixel(x, y, self.BG_COLOR)
-                    self.process_extras(x, y)
-                else:
+                if new_pos in self.FOOD_POSITIONS:
                     self.send_message(Fap.CODE_SNAKE_ATE_APPLE)
                     del self.FOOD_POSITIONS[new_pos]
                     self.spawn_food(1)
                     self.rate += self.rate_increase
                     self.process_extras()
-                self.send_model()
-            rate.sleep()
-        self.game_over()
-        #self.send_close_app()
+                else:
+                    x, y = self.queue.pop(0)
+                    self.model.set_pixel(x, y, self.BG_COLOR)
+                    self.process_extras(x, y)
+
+                if new_pos in self.queue:
+                    # Game Over !!
+                    self.send_model()
+                    self.game_over()
+                    return
+                else:
+                    self.HEAD = new_pos
+                    self.model.set_pixel(new_pos[0], new_pos[1], self.PIXEL_COLOR)
+                    self.queue.append(new_pos)
+                    self.send_model()
+                    rate.sleep()
 
