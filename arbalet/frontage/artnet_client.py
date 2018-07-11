@@ -176,7 +176,7 @@ class ArtnetClient(object):
             for row in range(self.back_mapping.shape[0]):
                 for col in range(self.back_mapping.shape[1]):
                     universe, address = self.back_mapping[row, col]
-                    r, g, b = self.model[row, col]
+                    r, g, b = self.model[row, col + (6 if col > 6 else 0)]
                     self.data[universe][address] = min(255, max(0, int(r*255)))
                     self.data[universe][address+1] = min(255, max(0, int(g*255)))
                     self.data[universe][address+2] = min(255, max(0, int(b*255)))
