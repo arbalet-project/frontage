@@ -68,7 +68,7 @@ class Scheduler(object):
         SchedulerState.clear_user_app_queue()
         self.stop_app(SchedulerState.get_current_app(),
                                 Fap.CODE_CLOSE_APP,
-                                'The admin started a forced app')
+                                'The admin disabled Arbalet Frontage')
 
     def stop_app(self, c_app, stop_code=None, stop_message=None):
         # flask_log(" ========= STOP_APP ====================")
