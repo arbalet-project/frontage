@@ -19,6 +19,7 @@ from apps.sweep_rand import SweepRand
 from apps.snake import Snake
 from apps.tetris import Tetris
 from apps.snap import Snap
+from apps.drawing import Drawing
 
 class TestApp():
     def run(self, params):
