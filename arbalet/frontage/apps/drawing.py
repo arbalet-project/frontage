@@ -48,9 +48,9 @@ class Drawing(Fap):
             simple_color = int(simple_color)
         
         if simple_color < 0 or simple_color > 255:
-            raise Exception("ERROR : color received should be a value between 0 and 255 but it is [{0}]".format(simple_color)
+            raise Exception("ERROR : color received should be a value between 0 and 255 but it is [{0}]".format(simple_color))
             
-        return simple_color/255
+        return simple_color/255.
 
     def run(self, params, expires_at=None):
         self.start_socket()
