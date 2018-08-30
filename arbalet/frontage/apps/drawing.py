@@ -19,6 +19,7 @@ from utils.colors import name_to_rgb
 class Drawing(Fap):
 
     def __init__(self, username, userid):
+        self.rate = Rate(2)
         Fap.__init__(self, username, userid)
 
     def handle_message(self, data, path=None): # noqa
@@ -31,9 +32,9 @@ class Drawing(Fap):
                 print("Message received in web socket by 'Drawing Fapp' could not be cast as JSON. Message : [{0}]".format(data))
                 print(e)
 
-            red = convert_color(pixel.red)
-            green = convert_color(pixel.green)
-            blue = convert_color(pixel.blue)
+            red = convert_color(pixel['red'])
+            green = convert_color(pixel['green'])
+            blue = convert_color(pixel['blue'])
             color = (red, green, blue)
             
             try:
@@ -54,4 +55,6 @@ class Drawing(Fap):
 
     def run(self, params, expires_at=None):
         self.start_socket()
+        while True:
+            self.rate.sleep()
 
