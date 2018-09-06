@@ -61,7 +61,6 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
   snap:
-    image: nginx
     build: snap
     env_file: .env-dev
     restart: unless-stopped
