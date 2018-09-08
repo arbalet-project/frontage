@@ -35,7 +35,8 @@ class Fap(object):
         self.model = Model(4, 19)
 
         credentials = pika.PlainCredentials(environ.get('RABBITMQ_DEFAULT_USER'), environ.get('RABBITMQ_DEFAULT_PASS'))
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbit', credentials=credentials))
+        self.connection_params = pika.ConnectionParameters(host='rabbit', credentials=credentials, connection_attempts = 1000)
+        self.connection = pika.BlockingConnection(self.connection_params)
         #####   Channel used for emiting  model to scheduler
         self.channel = self.connection.channel()
         self.channel.exchange_declare(exchange='model', exchange_type='fanout')
