@@ -26,19 +26,13 @@ class Drawing(Fap):
         if data is None:
             print("Error : message received on websocket is empty.")
         else:
-            try:
-                pixel = json.loads(data)
-            except Exception as e:
-                print("Message received in web socket by 'Drawing Fapp' could not be cast as JSON. Message : [{0}]".format(data))
-                print(e)
+            print(data)
 
-            red = convert_color(pixel['red'])
-            green = convert_color(pixel['green'])
-            blue = convert_color(pixel['blue'])
-            color = (red, green, blue)
-            
+            pixel = data.pixel
+            color= data.color
+
             try:
-                self.model.set_pixel(pixel.x, pixel.y, color)
+                self.model.set_pixel(pixel.x, pixel.y, (color.red, color.green, color.blue))
             except Exception as e:
                 print("Message received in web socket by 'Drawing Fapp' is incorrect. Read below for the stack trace.")
                 print(e)
