@@ -14,7 +14,7 @@ from json import loads
 from apps.fap import Fap
 from apps.actions import Actions
 from utils.tools import Rate
-from utils.colors import name_to_rgb
+from utils.colors import name_to_rgb, rgb_to_hsv
 
 class Drawing(Fap):
 
@@ -32,7 +32,7 @@ class Drawing(Fap):
             color= data.color
 
             try:
-                self.model.set_pixel(pixel.x, pixel.y, (color.red, color.green, color.blue))
+                self.model.set_pixel(pixel.x, pixel.y, rgb_to_hsv(color.red, color.green, color.blue))
             except Exception as e:
                 print("Message received in web socket by 'Drawing Fapp' is incorrect. Read below for the stack trace.")
                 print(e)
