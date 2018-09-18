@@ -5,7 +5,7 @@ import time
 from time import sleep
 from utils.red import redis, redis_get
 from db.models import FappModel, ConfigModel
-from db.base import session_factory, Base
+from db.base import session_factory, engine
 from db.tools import to_dict, serialize
 
 from server.flaskutils import print_flush
@@ -570,14 +570,15 @@ class SchedulerState(object):
 
     @staticmethod
     def check_db():
-        if ConfigModel.__tablename__ in [t.name for t in Base.metadata.sorted_tables]:
+        if engine.dialect.has_table(engine.connect(), ConfigModel.__tablename__):
             session = session_factory()
             conf = session.query(ConfigModel).first()
             if conf is not None:
                 return
 
-        raise ValueError("Database has not been initialized. "
-                         "Please run 'docker-compose run --rm app init' before starting the scheduler")
+        raise ValueError("Arbalet backend database has not been initialized. "
+                         "Please run 'docker-compose run --rm app init' before starting the scheduler. "
+                         "See INSTALL instructions for more information.")
 
     @staticmethod
     def restart_service():
