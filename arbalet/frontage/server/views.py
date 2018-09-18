@@ -305,6 +305,12 @@ def status():
                    state=SchedulerState.get_enable_state(),
                    current_time=datetime.datetime.now().isoformat())
 
+@blueprint.route('/b/restart', methods=['POST'])
+@authentication_required
+def restart_service(user):
+    if is_admin(user):
+        return jsonify(done=SchedulerState.restart_service())
+    return jsonify(done=False)
 
 rest_api.add_resource(ConfigView, '/b/config/')
 

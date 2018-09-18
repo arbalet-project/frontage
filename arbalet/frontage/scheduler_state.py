@@ -578,3 +578,15 @@ class SchedulerState(object):
 
         raise ValueError("Database has not been initialized. "
                          "Please run 'docker-compose run --rm app init' before starting the scheduler")
+
+    @staticmethod
+    def restart_service():
+        # Returns True if we could trigger a service restart, but can't guarantee it succeeded
+        from os.path import isfile
+        from os import system
+        if isfile('/usr/sbin/service'):
+            out1 = system('/usr/sbin/service arbalet restart')
+            out2 = system('/usr/sbin/service artnet restart')
+            if out1 == 0 and out2 == 0:
+                return True
+        return False
