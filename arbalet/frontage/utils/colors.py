@@ -173,18 +173,12 @@ def name_to_hsv(color_name):
 
 def rgb255_to_rgb(red255, green255, blue255):
     red = color255_to_color(red255)
-    green = color255_to_color(red255)
-    blue = color255_to_color(red255)
+    green = color255_to_color(green255)
+    blue = color255_to_color(blue255)
     return red, green, blue
 
 def color255_to_color(color255):
-    if isinstance(color255) is not int:
-        print("WARNING : color received is not an int. Try casting it.[color received : {0}]".format(simple_color))
-        color255 = int(color255)
-    
-    if color255 < 0 or color255 > 255:
-        raise Exception("ERROR : color received should be a value between 0 and 255 but it is [{0}]".format(simple_color))
-            
+    # This might raise exceptions          
     return float(color255)/float(255)
 
 # HSV: Hue, Saturation, Value

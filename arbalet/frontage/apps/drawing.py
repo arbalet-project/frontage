@@ -14,7 +14,7 @@ from json import loads
 from apps.fap import Fap
 from apps.actions import Actions
 from utils.tools import Rate
-from utils.colors import name_to_rgb, rgb_to_hsv, color255_to_color
+from utils.colors import name_to_rgb, rgb_to_hsv, rgb255_to_rgb
 
 class Drawing(Fap):
 
@@ -22,20 +22,25 @@ class Drawing(Fap):
         self.rate = Rate(2)
         Fap.__init__(self, username, userid)
 
-    def handle_message(self, data, path=None): # noqa
-        if data is None:
-            print("Error : message received on websocket is empty.")
+    def handle_message(self, json_data, path=None): # noqa
+        if json_data is None:
+            raise ValueError("Error : message received on websocket is empty.")
+        elif isinstance(json_data, str):
+            data = loads(json_data)
         else:
-            print(data)
+            raise ValueError("Incorrect payload value type for Drawing Fapp")
 
-            pixel = data.pixel
-            color = data.color
+        pixel = data['pixel']
+        color = data['color']
 
-            try:
-                self.model.set_pixel(pixel.x, pixel.y, array(color255_to_color(color.red, color.green, color.blue)))
-            except Exception as e:
-                print("Message received in web socket by 'Drawing Fapp' is incorrect. Read below for the stack trace.")
-                print(e)
+        assert(isinstance(pixel['x'], int))
+        assert(isinstance(pixel['y'], int))
+        assert(isinstance(color['red'], int) and 0 <= color['red'] <= 255)
+        assert(isinstance(color['green'], int) and 0 <= color['green'] <= 255)
+        assert(isinstance(color['blue'], int) and 0 <= color['blue'] <= 255)
+
+        self.model.set_pixel(pixel['x'], pixel['y'], rgb255_to_rgb(color['red'], color['green'], color['blue']))
+
 
     def run(self, params, expires_at=None):
         self.start_socket()
