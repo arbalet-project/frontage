@@ -39,8 +39,10 @@ sudo cp resolv.conf /etc/resolv.conf
 cd ..
 nano .env  # Set random passwords
 sudo systemctl edit artnet
-# Add a [Service] section with the 2 rabbitMQ credential strings, syntax is:
-# Environment="SOME_VAR="
+# Add a [Service] section with the 2 rabbitMQ credential strings, i.e.:
+# [Service]
+# Environment="RABBITMQ_DEFAULT_USER=frontage"
+# Environment="RABBITMQ_DEFAULT_PASS="
 docker-compose -f docker-compose.prod.yml run --rm app init # Create your admin password here
 
 ```
