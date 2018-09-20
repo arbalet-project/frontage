@@ -585,9 +585,9 @@ class SchedulerState(object):
         # Returns True if we could trigger a service restart, but can't guarantee it succeeded
         from os.path import isfile
         from os import system
-        if isfile('/usr/sbin/service'):
-            out1 = system('/usr/sbin/service arbalet restart')
-            out2 = system('/usr/sbin/service artnet restart')
-            if out1 == 0 and out2 == 0:
+        if isfile('/home/arbalet/Arbalet/frontage/docker-compose.prod.yml') and isfile('/usr/bin/docker-compose')
+            out = system('cd /home/arbalet/Arbalet/frontage && /usr/bin/docker-compose -f /home/arbalet/Arbalet/frontage/docker-compose.prod.yml down')
+            # Do not docker-compose up again, systemd will restart the stack
+            if out == 0:
                 return True
         return False
