@@ -75,11 +75,11 @@ class Snap(Fap):
             abort(403, "Forbidden Bru")
 
         data = loads(request.get_data().decode())   # {selected_client: ""}
-        if "selected_client" in data and data["selected_client"] in [self.OFF] + list(self.nicknames.keys()):
-            with self.lock:
+        with self.lock:
+            if "selected_client" in data and data["selected_client"] in [self.OFF] + list(self.nicknames.keys()):
                 self.current_auth_nick = data["selected_client"]
                 self.erase_all()
-            return dumps({"success": True, "message": "Client authorized successfully"})
+                return dumps({"success": True, "message": "Client authorized successfully"})
         return dumps({"success": False, "message": "No such client"})
 
     @staticmethod
@@ -87,42 +87,38 @@ class Snap(Fap):
         return min(1., max(0., float(v)/255))
 
     def set_rgb_matrix(self):
-        try:
-            data = request.get_data().decode().split(':')
+        data = request.get_data().decode().split(':')
+        if data.pop(0) == self.current_auth_nick:
+            nb_rows = 4
+            nb_cols = 19
+            r = 0
+            c = 0
             with self.lock:
-                if data.pop(0) == self.current_auth_nick:
-                    nb_rows = 4
-                    nb_cols = 19
-                    r = 0
-                    c = 0
-                    while data:
-                        red = data.pop(0)
-                        green = data.pop(0)
-                        blue = data.pop(0)
-                        self.model.set_pixel(r, c, list(map(self.scale, [red, green, blue])))
-                        if c < nb_cols - 1:
-                            c += 1
-                        else:
-                            c = 0
-                            r += 1
-        except Exception as e:
-            raise e
-            sys.exc_clear()
-        else:
-            self.send_model()
-        return ''
-
+                while data:
+                    red = data.pop(0)
+                    green = data.pop(0)
+                    blue = data.pop(0)
+                    self.model.set_pixel(r, c, list(map(self.scale, [red, green, blue])))
+                    if c < nb_cols - 1:
+                        c += 1
+                    else:
+                        c = 0
+                        r += 1
+                self.send_model()
+                return 'OK'
+        abort(403, "Snap client not authorized")
 
     def erase_all(self):
-        self.model.set_all("black")
-        self.send_model()
+        with self.lock:
+            self.model.set_all("black")
+            self.send_model()
         return ''
 
     def is_authorized(self, nickname):
         with self.lock:
             self.nicknames[nickname] = time()
-        # update user table
-        self.check_nicknames_validity()
+            # update user table
+            self.check_nicknames_validity()
         return str(nickname == self.current_auth_nick)
 
     def get_nickname(self):
