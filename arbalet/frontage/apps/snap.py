@@ -112,7 +112,7 @@ class Snap(Fap):
         with self.lock:
             self.model.set_all("black")
             self.send_model()
-        return ''
+        return 'OK'
 
     def is_authorized(self, nickname):
         with self.lock:
