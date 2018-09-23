@@ -149,7 +149,7 @@ class ArtnetClient(object):
         self.dmx = None
         self.data = [[0]*512 for u in range(self.num_universes)]  # self.data[universe][dmx_address] = dmx_value
         credentials = pika.PlainCredentials(environ['RABBITMQ_DEFAULT_USER'], environ['RABBITMQ_DEFAULT_PASS'])
-        self.params = pika.ConnectionParameters(host='localhost', credentials=credentials, connection_attempts = 1000)
+        self.params = pika.ConnectionParameters(host='localhost', credentials=credentials, connection_attempts = 100, heartbeat = 0)
 
     def start_dmx(self):
         if self.dmx is None:

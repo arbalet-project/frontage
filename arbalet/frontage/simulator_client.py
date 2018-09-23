@@ -79,7 +79,7 @@ class Simulator(object):
         self.update()
         # These are the public credentials for dev environment
         credentials = pika.PlainCredentials('frontage', 'uHm65hK6]yfabDwUUksqeFDbOu')
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=credentials))
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=credentials, heartbeat = 0))
         self.channel = connection.channel()
 
         self.channel.exchange_declare(exchange='pixels', exchange_type='fanout')
