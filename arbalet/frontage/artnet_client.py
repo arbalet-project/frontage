@@ -1,4 +1,5 @@
 import pika
+import logging
 from os import environ
 from model import Model
 from numpy import array
@@ -208,5 +209,7 @@ class ArtnetClient(object):
 
 if __name__ == '__main__':
     artnet = ArtnetClient()
+    logger = logging.getLogger("artnet.dmx")
+    logger.setLevel(logging.ERROR)
     artnet.run()
 
