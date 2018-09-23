@@ -2,6 +2,8 @@ version: '2'
 services:
   redis:
     image: "redis"
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     restart: unless-stopped
   rabbit:
     image: "rabbitmq:3-management"
