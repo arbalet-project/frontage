@@ -32,6 +32,7 @@ class Simulator(object):
         self.border_thickness = 1
         self.cell_height = factor_sim
         self.cell_width = factor_sim
+        self.connection = None
         self.channel = None
         self.display = None
         self.running = False
@@ -79,8 +80,8 @@ class Simulator(object):
         self.update()
         # These are the public credentials for dev environment
         credentials = pika.PlainCredentials('frontage', 'uHm65hK6]yfabDwUUksqeFDbOu')
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=credentials, heartbeat = 0))
-        self.channel = connection.channel()
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=credentials, heartbeat = 0))
+        self.channel = self.connection.channel()
 
         self.channel.exchange_declare(exchange='pixels', exchange_type='fanout')
 
@@ -98,7 +99,10 @@ class Simulator(object):
     def close(self):
         if self.channel is not None:
             self.channel.stop_consuming()
-
+        if self.channel is not None:
+            self.channel.close()
+        if self.connection is not None:
+            self.connection.close()
         self.display.lock()
         try:
             display.quit()
