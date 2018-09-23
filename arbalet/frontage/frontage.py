@@ -45,7 +45,7 @@ class Frontage(Thread):
 
     def run(self):
         credentials = pika.PlainCredentials(environ.get('RABBITMQ_DEFAULT_USER'), environ.get('RABBITMQ_DEFAULT_PASS'))
-        self.connection_params = pika.ConnectionParameters(host='rabbit', credentials=credentials, connection_attempts = 100)
+        self.connection_params = pika.ConnectionParameters(host='rabbit', credentials=credentials, connection_attempts = 100, heartbeat = 0)
         self.connection = pika.BlockingConnection(self.connection_params)
 
         #####    Receive model from apps
