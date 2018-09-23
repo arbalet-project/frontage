@@ -115,6 +115,10 @@ class Fap(object):
         return struct
 
     def close(self):
+        if self.channel is not None:
+            self.channel.close()
+        if self.connection is not None:
+            self.connection.close()
         if self.ws is not None:
             self.ws.close()
             time.sleep(0.2)

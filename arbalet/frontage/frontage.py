@@ -24,6 +24,8 @@ class Frontage(Thread):
         self.rate = Rate(self.RATE_HZ)
         self.frontage_running = False
         self.fade_out_idx = 0
+        self.connection = None
+        self.channel = None
 
     def __getitem__(self, row):
         return self.model.__getitem__(row)
@@ -71,6 +73,12 @@ class Frontage(Thread):
             if self.frontage_running:
                 self.channel_pixels.basic_publish(exchange='pixels', routing_key='', body=self.model.json())
                 self.rate.sleep()
+        
+        # Closing
+        if self.channel is not None:
+            self.channel.close()
+        if self.connection is not None:
+            self.connection.close()
 
     @property
     def is_running(self):
