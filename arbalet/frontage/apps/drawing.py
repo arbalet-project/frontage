@@ -23,6 +23,7 @@ class Drawing(Fap):
         Fap.__init__(self, username, userid)
 
     def handle_message(self, json_data, path=None): # noqa
+        print('start handle')
         if json_data is None:
             raise ValueError("Error : message received on websocket is empty.")
         elif isinstance(json_data, str):
@@ -32,14 +33,17 @@ class Drawing(Fap):
 
         pixel = data['pixel']
         color = data['color']
+        print('Handling response : {0} | {1}'.format(pixel, color))
 
-        assert(isinstance(pixel['x'], int))
-        assert(isinstance(pixel['y'], int))
+        px_x = int(pixel['x'])
+        px_y = int(pixel['y'])
+
         assert(isinstance(color['red'], int) and 0 <= color['red'] <= 255)
         assert(isinstance(color['green'], int) and 0 <= color['green'] <= 255)
         assert(isinstance(color['blue'], int) and 0 <= color['blue'] <= 255)
 
-        self.model.set_pixel(pixel['x'], pixel['y'], rgb255_to_rgb(color['red'], color['green'], color['blue']))
+        print('Ok it is : {0}'.format(rgb255_to_rgb(color['red'], color['green'], color['blue'])))
+        self.model.set_pixel(px_x, px_y, rgb255_to_rgb(color['red'], color['green'], color['blue']))
 
 
     def run(self, params, expires_at=None):
