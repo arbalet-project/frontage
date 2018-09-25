@@ -310,7 +310,8 @@ class SchedulerState(object):
 
     @staticmethod
     def get_current_app():
-        return json.loads(redis.get(SchedulerState.KEY_CURRENT_RUNNING_APP))
+        c_app = redis.get(SchedulerState.KEY_CURRENT_RUNNING_APP)
+        return json.loads(c_app) if c_app is not None else None
 
     @staticmethod
     def set_current_app(app_struct):
