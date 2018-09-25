@@ -214,6 +214,12 @@ class AppDefaultListView(Resource):
     def post(self, user):
         return True
 
+class DrawingAppDefault(Resource):
+    @authentication_required
+    def post(self, user):
+        if not is_admin(user):
+            abort(403, "Forbidden Bru")
+        return jsonify(done=SchedulerState.set_default_drawing())
 
 class AppDefaultParamView(Resource):
     @authentication_required
@@ -317,6 +323,7 @@ rest_api.add_resource(ConfigView, '/b/config/')
 rest_api.add_resource(AppDefaultView, '/b/apps/default/')
 rest_api.add_resource(AppDefaultParamView, '/b/apps/default/<string:app_name>')
 rest_api.add_resource(AppDefaultListView, '/b/apps/default')
+rest_api.add_resource(DrawingAppDefault, '/b/apps/drawing/default')
 
 rest_api.add_resource(AppRunningView, '/b/apps/running')
 rest_api.add_resource(AppListView, '/b/apps')

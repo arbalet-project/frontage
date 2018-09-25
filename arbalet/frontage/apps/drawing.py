@@ -15,6 +15,11 @@ from apps.fap import Fap
 from apps.actions import Actions
 from utils.tools import Rate
 from utils.colors import name_to_rgb, rgb_to_hsv, rgb255_to_rgb
+from scheduler_state import SchedulerState
+
+from db.models import FappModel
+from db.base import session_factory
+from json import dumps
 
 class Drawing(Fap):
     PLAYABLE = True
@@ -43,10 +48,31 @@ class Drawing(Fap):
 
         self.model.set_pixel(px_x, px_y, rgb255_to_rgb(color['red'], color['green'], color['blue']))
 
+    def set_default_drawing(self):
+        # Set the current model as the default drawing in database
+        session = session_factory()
+        try:
+            fap = session.query(FappModel).filter_by(name='Drawing').first()
+            if not fap:
+                return False
+            fap.default_params = dumps({"model": self.model.json()})
+            session.commit()
+        finally:
+            session.close()
 
     def run(self, params, expires_at=None):
-        self.start_socket()
-        while True:
-            self.send_model()
-            self.rate.sleep()
+        if 'model' in params and params['model'] != "":
+            # Replay saved drawing
+            self.model.set_from_json(params['model'])
+            while True:
+                self.send_model()
+                self.rate.sleep()
+        else:
+            # Regular real-time drawing
+            self.start_socket()
+            while True:
+                if SchedulerState.get_default_drawing_request():
+                    self.set_default_drawing()
+                self.send_model()
+                self.rate.sleep()
 

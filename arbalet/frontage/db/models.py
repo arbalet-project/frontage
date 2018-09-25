@@ -19,14 +19,13 @@ def cln_str(s):
             '')
     return ''
 
-
 class FappModel(Base):
     __tablename__ = 'fapp'
 
     uniqid = Column(String(36), primary_key=True)
     name = Column(String(36), unique=True)
     is_scheduled = Column(Boolean)
-    default_params = Column(String(36))
+    default_params = Column(String(4096))
     position = Column(Integer)
     duration = Column(Integer)
     created_at = Column(DateTime, unique=False)

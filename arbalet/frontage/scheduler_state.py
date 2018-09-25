@@ -39,6 +39,7 @@ class SchedulerState(object):
     KEY_ON_TIME = 'astronomical_twilight_end'
     KEY_OFF_TIME = 'astronomical_twilight_begin'
     KEY_DEFAULT_APP_CURRENT_INDEX = 'key_default_app_current_index'
+    KEY_SET_DEFAULT_DRAWING = 'key_set_default_drawing'
 
     # admin override app
     KEY_FORCED_APP = 'frontage_forced_app'
@@ -108,6 +109,13 @@ class SchedulerState(object):
         return False, None
 
     @staticmethod
+    def get_default_drawing_request():
+        # Return true if a request has been initiated to set the current drawing as the default
+        request = redis_get(SchedulerState.KEY_SET_DEFAULT_DRAWING, False) == 'True'
+        redis.set(SchedulerState.KEY_SET_DEFAULT_DRAWING, 'False')
+        return request
+
+    @staticmethod
     def get_forced_app_request():
         return json.loads(redis_get(SchedulerState.KEY_FORCED_APP_REQUEST, '{}'))
 
@@ -143,6 +151,14 @@ class SchedulerState(object):
         for fap in apps:
             struct[fap] = apps[fap].jsonify()
         redis.set(SchedulerState.KEY_REGISTERED_APP, json.dumps(struct))
+
+    @staticmethod
+    def set_default_drawing():
+        c_app = SchedulerState.get_current_app()
+        if('name' in c_app and c_app['name'] == "Drawing"):
+            redis.set(SchedulerState.KEY_SET_DEFAULT_DRAWING, "True")
+            return True
+        return False
 
     @staticmethod
     def get_available_apps():
