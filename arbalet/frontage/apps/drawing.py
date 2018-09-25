@@ -17,9 +17,10 @@ from utils.tools import Rate
 from utils.colors import name_to_rgb, rgb_to_hsv, rgb255_to_rgb
 
 class Drawing(Fap):
-
+    PLAYABLE = True
+    ACTIVATED = True
     def __init__(self, username, userid):
-        self.rate = Rate(2)
+        self.rate = Rate(10)
         Fap.__init__(self, username, userid)
 
     def handle_message(self, json_data, path=None): # noqa
