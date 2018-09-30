@@ -4,8 +4,9 @@ This is the backend of Arbalet Frontage, the [pixelated building facade of Borde
 
 
 ## Development
+### First startup
 Default keys and passwords are fine for a dev environment.
-Maker you [docker-compose](https://docs.docker.com/compose/) is installed on your desktop and then build and run with docker:
+Make sure [docker-compose](https://docs.docker.com/compose/) is installed on your workstation and then build and run with docker:
 ```
 git clone https://github.com/arbalet-project/frontage.git
 cd frontage
@@ -27,8 +28,8 @@ scheduler_1  | ---------- Forced App ?
 scheduler_1  | False
 scheduler_1  | ---------- Waiting Queue
 scheduler_1  | []
-
 ```
+
 * Enable state can be `on` (forced on), `scheduled` (according to the daily planning based on sunset time) or `off` (forced off)
 * Frontage is up in forced on or when the server's local time is within the range of the daily planning, or when in forced on mode
 * Frontage is usable when a regular user is allowed to connect and take control (i.e. when frontage is up and no application is being forced)
@@ -40,5 +41,11 @@ If you're meeting authorizations issues on Linux, make sure your username is in 
 
 Then compile, deploy and open [the frontend app](https://github.com/arbalet-project/frontage-frontend) and edit its environment so that it calls the IP of your dev workstation (usually `127.0.0.1` in `environment.ts`)
 
+If you want to stop the backend, just press Ctl+C once, it will nicely closes all processes.
+
 ## Production
 Refer to the [install](install) procedure to deploy the app on a production server.
+
+## How to...?
+### Reset database and settings
+`docker-compose down -v` will get rid of the database, you will then need to initialize a new one with `docker-compose run --rm app init`. If this is intended to be executed on the production server, add `-f docker-compose.prod.yml` to the `docker-compose commands`.
