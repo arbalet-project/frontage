@@ -1,24 +1,51 @@
 # Arbalet Frontage backend
 
-This is the backend of Arbalet Frontage, the [pixelated building facade of Bordeaux University](https://vimeo.com/arbalet/frontage).
+This is the backend of Arbalet Frontage, the [pixelated building facade of Bordeaux University](https://vimeo.com/arbalet/frontage). It drives 4 rows x 19 columns of RGB Art-Net/DMX fixtures. See [Network schematics](frontage.svg).
+
 
 ## Development
+### First startup
 Default keys and passwords are fine for a dev environment.
-Build and run with docker:
+Make sure [docker-compose](https://docs.docker.com/compose/) is installed on your workstation and then build and run with docker:
 ```
-cd arbalet/frontage
-docker-compose up --build
+git clone https://github.com/arbalet-project/frontage.git
+cd frontage
+docker-compose run --rm app init # Prompt will ask you to create your admin password
+docker-compose up
 ```
-Then open the frontend app and edit its environment so that it calls the IP of your dev workstation.
+If everything goes well, your terminal shows the Arbalet Frontage scheduler state on stdout:
+```
+scheduler_1  |  ========== Scheduling ==========
+scheduler_1  | -------- Enable State
+scheduler_1  | scheduled
+scheduler_1  | -------- Is Frontage Up?
+scheduler_1  | False
+scheduler_1  | -------- Usable?
+scheduler_1  | False
+scheduler_1  | -------- Current App
+scheduler_1  | {}
+scheduler_1  | ---------- Forced App ?
+scheduler_1  | False
+scheduler_1  | ---------- Waiting Queue
+scheduler_1  | []
+```
+
+* Enable state can be `on` (forced on), `scheduled` (according to the daily planning based on sunset time) or `off` (forced off)
+* Frontage is up in forced on or when the server's local time is within the range of the daily planning, or when in forced on mode
+* Frontage is usable when a regular user is allowed to connect and take control (i.e. when frontage is up and no application is being forced)
+* Current app shows the current running f-app (frontage application)
+* Forced app is true is the current running f-app is being forced by and admin (will stop only when unforced)
+* Waiting queue shows the list of users waiting for controlling the frontage
+
+If you're meeting authorizations issues on Linux, make sure your username is in the docker group: `sudo usermod -aG docker $USER` Log out and log back in so that your group membership is re-evaluated.
+
+Then compile, deploy and open [the frontend app](https://github.com/arbalet-project/frontage-frontend) and edit its environment so that it calls the IP of your dev workstation (usually `127.0.0.1` in `environment.ts`)
+
+If you want to stop the backend, just press Ctl+C once, it will nicely closes all processes.
 
 ## Production
-As mentionned in [install](install), in production mode the server is managed by SystemD:
-```
-sudo service arbalet start   # Main backend start
-sudo service artnet start    # Art-Net publisher
-sudo service arbalet stop
-sudo systemctl status arbalet.service
-sudo journalctl -u arbalet -f
-```
+Refer to the [install](install) procedure to deploy the app on a production server.
 
-[Network schematics](frontage.svg)
+## How to...?
+### Reset database and settings
+`docker-compose down -v` will get rid of the database, you will then need to initialize a new one with `docker-compose run --rm app init`. If this is intended to be executed on the production server, add `-f docker-compose.prod.yml` to the `docker-compose commands`.
