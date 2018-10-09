@@ -22,7 +22,7 @@ class SchedulerState(object):
     DEFAULT_KEEP_ALIVE_DELAY = 60  # in second
     DEFAULT_CURRENT_APP_KEEP_ALIVE_DELAY = 15  # in second
     KEY_DAY_TABLE = 'frontage_day_table'
-    CITY = 'data/bordeaux_user.sun'
+    CITY = 'data/sun/bordeaux.json'
 
     KEY_SUNRISE_OFFSET = 'key_sunrise_offset'
     KEY_SUNDOWN_OFFSET = 'key_sundown_offset'
