@@ -268,22 +268,27 @@ class SchedulerState(object):
     @staticmethod
     def _get_scheduled_off_time():
         forced_off_time = SchedulerState.get_forced_off_time()
+        now = datetime.datetime.now()
+
         if forced_off_time:
             try:
                 forced_off_time = datetime.datetime.strptime(forced_off_time, "%H:%M")
             except ValueError:
                 SchedulerState.set_forced_off_time('')
             else:
-                now = datetime.datetime.now()
-                off_time = now.replace(hour=forced_off_time.hour, minute=forced_off_time.minute, second=0, microsecond=0)
+                return now.replace(hour=forced_off_time.hour, minute=forced_off_time.minute)
         else:
-            at = datetime.datetime.now().strftime('%Y-%m-%d')
-            v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(
-                SchedulerState.KEY_OFF_TIME, datetime.datetime.now().isoformat())
+            at = now.strftime('%Y-%m-%d')
+            calendar = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
+            if at in calendar:
+                v = calendar[at].get(SchedulerState.KEY_OFF_TIME, now.isoformat())
+                off_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
+                return off_time + datetime.timedelta(hours=float(SchedulerState.get_sunrise_offset()))
+        
+        # Sanity check: worst case: off time is unknown, return past date
+        return now + datetime.timedelta(hours=-10)
 
-            off_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
-            off_time = off_time + datetime.timedelta(hours=float(SchedulerState.get_sunrise_offset()))
-        return off_time
+
 
     @staticmethod
     def get_scheduled_off_time():
@@ -308,21 +313,25 @@ class SchedulerState(object):
     @staticmethod
     def _get_scheduled_on_time():
         forced_on_time = SchedulerState.get_forced_on_time()
+        now = datetime.datetime.now()
+
         if forced_on_time:
             try:
                 forced_on_time = datetime.datetime.strptime(forced_on_time, "%H:%M")
             except ValueError:
                 SchedulerState.set_forced_on_time('')
             else:
-                now = datetime.datetime.now()
-                forced_sundown_dt = now.replace(hour=forced_on_time.hour, minute=forced_on_time.minute,
-                                                second=0, microsecond=0)
-                return forced_sundown_dt
-        at = datetime.datetime.now().strftime('%Y-%m-%d')
-        v = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))[at].get(
-            SchedulerState.KEY_ON_TIME, datetime.datetime.now().isoformat())
-        on_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
-        return on_time + datetime.timedelta(hours=float(SchedulerState.get_sundown_offset()))
+                return now.replace(hour=forced_on_time.hour, minute=forced_on_time.minute)
+        else:
+            at = now.strftime('%Y-%m-%d')
+            calendar = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
+            if at in calendar:
+                v = calendar[at].get(SchedulerState.KEY_ON_TIME, now.isoformat())
+                on_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
+                return on_time + datetime.timedelta(hours=float(SchedulerState.get_sundown_offset()))
+
+        # Sanity check: worst case: on time is unknown, return future date
+        return now + datetime.timedelta(hours=10)
 
     @staticmethod
     def get_current_app():
