@@ -276,7 +276,7 @@ class SchedulerState(object):
             except ValueError:
                 SchedulerState.set_forced_off_time('')
             else:
-                return now.replace(hour=forced_off_time.hour, minute=forced_off_time.minute)
+                return now.replace(hour=forced_off_time.hour, minute=forced_off_time.minute, second=0, microsecond=0)
         else:
             at = now.strftime('%Y-%m-%d')
             calendar = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
@@ -321,7 +321,7 @@ class SchedulerState(object):
             except ValueError:
                 SchedulerState.set_forced_on_time('')
             else:
-                return now.replace(hour=forced_on_time.hour, minute=forced_on_time.minute)
+                return now.replace(hour=forced_on_time.hour, minute=forced_on_time.minute, second=0, microsecond=0)
         else:
             at = now.strftime('%Y-%m-%d')
             calendar = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
