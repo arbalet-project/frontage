@@ -27,17 +27,13 @@ class FappModel(Base):
     is_scheduled = Column(Boolean)
     default_params = Column(String(4096))
     position = Column(Integer)
-    duration = Column(Integer)
-    created_at = Column(DateTime, unique=False)
 
     def __init__(self, app_name, is_scheduled=False):
         self.uniqid = str(uuid4())
         self.position = 0
-        self.duration = (15 * 60)
         self.name = app_name
         self.is_scheduled = is_scheduled
         self.default_params = '{}'
-        self.created_at = datetime.datetime.now()
 
     def __repr__(self):
         return '<Fapp %r (%r) (%r) (%r)>' % (
