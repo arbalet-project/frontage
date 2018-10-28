@@ -28,7 +28,6 @@ class Scheduler(object):
         redis.set(SchedulerState.KEY_USERS_Q, '[]')
         redis.set(SchedulerState.KEY_FORCED_APP, False)
 
-        # SchedulerState.set_current_app({})
         self.frontage = Frontage()
         self.current_app_state = None
         self.queue = None
@@ -73,6 +72,7 @@ class Scheduler(object):
     def stop_app(self, c_app, stop_code=None, stop_message=None):
         # flask_log(" ========= STOP_APP ====================")
         if not c_app or 'task_id' not in c_app:
+            print_flush('Cannot stop invalid app')
             return
 
         from tasks.celery import app
@@ -80,13 +80,10 @@ class Scheduler(object):
             if stop_code and stop_message and 'userid' in c_app:
                 Websock.send_data(stop_code, stop_message, c_app['username'], c_app['userid'])
 
-        sleep(0.1)
-        # revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
-        # app.control.revoke(c_app['task_id'], terminate=True, signal='SIGUSR1')
         app.control.revoke(c_app['task_id'], terminate=True)
         self.frontage.fade_out()
+        SchedulerState.set_current_app({})
 
-        sleep(0.05)
 
     def run_scheduler(self):
         # check usable value, based on ON/OFF AND if a forced app is running
@@ -108,7 +105,7 @@ class Scheduler(object):
 
     def stop_current_app_start_next(self, queue, c_app, next_app):
         SchedulerState.set_event_lock(True)
-        print_flush('===> REVOKING APP')
+        print_flush('## Revoking app [stop_current_app_start_next]')
         self.stop_app(c_app, Fap.CODE_EXPIRE, 'Someone else turn')
         # Start app
         print_flush("## Starting {} [stop_current_app_start_next]".format(next_app['name']))
@@ -149,7 +146,6 @@ class Scheduler(object):
             if close_request:
                 message = Fap.CODE_CLOSE_APP if close_userid != c_app['userid'] else None
                 self.stop_app(c_app, message, 'Executing requested app closure')
-                redis.set(SchedulerState.KEY_CURRENT_RUNNING_APP, '{}')
                 redis.set(SchedulerState.KEY_STOP_APP_REQUEST, '{}')
                 return
             if len(forced_app) > 0 and not SchedulerState.get_forced_app():
@@ -177,19 +173,12 @@ class Scheduler(object):
                 else:
                     # is a defautl scheduled app ?
                     if c_app.get('is_default', False) and self.app_is_expired(c_app):
-                        print_flush('===> Stoping Default Scheduled app')
+                        print_flush('## Stopping expired default scheduled app [check_app_scheduler]')
                         self.stop_app(c_app)
                         return
                     # it's a USER_APP, we let it running, do nothing
                     else:
-                        # is a defautl scheduled app ?
-                        if c_app.get('is_default', False) and self.app_is_expired(c_app):
-                            print_flush('===> Stoping Default Scheduled app')
-                            self.stop_app(c_app)
-                            return
-                        # it's a USER_APP, we let it running, do nothing
-                        else:
-                            pass
+                        pass
         else:
             if len(forced_app) > 0 and not SchedulerState.get_forced_app():
                 print_flush("## Starting {} [FORCED]".format(forced_app['name']))
