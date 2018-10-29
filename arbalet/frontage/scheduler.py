@@ -65,9 +65,11 @@ class Scheduler(object):
 
     def disable_frontage(self):
         SchedulerState.clear_user_app_queue()
-        self.stop_app(SchedulerState.get_current_app(),
-                                Fap.CODE_CLOSE_APP,
-                                'The admin disabled Arbalet Frontage')
+        c_app = SchedulerState.get_current_app()
+        if c_app:
+            self.stop_app(c_app,
+                        Fap.CODE_CLOSE_APP,
+                        'The admin disabled Arbalet Frontage')
 
     def stop_app(self, c_app, stop_code=None, stop_message=None):
         # flask_log(" ========= STOP_APP ====================")
@@ -145,10 +147,12 @@ class Scheduler(object):
             close_request, close_userid = SchedulerState.get_close_app_request()
             if close_request:
                 message = Fap.CODE_CLOSE_APP if close_userid != c_app['userid'] else None
+                print_flush('## Stopping app upon user reques [check_app_scheduler]')
                 self.stop_app(c_app, message, 'Executing requested app closure')
                 redis.set(SchedulerState.KEY_STOP_APP_REQUEST, '{}')
                 return
             if len(forced_app) > 0 and not SchedulerState.get_forced_app():
+                print_flush('## Closing previous app for forced one [check_app_scheduler]')
                 SchedulerState.clear_user_app_queue()
                 self.stop_app(c_app, Fap.CODE_CLOSE_APP, 'The admin started a forced app')
                 return
@@ -163,6 +167,7 @@ class Scheduler(object):
             if self.app_is_expired(c_app) or c_app.get('is_default', False):
                 # is the current_app a FORCED_APP ?
                 if SchedulerState.get_forced_app():
+                    print_flush('## Stopping expired forced app [check_app_scheduler]')
                     self.stop_app(c_app)
                     return
                 # is some user-app are waiting in queue ?
