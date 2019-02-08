@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script type="text/javascript" src="javascript.js"></script>
+    <link rel="stylesheet" href="css.css" >
+    <script src="google-blockly-3342a37/blockly_accessible_compressed.js"></script>
+    <script src="google-blockly-3342a37/blocks_compressed.js"></script>
+    <script src="google-blockly-3342a37/javascript_compressed.js"></script>
+    <script src="google-blockly-3342a37/msg/js/fr.js"></script>
+    <script src="google-blockly-3342a37/blocks/lists.js"></script>
+</head>
+<body>
+
+<div id="blocklyDiv" style="height: 480px; width: 600px;">
+
+    <xml id="toolbox" style="display: none">
+
+        <!--Logic Category -->
+        <category name="Logic" colour="210">
+            <block type="controls_if"></block>
+            <block type="logic_boolean"></block>
+            <block type="controls_ifelse"></block>
+            <block type="logic_compare"></block>
+            <block type="logic_operation"></block>
+            <block type="logic_negate"></block>
+            <block type="logic_null"></block>
+            <block type="logic_ternary"></block>
+            <block type="controls_if_if"></block>
+            <block type="controls_if_elseif"></block>
+            <block type="controls_if_else"></block>
+
+        </category>
+
+        <!--Text Category -->
+        <category name="Text" colour="100">
+            <block type="string_length"></block>
+            <block type="text"></block>
+            <block type="text_join"></block>
+            <block type="text_create_join_container"></block>
+            <block type="text_append"></block>
+            <block type="text_length"></block>
+            <block type="text_isEmpty"></block>
+            <block type="text_indexOf"></block>
+            <block type="text_charAt"></block>
+            <block type="text_print"></block>
+
+        </category>
+
+        <!--Loops Category -->
+        <category name="Loops" colour="120">
+            <block type="controls_repeat_ext"></block>
+            <block type="controls_repeat"></block>
+            <block type="controls_whileUntil"></block>
+            <block type="controls_for"></block>
+            <block type="controls_forEach"></block>
+            <block type="controls_flow_statements"></block>
+
+        </category>
+
+        <!--Math Category -->
+        <category name="Math" colour="230">
+            <block type="math_number"></block>
+            <block type="math_arithmetic"></block>
+            <block type="math_single"></block>
+            <block type="math_trig"></block>
+            <block type="math_constant"></block>
+            <block type="math_number_property"></block>
+            <block type="math_change"></block>
+            <block type="math_round"></block>
+            <block type="math_on_list"></block>
+            <block type="math_modulo"></block>
+            <block type="math_constrain"></block>
+            <block type="math_random_int"></block>
+            <block type="math_random_float"></block>
+            <block type="math_atan2"></block>
+
+        </category>
+
+        <!--Colors Category -->
+        <category name="Colour" colour="20">
+            <block type="colour_picker"></block>
+            <block type="colour_random"></block>
+            <block type="colour_rgb"></block>
+            <block type="colour_blend"></block>
+
+        </category>
+
+    <sep></sep>
+
+        <!--Variables Category -->
+        <category name="Variables" colour="300" custom="VARIABLE">
+        </category>
+
+        <!--Functions Category -->
+        <category name="Functions" colour="290" custom="PROCEDURE">
+        </category>
+
+        <!--Personalized Category -->
+        <category name="personalized" custom="COLOUR_PALETTE" >
+
+        </category>
+
+    </xml>
+
+</div>
+<textarea id="textarea" style="float: right" rows="30" cols="80" ></textarea>
+
+</body>
+<script type="text/javascript">
+    Blockly.Blocks['string_length'] = {
+        init: function() {
+            this.jsonInit({
+                "message0": 'length of %1',
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "VALUE",
+                        "check": "String"
+                    }
+                ],
+                "output": "Number",
+                "colour": 160,
+                "tooltip": "Returns number of letters in the provided text.",
+                "helpUrl": "http://www.w3schools.com/jsref/jsref_length_string.asp"
+            });
+        }
+    };
+    </script>
+
+<script type="text/javascript">
+
+    var workspace = Blockly.inject('blocklyDiv',
+        {toolbox: document.getElementById('toolbox'),
+            zoom:
+                {controls: true,
+                    wheel: true,
+                    startScale: 1.0,
+                    maxScale: 3,
+                    minScale: 0.3,
+                    scaleSpeed: 1.2},
+            trashcan: true});
+
+    function myUpdateFunction(event) {
+         code = Blockly.JavaScript.workspaceToCode(workspace);
+        document.getElementById('textarea').value = code;}
+    workspace.addChangeListener(myUpdateFunction);
+</script>
+
+</html>
