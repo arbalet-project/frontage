@@ -1,0 +1,55 @@
+*
+{
+    margin: 0;
+    padding: 0;
+
+}
+html{   ;}
+
+body
+{
+    background: url("images/background.jpg") fixed ;
+    background-size: cover;
+    padding-top: 5px;
+    font-family: Arial,sans-serif;
+    font-size: 12px;
+}
+.container {
+    margin: 10px auto;
+    padding: 10px auto;
+    background-color: rgba(70, 70, 83, 0.37);
+}
+
+
+header {
+    margin-top: 10px;
+    margin-left: 30px;
+    height: auto;
+    position: relative;
+}
+header img{
+    width: 235px;
+    height: 38px;
+}
+
+[class*="col"]
+{
+    border-style: ;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#textarea{
+background-color: black;
+}
+
+#simul-col {
+    margin-top: 10%;
+    margin-bottom: 10%;
+}
+.buttons{margin: 0;}
+.buttons a {
+    border-radius:3%;
+}
+
+

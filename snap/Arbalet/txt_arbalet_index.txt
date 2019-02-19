@@ -1,0 +1,4 @@
+Bienvenue ! Arbalet Frontage est la façade pixelisée interactive du bâtiment A1 de l'Université de Bordeaux.
+ 71 pixels colorés s'illuminent le long des fenêtres extérieures du bâtiment en soirée.
+En poursuivant vous pourrez changer les couleurs, jouer à Tetris et Snake, ou même apprendre un langage de programmation lors d'un atelier encadré par un formateur 
+         <a href="http://arbalet-project.org/frontage">consulter la date du prochain atelier</a>
