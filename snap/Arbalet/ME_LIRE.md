@@ -5,7 +5,7 @@ Ensuite choisissez le block que vous désirez utiliser, Glissez le dans votre _W
 
 Puis vous pouvez choisir parmi tous les menus à gauche, les bloques que vous aimerez combiner avec vos blocks de coloration de pixels comme par exemple :
 
-![Capture d'ecran ](https://github.com/abdel140/frontage/blob/master/snap/Arbalet/images/)
+<img src="https://github.com/abdel140/frontage/blob/master/snap/Arbalet/images/tuto.png" alt="Capture d'ecran" width="600" height="500" />
 
 Démarrer ensuite votre code en appuyant sur le bouton **"Démarrer"**.
 
