@@ -1,21 +1,21 @@
-// eteindre tout: block definition:
+// turn off all: block definition:
 Blockly.Blocks['perso_eteindre_tout'] = {
     init: function() {
         this.appendDummyInput()
             .appendField("Eteindre tout");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(230);
+        this.setColour(75);
         this.setTooltip("");
         this.setHelpUrl("");
     }
 };
 
-// colorer un pixel : block definition:
+// color a pixel : block definition:
 Blockly.Blocks['perso_colorer_le_pixel'] = {
     init: function() {
         this.appendDummyInput()
-            .appendField("Colorer le pixel")
+            .appendField("Allumer le pixel")
             .appendField(new Blockly.FieldNumber(0, 0, 3), "i")
             .appendField(new Blockly.FieldNumber(0, 0, 18), "j")
             .appendField("en :")
@@ -23,30 +23,42 @@ Blockly.Blocks['perso_colorer_le_pixel'] = {
         this.setInputsInline(false);
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(240);
+        this.setColour(75);
         this.setTooltip("");
         this.setHelpUrl("");
     }
 };
 
-//colorer un pixel with input : block definition:
+//color a pixel randomly : block definition:
 Blockly.Blocks['perso_colorer_pixel_alea'] = {
     init: function() {
-        this.appendValueInput("NAME")
-            .setCheck(null)
-            .appendField("Colorer le pixel ")
+        this.appendDummyInput()
+            .appendField("Allumer le pixel ")
             .appendField(new Blockly.FieldNumber(0, 0, 3), "i")
             .appendField(new Blockly.FieldNumber(0, 0, 18), "j")
-            .appendField("en");
+            .appendField("Aléatoirement");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(230);
+        this.setColour(75);
         this.setTooltip("");
         this.setHelpUrl("");
     }
 };
 
-// eteindre un pixel : block definition
+// random pixel randomly : Block definition
+Blockly.Blocks['perso_pixel_x_alea'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("Allumer n'importe quel pixel aléatoirement");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(75);
+        this.setTooltip("Attention, ne pas abuser d'utilisation !");
+        this.setHelpUrl();
+    }
+};
+
+// turn off a pixel : block definition
 Blockly.Blocks['perso_eteindre_pixel'] = {
     init: function() {
         this.appendDummyInput()
@@ -55,14 +67,16 @@ Blockly.Blocks['perso_eteindre_pixel'] = {
             .appendField(new Blockly.FieldNumber(0, 0, 18), "j");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
-        this.setColour(230);
+        this.setColour(75);
         this.setTooltip("");
         this.setHelpUrl("");
     }
 };
 
+//END OF DEFIINITIONS // ******************************
 
-//eteindre tout: Generating into JS code :
+
+//turn off all: Generating into JS code :
 Blockly.JavaScript['perso_eteindre_tout'] = function(block) {
     // TODO: Assemble JavaScript into code variable.
     var code = 'function ColorerToutEnNoir() {\n' +
@@ -76,14 +90,14 @@ Blockly.JavaScript['perso_eteindre_tout'] = function(block) {
         '                    continue;\n' +
         '                }\n' +
         '            }\n' +
-        '            document.getElementById(i + \'-\' + j).style.fill = \'#FFFFFF\';\n' +
+        '            document.getElementById(i + \'-\' + j).style.fill = \'#000000\';\n' +
         '        }\n' +
         '    }}\n' +
         'ColorerToutEnNoir();';
     return code;
 };
 
-// colorer un pixel : Generatig its code JS:
+// color a pixel  : Generatig its code JS:
 Blockly.JavaScript['perso_colorer_le_pixel'] = function(block) {
     var number_i = block.getFieldValue('i');
     var number_j = block.getFieldValue('j');
@@ -96,27 +110,36 @@ Blockly.JavaScript['perso_colorer_le_pixel'] = function(block) {
     return code;
 };
 
-// eteindre un pixel : Generating into Js code:
+//color the pixel (ij) randomly : Generating code :
+Blockly.JavaScript['perso_colorer_pixel_alea'] = function(block) {
+    var number_i = block.getFieldValue('i');
+    var number_j = block.getFieldValue('j');
+    // TODO: Assemble JavaScript into code variable.
+    var code = 'function Colorer_le_pixel_alea(_i, _j){\n' +
+        '    document.getElementById(_i + "-" + _j).style.fill=RandomColor();\n' +
+        '}\n' +
+        'Colorer_le_pixel_alea('+ number_i+',' + number_j+')\n';
+    return code;
+};
+
+// random pixel randomly Generating code :
+Blockly.JavaScript['perso_pixel_x_alea'] = function(block) {
+    // TODO: Assemble JavaScript into code variable.
+    var code = 'function Color_pixel_X_alea(){\n' +
+        '    document.getElementById( Math.floor(Math.random() * Math.floor(4)) + "-" + Math.floor(Math.random() * Math.floor(19)) ).style.fill=RandomColor();\n' +
+        '}\n' +
+        'Color_pixel_X_alea();\n';
+    return code;
+};
+
+// turn off a pixel : Generating into Js code:
 Blockly.JavaScript['perso_eteindre_pixel'] = function(block) {
     var number_i = block.getFieldValue('i');
     var number_j = block.getFieldValue('j');
     // TODO: Assemble JavaScript into code variable.
     var code = 'function eteindreLePixel(_i, _j) {\n' +
-        '    document.getElementById(_i + "-" + _j).style.fill=\'#FFFFFF\';\n' +
+        '    document.getElementById(_i + "-" + _j).style.fill=\'#000000\';\n' +
         '}\n' +
         'eteindreLePixel('+ number_i + ',' + number_j + ');\n';
-    return code;
-};
-
-//colorer un pixel with input : Generating code :
-Blockly.JavaScript['perso_colorer_pixel_alea'] = function(block) {
-    var number_i = block.getFieldValue('i');
-    var number_j = block.getFieldValue('j');
-    var value_name = Blockly.JavaScript.valueToCode(block, 'NAME', Blockly.JavaScript.ORDER_ATOMIC);
-    // TODO: Assemble JavaScript into code variable.
-    var code =  'function colorerLePixel_ij(_i, _j){\n' +
-        '    document.getElementById( _i + "-" + _j).style.fill=' + '\'' +  + '\';\n' +
-        '}\n' +
-        'colorerLePixel_ij(' + number_i + ',' + number_j + ');\n';
     return code;
 };
