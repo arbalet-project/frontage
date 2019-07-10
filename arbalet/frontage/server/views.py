@@ -96,10 +96,10 @@ def admin_enabled_scheduler(user):
 
 @blueprint.route('/b/admin/cal', methods=['GET'])
 def admin_cal_at():
-    return jsonify(on=SchedulerState.get_forced_on_time(),
-                   off=SchedulerState.get_forced_off_time(),
-                   on_offset=SchedulerState.get_sundown_offset(),
-                   off_offset=SchedulerState.get_sunrise_offset())
+    return jsonify(time_on=SchedulerState.get_time_on(),
+                   time_off=SchedulerState.get_time_off(),
+                   offset_time_on=SchedulerState.get_offset_time_on(),
+                   offset_time_off=SchedulerState.get_offset_time_off())
 
 # format .strftime('%Y-%m-%d')
 
@@ -107,15 +107,20 @@ def admin_cal_at():
 @blueprint.route('/b/admin/state', methods=['PATCH'])
 @authentication_required
 def admin_set_state(user):
-    if request.get_json().get('sunrise_offset'):
-        SchedulerState.set_sunrise_offset(request.get_json().get('sunrise_offset', 0))
-    if request.get_json().get('sundown_offset'):
-        SchedulerState.set_sunset_offset(request.get_json().get('sundown_offset', 0))
-    if request.get_json().get('sunrise'):
-        SchedulerState.set_forced_off_time(request.get_json()['sunrise'])
-    if request.get_json().get('sundown'):
-        SchedulerState.set_forced_on_time(request.get_json()['sundown'])
-
+    if request.get_json().get('offset_time_on'):
+        try:
+            SchedulerState.set_offset_time_on(int(request.get_json().get('offset_time_on')))
+        except ValueError:
+            return jsonify(done=False)
+    if request.get_json().get('offset_time_off'):
+        try:
+            SchedulerState.set_offset_time_off(int(request.get_json().get('offset_time_off')))
+        except ValueError:
+            return jsonify(done=False)
+    if request.get_json().get('time_on'):
+        SchedulerState.set_time_on(request.get_json()['time_on'])
+    if request.get_json().get('time_off'):
+        SchedulerState.set_time_off(request.get_json()['time_off'])
     return jsonify(done=True)
 
 
@@ -327,3 +332,104 @@ rest_api.add_resource(DrawingAppDefault, '/b/apps/drawing/default')
 
 rest_api.add_resource(AppRunningView, '/b/apps/running')
 rest_api.add_resource(AppListView, '/b/apps')
+
+
+
+# arbalet mesh additions
+@blueprint.route('/b/admin/settings/mesh/dimensions', methods=['POST'])
+@authentication_required
+def set_building_dimensions(user):
+    if not is_admin(user):
+        abort(403, "Forbidden Bru")
+
+    body = request.get_json()
+    if 'height' not in body:
+        abort(415, 'Missing height value')
+    if 'width' not in body:
+        abort(415, 'Missing width value')
+    if 'amount' not in body:
+        abort(415, 'Missing amount value')
+
+    SchedulerState.set_rows(body['height'])
+    SchedulerState.set_cols(body['width'])
+    SchedulerState.set_amount(body['amount'])
+    return jsonify(height=SchedulerState.get_rows(),
+                  width=SchedulerState.get_cols(),
+                  amount=SchedulerState.get_amount())
+
+@blueprint.route('/b/admin/settings/mesh/dimensions', methods=['GET'])
+@authentication_required
+def get_building_dimensions(user):
+    if not is_admin(user):
+        abort(403, "Forbidden Bru")
+    print_flush(SchedulerState.get_pixels_dic())
+    return jsonify(height=SchedulerState.get_rows(),
+                  width=SchedulerState.get_cols(),
+                  amount=SchedulerState.get_amount(),
+                  disabled=SchedulerState.get_disabled())
+
+@blueprint.route('/b/admin/settings/mesh/pixel/set', methods=['POST'])
+@authentication_required
+#TODO : call Fapp AMA
+def set_pixel_position(user):
+    if not is_admin(user):
+        abort(403, "Forbidden Bru")
+
+    body = request.get_json()
+    if 'row' not in body:
+        abort(415, 'Missing height value')
+    if 'column' not in body:
+        abort(415, 'Missing width value')
+    print_flush("fait chier")
+
+    #TODO: variable mac a changer en string pour voir l'erreur
+    mac = 1;
+
+    SchedulerState.add_cell(body['column'], body['row'], mac);
+
+    return jsonify(row=body['row'], column=body['column'])
+
+@blueprint.route('/b/admin/settings/mesh/pixel/reset', methods=['POST'])
+@authentication_required
+def reset_pixel_position(user):
+    if not is_admin(user):
+        abort(403, "Forbidden Bru")
+
+    print_flush("reset")
+    return jsonify(success='true')
+    # body = request.get_json()
+    # print_flush(body)
+    # return jsonify(row=body['row'],
+    #                column=body['column'])
+
+@blueprint.route('/b/admin/settings/mesh/pixel/confirm', methods=['POST'])
+@authentication_required
+def confirm_pixel_position(user):
+    if not is_admin(user):
+        abort(403, "Forbidden Bru")
+
+    print_flush("confirmed")
+    return jsonify(success='true')
+
+
+
+@blueprint.route('/b/admin/settings/mesh/initialised', methods=['GET'])
+@authentication_required
+def get_initialised(user):
+    if not is_admin(user):
+        abort(403, "Forbidden Bru")
+
+    return jsonify(initialised=SchedulerState.get_initialised())
+
+@blueprint.route('/b/admin/settings/mesh/initialised', methods=['POST'])
+@authentication_required
+def set_initialised(user):
+    if not is_admin(user):
+        abort(403, "Forbidden Bru")
+
+    body = request.get_json()
+    if 'initialised' not in body:
+        abort(415, 'Missing initialised value')
+
+    SchedulerState.set_initialised(body['initialised'])
+    return jsonify(initialised=SchedulerState.get_initialised())

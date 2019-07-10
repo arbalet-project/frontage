@@ -20,6 +20,7 @@ from tornado.ioloop import IOLoop
 
 from time import time
 from apps.fap import Fap
+from scheduler_state import SchedulerState
 from utils.security import authentication_required, is_admin
 
 
@@ -89,8 +90,8 @@ class Snap(Fap):
     def set_rgb_matrix(self):
         data = request.get_data().decode().split(':')
         if data.pop(0) == self.current_auth_nick:
-            nb_rows = 4
-            nb_cols = 19
+            nb_rows = SchedulerState.get_rows()
+            nb_cols = SchedulerState.get_cols()
             r = 0
             c = 0
             with self.lock:
@@ -130,10 +131,9 @@ class Snap(Fap):
     def run(self, params, expires_at=None):
         self.start_socket()
         from tornado.wsgi import WSGIContainer
-        
+
         self.erase_all()
         self.loop = IOLoop()
         http_server = HTTPServer(WSGIContainer(self.flask))
         http_server.listen(self.port)
         self.loop.start()
-

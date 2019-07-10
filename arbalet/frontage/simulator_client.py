@@ -11,6 +11,7 @@ import sys
 
 import pika
 from os import environ
+from scheduler_state import SchedulerState
 from pygame import color, event, display, draw, Rect, QUIT
 from pygame.time import Clock
 from model import Model
@@ -23,7 +24,7 @@ def print_flush(s):
     sys.stdout.flush()
 
 class Simulator(object):
-    def __init__(self, row=4, col=19, port=33460):
+    def __init__(self, row=SchedulerState.get_rows(), col=SchedulerState.get_cols(), port=33460):
         factor_sim = 40
         self.clock = Clock()
         self.model = Model(row, col)

@@ -17,13 +17,12 @@ import time
 from apps.fap import Fap
 from apps.actions import Actions
 from utils.colors import name_to_rgb
+from scheduler_state import SchedulerState
+from server.flaskutils import print_flush
 
 from random import randrange as rand
 from time import sleep
 
-# The configuration
-cols =        4
-rows =        19
 
 # Define the shapes of the single parts
 tetris_shapes = [
@@ -67,7 +66,7 @@ def check_collision(board, shape, offset):
 
 def remove_row(board, row):
     del board[row]
-    return [[0 for i in range(cols)]] + board
+    return [[0 for i in range(Tetris.cols)]] + board
 
 
 def join_matrixes(mat1, mat2, mat2_off):
@@ -79,7 +78,7 @@ def join_matrixes(mat1, mat2, mat2_off):
 
 
 def new_board():
-    board = [[0 for x in range(cols)] for y in range(rows)]
+    board = [[0 for x in range(Tetris.cols)] for y in range(Tetris.rows)]
     return board
 
 
@@ -88,17 +87,23 @@ class Tetris(Fap):
     ACTIVATED = True
     PARAMS_LIST = {}
 
+    cols = 0
+    rows = 0
+
     def __init__(self, username, userid):
         super(Tetris, self).__init__(username, userid)
         self.PARAMS_LIST = {'speed': 0.15}
         self.colors = ['black', 'deeppink', 'green', 'darkred', 'orangered', 'darkblue', 'cyan', 'yellow']
         self.next_stone = tetris_shapes[rand(len(tetris_shapes))]
+        Tetris.cols = SchedulerState.get_cols()
+        Tetris.rows = SchedulerState.get_rows()
+        print_flush("Init of TETORISU", self.model.height, self.model.width)
         self.init_game()
 
     def new_stone(self):
         self.stone = self.next_stone[:]
         self.next_stone = tetris_shapes[rand(len(tetris_shapes))]
-        self.stone_x = int(cols / 2 - len(self.stone[0])/2)
+        self.stone_x = int(Tetris.cols / 2 - len(self.stone[0])/2)
         self.stone_y = 0
 
         if check_collision(self.board, self.stone, (self.stone_x, self.stone_y)):
@@ -129,8 +134,8 @@ class Tetris(Fap):
             new_x = self.stone_x + delta_x
             if new_x < 0:
                 new_x = 0
-            if new_x > cols - len(self.stone[0]):
-                new_x = cols - len(self.stone[0])
+            if new_x > Tetris.cols - len(self.stone[0]):
+                new_x = Tetris.cols - len(self.stone[0])
             if not check_collision(self.board,
                                    self.stone,
                                    (new_x, self.stone_y)):
@@ -220,4 +225,3 @@ class Tetris(Fap):
         self.flash()
         time.sleep(1)
         # self.send_close_app()
-

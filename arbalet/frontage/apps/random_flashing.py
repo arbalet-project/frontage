@@ -3,12 +3,14 @@
 from ._generator import gen_random_flashing
 from .colors import Colors
 from json import loads
+from server.flaskutils import print_flush
 
 
 class RandomFlashing(Colors):
 
     def __init__(self, username, userid):
         Colors.__init__(self, gen_random_flashing, username, userid)
+        print_flush("Init of Rand_FLASH", self.model.height, self.model.width)
         self.PARAMS_LIST['uapp'] = ['flashes']
 
 

@@ -31,7 +31,7 @@ class Websock(Thread):
     def get_data():
         data = redis_get(KEY_WS_SEND, None)
         if data:
-            redis.set(KEY_WS_SEND, None)
+            redis.set(KEY_WS_SEND, 'None')
         if data == 'None':
             return None
         return data

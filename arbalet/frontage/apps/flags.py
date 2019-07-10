@@ -3,6 +3,7 @@ import time
 from apps.fap import Fap
 from utils.colors import name_to_rgb
 from json import loads
+from scheduler_state import SchedulerState
 
 
 class Flags(Fap):
@@ -76,37 +77,53 @@ class Flags(Fap):
                             'yemen']}
 
     def french(self):
-        for i in range(0, 6):
+        cols = SchedulerState.get_cols()
+        b1 = cols // 3
+        b2 = cols - b1
+        for i in range(0, b1):
             self.model.set_column(i, name_to_rgb('navy'))
-        for i in range(6, 13):
+        for i in range(b1, b2):
             self.model.set_column(i, name_to_rgb('white'))
-        for i in range(13, 19):
+        for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('red'))
 
     def italy(self):
-        for i in range(0, 6):
+        cols = SchedulerState.get_cols()
+        b1 = cols // 3
+        b2 = cols - b1
+        for i in range(0, b1):
             self.model.set_column(i, name_to_rgb('green'))
-        for i in range(6, 13):
+        for i in range(b1, b2):
             self.model.set_column(i, name_to_rgb('white'))
-        for i in range(13, 19):
+        for i in range(b3, cols):
             self.model.set_column(i, name_to_rgb('firebrick'))
 
     def spain(self):
         r = name_to_rgb('red')
         y = name_to_rgb('yellow')
-        self.model.set_line(0, r)
-        self.model.set_line(1, y)
-        self.model.set_line(2, y)
-        self.model.set_line(3, r)
+        rows = SchedulerState.get_rows()
+        b1 = rows // 4
+        b2 = rows - b1
+        for i in range(0, b1) :
+            self.model.set_line(i, r)
+        for i in range(b1, b2) :
+            self.model.set_line(i, y)
+        for i in range(b2, rows) :
+            self.model.set_line(i, r)
 
     def germany(self):
         d = name_to_rgb('black')
         r = name_to_rgb('red')
         y = name_to_rgb('yellow')
-        self.model.set_line(0, d)
-        self.model.set_line(1, r)
-        self.model.set_line(2, y)
-        self.model.set_line(3, d)
+        rows = SchedulerState.get_rows()
+        b1 = rows // 3
+        b2 = rows - b1
+        for i in range(0, b1) :
+            self.model.set_line(i, d)
+        for i in range(b1, b2) :
+            self.model.set_line(i, r)
+        for i in range(b2, rows) :
+            self.model.set_line(i, y)
 
     def algeria(self):
         for i in range(0, 9):
@@ -140,8 +157,7 @@ class Flags(Fap):
 
     def australia(self):
         self.model.set_all('navy')
-        for i in range(0, 9):
-            self.model.set_pixel(1, i, name_to_rgb('red'))
+        self.model.set_pixel(1, i, name_to_rgb('red'))
         self.model.set_pixel(0, 4, name_to_rgb('red'))
         self.model.set_pixel(2, 4, name_to_rgb('red'))
         for r, c in [(0, 14), (1, 11), (1, 16), (2, 13), (3, 12), (0, 3), (2, 3), (0, 5), (2, 5), (3, 4)]:
@@ -157,11 +173,14 @@ class Flags(Fap):
         a = name_to_rgb('black')
         b = name_to_rgb('yellow')
         c = name_to_rgb('red')
-        for i in range(0, 6):
+        cols = SchedulerState.get_cols()
+        b1 = cols // 3
+        b2 = cols - b1
+        for i in range(0, b1):
             self.model.set_column(i, a)
-        for i in range(6, 13):
+        for i in range(b1, b2):
             self.model.set_column(i, b)
-        for i in range(13, 19):
+        for i in range(b2, cols):
             self.model.set_column(i, c)
 
     def brazil(self):
@@ -192,14 +211,20 @@ class Flags(Fap):
         a = (0, 0.62, 0.27)
         b = (0.75, 0.25, 0.25)
         y = name_to_rgb('yellow')
-        for i in range(0, 6):
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        b1 = cols // 3
+        b2 = cols - b1
+        for i in range(0, b1):
             self.model.set_column(i, a)
-        for i in range(6, 13):
+        for i in range(b1, b2):
             self.model.set_column(i, b)
-        for i in range(13, 19):
+        for i in range(b2, cols):
             self.model.set_column(i, y)
-        for r in range(1, 3):
-            for c in range(8, 11):
+        b3 = rows // 3
+        b4 = rows - b3
+        for r in range(b3, b4):
+            for c in range(b1+(b1//3), b2-(b1//3)):
                 self.model.set_pixel(r, c, name_to_rgb('yellow'))
 
     def canada(self):
@@ -238,17 +263,22 @@ class Flags(Fap):
         self.model.set_line(3, name_to_rgb('red'))
 
     def ivory(self):
-        for i in range(0, 6):
+        cols = SchedulerState.get_cols()
+        b1 = cols // 3
+        b2 = cols - b1
+        for i in range(0, b1):
             self.model.set_column(i, (0.96, 0.5, 0))
-        for i in range(6, 13):
+        for i in range(b1, b2):
             self.model.set_column(i, (1, 1, 1))
-        for i in range(13, 19):
+        for i in range(b2, cols):
             self.model.set_column(i, (0, 0.62, 0.38))
 
     def denmark(self):
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
         self.model.set_all((0.78, 0, 0.17))
-        self.model.set_line(1, (1, 1, 1))
-        self.model.set_column(6, (1, 1, 1))
+        self.model.set_line(rows//2, (1, 1, 1))
+        self.model.set_column(cols//3, (1, 1, 1))
 
     def emirates(self):
         self.model.set_line(0, (0, 0.45, 0.18))
@@ -297,11 +327,14 @@ class Flags(Fap):
         self.model.set_line(3, name_to_rgb('white'))
 
     def ireland(self):
-        for i in range(0, 6):
+        cols = SchedulerState.get_cols()
+        b1 = cols // 3
+        b2 = cols - b1
+        for i in range(0, b1):
             self.model.set_column(i, (0, 0.62, 0.38))
-        for i in range(6, 13):
+        for i in range(b1, b2):
             self.model.set_column(i, (1, 1, 1))
-        for i in range(13, 19):
+        for i in range(b2, cols):
             self.model.set_column(i, (0.96, 0.5, 0))
 
     def iceland(self):
@@ -370,17 +403,22 @@ class Flags(Fap):
         self.model.set_line(2, name_to_rgb('skyblue'))
 
     def mali(self):
-        for i in range(0, 6):
+        cols = SchedulerState.get_cols()
+        b1 = cols // 3
+        b2 = cols - b1
+        for i in range(0, b1):
             self.model.set_column(i, name_to_rgb('green'))
-        for i in range(6, 13):
+        for i in range(b1, b2):
             self.model.set_column(i, name_to_rgb('yellow'))
-        for i in range(13, 19):
+        for i in range(b2, rows):
             self.model.set_column(i, name_to_rgb('red'))
 
     def malta(self):
-        for i in range(0, 9):
+        cols = SchedulerState.get_cols()
+        b1 = cols // 2
+        for i in range(0, b2):
             self.model.set_column(i, name_to_rgb('white'))
-        for i in range(9, 18):
+        for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('red'))
 
     def morocco(self):
@@ -396,11 +434,14 @@ class Flags(Fap):
         return self.indonesia()
 
     def nigeria(self):
-        for i in range(0, 6):
+        cols = SchedulerState.get_cols()
+        b1 = cols // 3
+        b2 = cols - b1
+        for i in range(0, b1):
             self.model.set_column(i, (0, 0.53, 0.31))
-        for i in range(6, 13):
+        for i in range(b1, b2):
             self.model.set_column(i, name_to_rgb('white'))
-        for i in range(13, 19):
+        for i in range(b2, cols):
             self.model.set_column(i, (0, 0.53, 0.31))
 
     def norway(self):
@@ -431,11 +472,14 @@ class Flags(Fap):
         return self.netherlands()
 
     def peru(self):
-        for i in range(0, 6):
+        cols = SchedulerState.get_cols()
+        b1 = cols // 3
+        b2 = cols - b1
+        for i in range(0, b1):
             self.model.set_column(i, name_to_rgb('red'))
-        for i in range(6, 13):
+        for i in range(b1, b2):
             self.model.set_column(i, name_to_rgb('white'))
-        for i in range(13, 19):
+        for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('red'))
 
     def poland(self):
@@ -455,11 +499,14 @@ class Flags(Fap):
             self.model.set_column(i, (1, 1, 1))
 
     def romania(self):
-        for i in range(0, 6):
+        cols = SchedulerState.get_cols()
+        b1 = cols // 3
+        b2 = cols - b1
+        for i in range(0, b1):
             self.model.set_column(i, name_to_rgb('navy'))
-        for i in range(6, 13):
+        for i in range(b1, b2):
             self.model.set_column(i, name_to_rgb('yellow'))
-        for i in range(13, 19):
+        for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('firebrick'))
 
     def uk(self):
@@ -479,11 +526,14 @@ class Flags(Fap):
             self.model.set_pixel(2, 18 - c, name_to_rgb('navy'))
 
     def russia(self):
-        for i in range(0, 6):
+        cols = SchedulerState.get_cols()
+        b1 = cols // 3
+        b2 = cols - b1
+        for i in range(0, b1):
             self.model.set_column(i, name_to_rgb('white'))
-        for i in range(6, 13):
+        for i in range(b1, b2):
             self.model.set_column(i, name_to_rgb('navy'))
-        for i in range(13, 19):
+        for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('firebrick'))
 
     def sweden(self):

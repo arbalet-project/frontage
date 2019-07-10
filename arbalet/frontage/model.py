@@ -102,5 +102,7 @@ class Model(object):
 
     def set_from_json(self, json_data):
         self._model = np.array(json.loads(json_data))
+        self.height = len(self._model)
+        self.width = len(self._model[0])
 
         return self._model

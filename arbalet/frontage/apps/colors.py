@@ -12,6 +12,7 @@ from utils.tools import Rate
 from utils.colors import name_to_hsv, cnames, rgb_to_hsv
 from .fap import Fap
 from ._generator import animations
+from server.flaskutils import print_flush
 
 
 class Colors(Fap):
@@ -23,6 +24,7 @@ class Colors(Fap):
 
     def __init__(self, gen, username, userid):
         Fap.__init__(self, username, userid)
+        print_flush("Init of COLORS", self.model.height, self.model.width)
         self.rate = None
         self.PARAMS_LIST = {}
         self.generator = gen

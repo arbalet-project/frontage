@@ -3,8 +3,7 @@ import datetime
 # from server.extensions import db
 from uuid import uuid4
 from db.base import Base
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
-
+from sqlalchemy import table, Column, Integer, String, DateTime, Boolean
 
 def cln_str(s):
     if s:
@@ -18,6 +17,46 @@ def cln_str(s):
                 ';',
             '')
     return ''
+
+class DimensionsModel(Base):
+    __tablename__ = 'dimensionsmodel'
+
+    uniqid = Column(String(36), primary_key=True)
+    rows = Column(Integer)
+    cols = Column(Integer)
+    amount = Column(Integer)
+    initialised = Column(Integer)
+
+    def __init__(self):
+        self.uniqid = str(uuid4())
+        self.rows = 4
+        self.cols = 19
+        self.amount = 1
+        self.initialised = 0
+
+    def __repr__(self):
+        return '<dimensionsmodel %r (%r) (%r) (%r) (%r)>' % (
+            self.uniqid, self.rows, self.cols, self.amount, self.initialised)
+
+class CellTableModel(Base):
+    __tablename__ = 'celltablemodel'
+
+    uniqid = Column(String(36), primary_key=True)
+    X = Column(Integer)
+    Y = Column(Integer)
+    MacAddress = Column(String(60))
+    Ind = Column(Integer)
+
+    def __init__(self, x, y, macAddress, ind):
+        self.uniqid = str(uuid4())
+        self.X = x
+        self.Y = y
+        self.MacAddress = macAddress
+        self.Ind = ind
+
+    def __repr__(self):
+        return '<celltablemodel %r (%r) (%r) (%r) (%r)>' % (
+            self.uniqid, self.X, self.Y, self.MacAddress, self.Ind)
 
 class FappModel(Base):
     __tablename__ = 'fapp'
@@ -45,12 +84,12 @@ class ConfigModel(Base):
 
     uniqid = Column(String(36), primary_key=True)
 
-    forced_sunrise = Column(String(36))
-    offset_sunrise = Column(Integer)
 
-    forced_sunset = Column(String(36))
-    offset_sunset = Column(Integer)
-    state = Column(String(36))
+    time_on = Column(String(10))             # On time, which can be formatted as %H:%m or "sunrise", "sunset"
+    time_off = Column(String(10))            # On time, which can be formatted as %H:%m or "sunrise", "sunset"
+    offset_time_on = Column(Integer)         # Offset in seconds for actual ON time, with respect to time_on
+    offset_time_off = Column(Integer)        # Offset in seconds for actual OFF time, with respect to time_off
+    state = Column(String(36))               # "on", "off", "scheduled"
     expires_delay = Column(Integer)
     default_app_lifetime = Column(Integer)
 
@@ -58,15 +97,14 @@ class ConfigModel(Base):
     admin_hash = Column(String(512))
 
     def __init__(self):
+        # Default values when initializing a new database
         self.uniqid = str(uuid4())
-        self.forced_sunset = ""
-        self.offset_sunset = 0
         self.state = 'scheduled'
-
-        self.forced_sunrise = ""
-        self.offset_sunrise = 0
+        self.time_on = "sunset"
+        self.time_off = "sunrise"
+        self.offset_time_off = 0
+        self.offset_time_on = 0
         self.default_app_lifetime = 15 * 60
-
         self.expires_delay = 90
 
     def __repr__(self):

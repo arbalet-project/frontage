@@ -32,7 +32,7 @@ class Fap(object):
         self.username = username
         self.userid = userid
         self.ws = None
-        self.model = Model(4, 19)
+        self.model = Model(SchedulerState.get_rows(), SchedulerState.get_cols())
 
         credentials = pika.PlainCredentials(environ.get('RABBITMQ_DEFAULT_USER'), environ.get('RABBITMQ_DEFAULT_PASS'))
         self.connection_params = pika.ConnectionParameters(host='rabbit', credentials=credentials, connection_attempts = 100, heartbeat = 0)

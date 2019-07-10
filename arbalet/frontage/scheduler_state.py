@@ -4,7 +4,7 @@ import time
 
 from time import sleep
 from utils.red import redis, redis_get
-from db.models import FappModel, ConfigModel
+from db.models import FappModel, ConfigModel, DimensionsModel, CellTableModel
 from db.base import session_factory, engine
 from db.tools import to_dict, serialize
 
@@ -24,8 +24,6 @@ class SchedulerState(object):
     KEY_DAY_TABLE = 'frontage_day_table'
     CITY = 'data/sun/bordeaux.json'
 
-    KEY_SUNRISE_OFFSET = 'key_sunrise_offset'
-    KEY_SUNDOWN_OFFSET = 'key_sundown_offset'
     # KEY_APP_START_LOCK = 'key_app_start_lock'
     KEY_USABLE = 'frontage_usable'
     KEY_ENABLE_STATE = 'frontage_enable_state'
@@ -49,6 +47,129 @@ class SchedulerState(object):
     KEY_USERS_Q = 'frontage_users_q'
 
     KEY_CURRENT_RUNNING_APP = 'frontage_current_running_app'
+
+    @staticmethod
+    def get_rows():
+        session = session_factory()
+        rows = session.query(DimensionsModel).first().rows
+        session.close()
+        return rows
+
+    @staticmethod
+    def get_cols():
+        session = session_factory()
+        cols = session.query(DimensionsModel).first().cols
+        session.close()
+        return cols
+
+    @staticmethod
+    def get_amount():
+        session = session_factory()
+        amount = session.query(DimensionsModel).first().amount
+        session.close()
+        return amount
+
+    @staticmethod
+    def get_initialised():
+        session = session_factory()
+        initialised = session.query(DimensionsModel).first().initialised
+        session.close()
+        return initialised
+
+    @staticmethod
+    def get_disabled():
+        session = session_factory()
+        pixels = SchedulerState.get_pixels_dic()
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
+        model = [[ False for i in range(cols)] for j in range(rows)]
+        for pixel in pixels.values() :
+            ((x,y), ind) = pixel
+            model[x][y] = True
+        disabled = []
+        for i in range(rows):
+            for j in range(cols):
+                if (not model[i][j]) :
+                    disabled += [[i,j]]
+        return disabled
+
+    @staticmethod
+    def set_rows(value):
+        session = session_factory()
+        conf = session.query(DimensionsModel).first()
+        conf.rows = value
+        session.commit()
+        session.close()
+
+    @staticmethod
+    def set_cols(value):
+        session = session_factory()
+        conf = session.query(DimensionsModel).first()
+        conf.cols = value
+        session.commit()
+        session.close()
+
+    @staticmethod
+    def set_amount(value):
+        session = session_factory()
+        conf = session.query(DimensionsModel).first()
+        conf.amount = value
+        session.commit()
+        session.close()
+
+    @staticmethod
+    def set_initialised(value):
+        session = session_factory()
+        conf = session.query(DimensionsModel).first()
+        conf.initialised = value
+        session.commit()
+        session.close()
+
+
+    @staticmethod
+    def add_cell(x, y, mac_address, ind):
+        print_flush("Considering {0} at (({1}, {2}), {3})".format(mac_address, x, y, ind))
+        session = session_factory()
+        table = session.query(CellTableModel).all()
+        isInTable = False
+        for cell in table:
+            if (cell.X == x and cell.Y == y):
+                print_flush("Found its position : updating mac and ind...")
+                isInTable = True
+                cell.MacAddress = mac_address
+                cell.Ind = ind
+            elif (cell.MacAddress == mac_address) :
+                print_flush("Found its mac : updating position and ind...")
+                isInTable = True
+                cell.Ind = ind
+                cell.X == x
+                cell.Y == y
+        if (isInTable == False):
+            print_flush("Not found : adding to table")
+            cell = CellTableModel(x, y, mac_address, ind)
+            session.add(cell)
+            session.commit()
+
+        session.close()
+
+    @staticmethod
+    def get_pixels_dic() :
+        session = session_factory()
+        table = session.query(CellTableModel).all()
+        dic = {}
+        for cell in table :
+            dic[cell.MacAddress] = ((cell.X, cell.Y), cell.Ind)
+        session.close()
+        return dic
+
+    @staticmethod
+    def drop_dic() :
+        session = session_factory()
+        table = session.query(CellTableModel).all()
+        for cell in table :
+            session.delete(cell)
+        session.commit()
+        session.close()
 
     @staticmethod
     def get_expires_value():
@@ -82,11 +203,11 @@ class SchedulerState(object):
 
     @staticmethod
     def set_expire_soon(value=True):
-        redis.set(SchedulerState.KEY_NOTICE_EXPIRE_SOON, value)
+        redis.set(SchedulerState.KEY_NOTICE_EXPIRE_SOON, str(value))
 
     @staticmethod
     def set_expire(value=True):
-        redis.set(SchedulerState.KEY_NOTICE_EXPIRE, value)
+        redis.set(SchedulerState.KEY_NOTICE_EXPIRE, str(value))
 
     @staticmethod
     def get_expire():
@@ -166,7 +287,7 @@ class SchedulerState(object):
 
     @staticmethod
     def set_frontage_on(value):
-        redis.set(SchedulerState.KEY_FRONTAGE_ON_OFF, value)
+        redis.set(SchedulerState.KEY_FRONTAGE_ON_OFF, str(value))
 
     @staticmethod
     def is_frontage_on():
@@ -182,7 +303,7 @@ class SchedulerState(object):
     @staticmethod
     def set_usable(value):
         # redis.set(SchedulerState.KEY_USABLE, str(value))
-        redis.set(SchedulerState.KEY_USABLE, value)
+        redis.set(SchedulerState.KEY_USABLE, str(value))
 
     @staticmethod
     def set_enable_state(value):
@@ -206,89 +327,100 @@ class SchedulerState(object):
         val = conf.state
         session.close()
         return val
-        # redis.set(SchedulerState.KEY_USABLE, str(value))
-        # return redis_get(SchedulerState.KEY_ENABLE_STATE, 'on')
 
     @staticmethod
-    def set_sundown(day, at):
-        table = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
-        table[day][SchedulerState.KEY_ON_TIME] = day + 'T' + at + ':00'
-        dumped = json.dumps(table)
-
-        with open(SchedulerState.CITY, 'w') as f:
-            f.write(dumped)
-        redis.set(SchedulerState.KEY_DAY_TABLE, dumped)
-
-    @staticmethod
-    def set_sunrise(day, at):
-        table = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
-        table[day][SchedulerState.KEY_OFF_TIME] = day + 'T' + at + ':00'
-        dumped = json.dumps(table)
-
-        with open(SchedulerState.CITY, 'w') as f:
-            f.write(dumped)
-
-        redis.set(SchedulerState.KEY_DAY_TABLE, dumped)
-
-    @staticmethod
-    def set_forced_on_time(at):
+    def get_time_on():
         session = session_factory()
         conf = session.query(ConfigModel).first()
-        conf.forced_sunset = at
-        conf.offset_sunset = 0
-        session.commit()
-        session.close()
-
-    @staticmethod
-    def set_forced_off_time(at):
-        session = session_factory()
-        conf = session.query(ConfigModel).first()
-        conf.forced_sunrise = at
-        conf.offset_sunrise = 0
-        session.commit()
-        session.close()
-
-    @staticmethod
-    def get_forced_on_time():
-        session = session_factory()
-        conf = session.query(ConfigModel).first()
-        val = conf.forced_sunset
+        val = conf.time_on
         session.close()
         return val
 
     @staticmethod
-    def get_forced_off_time():
+    def get_time_off():
         session = session_factory()
         conf = session.query(ConfigModel).first()
-        val = conf.forced_sunrise
+        val = conf.time_off
         session.close()
         return val
-    # ----
+
+    @staticmethod
+    def get_offset_time_on():
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        val = conf.offset_time_on
+        session.close()
+        return val
+
+    @staticmethod
+    def get_offset_time_off():
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        val = conf.offset_time_off
+        session.close()
+        return val
+
+    @staticmethod
+    def set_time_on(at):
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        conf.time_on = at
+        if conf.time_on not in ['sunrise', 'sunset']:
+            conf.offset_time_on = 0
+        session.commit()
+        session.close()
+
+    @staticmethod
+    def set_time_off(at):
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        conf.time_off = at
+        if conf.time_off not in ['sunrise', 'sunset']:
+            conf.offset_time_off = 0
+        session.commit()
+        session.close()
+
+    @staticmethod
+    def set_offset_time_off(offset=0):
+        if isinstance(offset, int):
+            session = session_factory()
+            conf = session.query(ConfigModel).first()
+            conf.offset_time_off = offset
+            session.commit()
+            session.close()
+
+    @staticmethod
+    def set_offset_time_on(offset=0):
+        if isinstance(offset, int):
+            session = session_factory()
+            conf = session.query(ConfigModel).first()
+            conf.offset_time_on = offset
+            session.commit()
+            session.close()
 
     @staticmethod
     def _get_scheduled_off_time():
-        forced_off_time = SchedulerState.get_forced_off_time()
+        time_off = SchedulerState.get_time_off()
         now = datetime.datetime.now()
 
-        if forced_off_time:
-            try:
-                forced_off_time = datetime.datetime.strptime(forced_off_time, "%H:%M")
-            except ValueError:
-                SchedulerState.set_forced_off_time('')
-            else:
-                return now.replace(hour=forced_off_time.hour, minute=forced_off_time.minute, second=0, microsecond=0)
-        else:
+        if time_off in ['sunrise', 'sunset']:
             at = now.strftime('%Y-%m-%d')
             calendar = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
             if at in calendar:
-                v = calendar[at].get(SchedulerState.KEY_OFF_TIME, now.isoformat())
+                v = calendar[at].get(SchedulerState.KEY_OFF_TIME if time_off=='sunrise' else SchedulerState.KEY_ON_TIME, now.isoformat())
                 off_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
-                return off_time + datetime.timedelta(hours=float(SchedulerState.get_sunrise_offset()))
-        
+                return off_time + datetime.timedelta(seconds=float(SchedulerState.get_offset_time_off()))
+        else:
+            # Other values of time_off can be "%H:%M"
+            try:
+                formatted_time_off = datetime.datetime.strptime(time_off, "%H:%M")
+            except ValueError:
+                SchedulerState.set_time_off('23:00')
+            else:
+                return now.replace(hour=formatted_time_off.hour, minute=formatted_time_off.minute, second=0, microsecond=0)
+
         # Sanity check: worst case: off time is unknown, return past date
         return now + datetime.timedelta(hours=-10)
-
-
 
     @staticmethod
     def get_scheduled_off_time():
@@ -312,23 +444,24 @@ class SchedulerState(object):
 
     @staticmethod
     def _get_scheduled_on_time():
-        forced_on_time = SchedulerState.get_forced_on_time()
+        time_on = SchedulerState.get_time_on()
         now = datetime.datetime.now()
 
-        if forced_on_time:
-            try:
-                forced_on_time = datetime.datetime.strptime(forced_on_time, "%H:%M")
-            except ValueError:
-                SchedulerState.set_forced_on_time('')
-            else:
-                return now.replace(hour=forced_on_time.hour, minute=forced_on_time.minute, second=0, microsecond=0)
-        else:
+        if time_on in ['sunrise', 'sunset']:
             at = now.strftime('%Y-%m-%d')
             calendar = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
             if at in calendar:
-                v = calendar[at].get(SchedulerState.KEY_ON_TIME, now.isoformat())
+                v = calendar[at].get(SchedulerState.KEY_OFF_TIME if time_on=='sunrise' else SchedulerState.KEY_ON_TIME, now.isoformat())
                 on_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
-                return on_time + datetime.timedelta(hours=float(SchedulerState.get_sundown_offset()))
+                return on_time + datetime.timedelta(seconds=float(SchedulerState.get_offset_time_on()))
+        else:
+            # Other values of time_on can be "%H:%M"
+            try:
+                formatted_time_on = datetime.datetime.strptime(time_on, "%H:%M")
+            except ValueError:
+                SchedulerState.set_time_on('20:00')
+            else:
+                return now.replace(hour=formatted_time_on.hour, minute=formatted_time_on.minute, second=0, microsecond=0)
 
         # Sanity check: worst case: on time is unknown, return future date
         return now + datetime.timedelta(hours=10)
@@ -345,60 +478,13 @@ class SchedulerState(object):
             json.dumps(app_struct))
 
     @staticmethod
-    def set_sunset_offset(offset=0):
-        session = session_factory()
-        conf = session.query(ConfigModel).first()
-        conf.forced_sunset = ""
-        conf.offset_sunset = offset
-        session.commit()
-        session.close()
-        # return val
-
-        # redis.set(SchedulerState.KEY_SUNDOWN_OFFSET, offset)
-        # redis.set(SchedulerState.KEY_FORCED_SUNDOWN_OFFSET, 0)
-        # return True
-
-    @staticmethod
-    def get_sundown_offset():
-        session = session_factory()
-        conf = session.query(ConfigModel).first()
-        offset = conf.offset_sunset
-        session.close()
-
-        return offset
-        # return redis_get(SchedulerState.KEY_SUNDOWN_OFFSET, 0)
-
-    @staticmethod
-    def set_sunrise_offset(offset=0):
-        session = session_factory()
-        conf = session.query(ConfigModel).first()
-        conf.forced_sunrise = ""
-        conf.offset_sunrise = offset
-        session.commit()
-        session.close()
-        # redis.set(SchedulerState.KEY_SUNRISE_OFFSET, offset)
-        # redis.set(SchedulerState.KEY_FORCED_SUNRISE_OFFSET, 0)
-        # return True
-
-    @staticmethod
     def get_admin_credentials():
         session = session_factory()
         conf = session.query(ConfigModel).first()
         login = conf.admin_login
         hash = conf.admin_hash
         session.close()
-
         return login, hash
-
-    @staticmethod
-    def get_sunrise_offset():
-        session = session_factory()
-        conf = session.query(ConfigModel).first()
-        offset = conf.offset_sunrise
-        session.close()
-
-        return offset
-        # return redis_get(SchedulerState.KEY_SUNRISE_OFFSET, 0)
 
     # ============= DEFAULT SCHEDULED APP
     @staticmethod
@@ -510,7 +596,7 @@ class SchedulerState(object):
 
     @staticmethod
     def set_event_lock(val):
-        redis.set(SchedulerState.KEY_EVENT_LOCK, val)
+        redis.set(SchedulerState.KEY_EVENT_LOCK, str(val))
 
     @staticmethod
     def is_event_lock():

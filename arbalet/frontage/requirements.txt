@@ -1,6 +1,6 @@
 psycopg2==2.7
 pytz==2016.10
-redis==2.10.5
+redis==3.2.0
 celery==4.2.1
 Flask
 Flask-Cors
@@ -27,4 +27,3 @@ raven
 blinker
 SQLAlchemy
 flask-expects-json
-

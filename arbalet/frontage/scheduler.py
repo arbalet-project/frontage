@@ -26,7 +26,7 @@ class Scheduler(object):
         clear_all_task()
 
         redis.set(SchedulerState.KEY_USERS_Q, '[]')
-        redis.set(SchedulerState.KEY_FORCED_APP, False)
+        redis.set(SchedulerState.KEY_FORCED_APP, 'False')
 
         self.frontage = Frontage()
         self.current_app_state = None
@@ -202,7 +202,7 @@ class Scheduler(object):
                 return self.start_default_app()
 
     def print_scheduler_info(self):
-        if self.count % 10 == 0:
+        if self.count % 100 == 0:
             self.count = 0
             print_flush(" ========== Scheduling ==========")
             print_flush("-------- Enable State")
