@@ -85,7 +85,8 @@ class SchedulerState(object):
         model = [[ False for i in range(cols)] for j in range(rows)]
         for pixel in pixels.values() :
             ((x,y), ind) = pixel
-            model[x][y] = True
+            if( x < rows and y < cols):
+                model[x][y] = True
         disabled = []
         for i in range(rows):
             for j in range(cols):
