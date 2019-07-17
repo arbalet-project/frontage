@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-export FLASK_APP=server_app.py
+export FLASK_APP=server_app
 
 case "$1" in
     prod)
