@@ -314,7 +314,11 @@ def status():
                    current_app=c_app_name,
                    next_on_time=SchedulerState.get_scheduled_on_time().isoformat(),
                    state=SchedulerState.get_enable_state(),
-                   current_time=datetime.datetime.now().isoformat())
+                   current_time=datetime.datetime.now().isoformat(),
+                   height=SchedulerState.get_rows(),
+                   width=SchedulerState.get_cols(),
+                   amount=SchedulerState.get_amount(),
+                   disabled=SchedulerState.get_disabled())
 
 @blueprint.route('/b/restart', methods=['POST'])
 @authentication_required
@@ -360,8 +364,6 @@ def set_building_dimensions(user):
 @blueprint.route('/b/admin/settings/mesh/dimensions', methods=['GET'])
 @authentication_required
 def get_building_dimensions(user):
-    if not is_admin(user):
-        abort(403, "Forbidden Bru")
     print_flush(SchedulerState.get_pixels_dic())
     return jsonify(height=SchedulerState.get_rows(),
                   width=SchedulerState.get_cols(),
