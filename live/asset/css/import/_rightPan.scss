@@ -1,0 +1,204 @@
+// RIGHT PAN STYLE
+
+.right-pan{
+    background-color: $color-background-2;
+    width: 300px;
+    padding: 0 45px;
+    display: flex;
+    flex-flow: column;
+    justify-content: space-between;
+    position: fixed;
+    right: 0;
+    top: 0;
+    .head-menu{
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        height: 75px;
+        align-items: flex-end;
+        margin-bottom: 35px;
+        a#file{
+            background-image: url('../images/icon/file.png');
+            background-size: contain;
+            width: 18px;
+            height: 18px;
+            opacity: .7;
+        }
+        a#setting{
+            background-image: url('../images/icon/setting.png');
+            background-size: contain;
+            width: 62px;
+            height: 62px;
+            opacity: .7;
+            cursor: pointer;
+        }
+    }
+
+    .info-user > div{
+        margin-bottom: 25px;
+    }
+
+    p{
+        font-size: 12px;
+        color: $white-text;
+    }
+
+    .text-header{
+        color: $grey-text;
+        font-size: 10px;
+        margin-bottom: 10px;
+    }
+
+    .connect-style{
+        color: $green-succes;
+        &:before{
+            content:"";
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 100%;
+            background-color: $green-succes;
+            margin-right: 10px;
+        }
+        &.live{
+            color: $red-error;
+            animation: liveBlink 1s infinite ease-in-out alternate;
+            &:before{
+                background-color: $red-error
+            }
+        }
+    }
+
+    @keyframes liveBlink{
+        from{
+            opacity: 0;
+        }
+        to{
+            opacity: 1;
+        }
+    }
+
+    .led-content{
+        margin-bottom: 75px;
+    }
+    .led-header{
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        margin-top: 15px;
+        margin-bottom: 25px;
+        a{
+            background-size: contain;
+            width: 16px;
+            height: 16px;
+            opacity: .7;
+            display: inline-block;
+        }
+        a#play{
+            background-image: url('../images/icon/play_green.png');
+            margin-right: 15px;
+        }
+        a#stop{
+            background-image: url('../images/icon/stop.png');
+        }
+        a#turn-led{
+            background-image: url('../images/icon/reload.png');
+            margin-right: 15px;
+            transform: scaleX(-1);
+        }
+        a#full-screen{
+            background-image: url('../images/icon/full-screen.png');
+        }
+    }
+
+    table#led-table {
+        width: 90%;
+        margin:auto;
+      }
+     #led-table td {
+        position: relative;
+      }
+      #led-table td:after {
+        content: '';
+        display: block;
+        margin-top: 100%;
+      }
+      #led-table td:hover{
+
+      }
+      #led-table td .led {
+        position: absolute;
+        margin: 2px;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: black;
+      }
+}
+
+//Rotate Table Led
+.active-rotate{
+    transform: rotate(-90deg)
+}
+.active-rotate-button{
+    transform: rotate(-90deg) !important;
+}
+
+// Menu Setting
+
+.setting-menu{
+    visibility: hidden;
+    position: absolute;
+    width: 100%;
+    top: 90px;
+    left: 0;
+    border-top: 1px solid $color-background-3;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.5s linear;
+    a{
+        display: block;
+        padding: 20px 45px;
+        border-bottom: 1px solid $color-background-3;
+        background-color: $color-background-2;
+        color: $white-text;
+        &:hover{
+            transform: scale(0.5);
+            background-color: $color-background-3;
+          }
+    }
+    &::before{
+        content: '';
+        display: block;
+        border-style: solid;
+        width: 20px;
+        height: 20px;
+        transform: rotate(45deg);
+        position: absolute;
+        right: 44px;
+        top: -9px;
+        border-width:1px 0px 0px 1px;
+        background-color: $color-background-2;
+        z-index: -2;
+        border-color: $color-background-3;
+    }
+    &:after{
+        content: '';
+        display: block;
+        background-color: transparent;
+        position: absolute;
+        width: 66px;
+        height: 66px;
+        top: -31px;
+        right: 23px;
+        cursor: pointer;
+        transform: rotate(45deg)
+    }
+}
+
+#setting:hover ~ .setting-menu, .setting-menu:hover{
+    visibility: visible;
+    opacity: 1;
+    width: 100%;
+    height: 100%;
+}

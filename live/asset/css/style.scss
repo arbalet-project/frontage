@@ -1,0 +1,19 @@
+// VARIABLES
+
+//Background
+$color-background: #20262C;
+$color-background-2: #1B2024;
+$color-background-3: #252C34;
+
+//Other colors
+$grey-text: #7A7B7D;
+$white-text: #D5D4D3;
+$green-succes: #2fc54f;
+$red-error: #d13b3b;
+$blue-text: #2196f3;
+
+// IMPORT
+@import 'import/_base.scss';
+@import 'import/_leftPan.scss';
+@import 'import/_rightPan.scss';
+@import 'import/_modules.scss';

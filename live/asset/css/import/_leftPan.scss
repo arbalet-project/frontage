@@ -1,0 +1,110 @@
+// LEFT PAN STYLE
+// with blockly integration
+
+.left-pan{
+    background-color: $color-background-2;
+    flex-grow: 1;
+    position: relative;
+    padding-right: 300px;
+    position: fixed;
+    width: 100%;
+    .head-title{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 250px;
+        z-index: 1000;
+        background-color:$color-background-2;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: center;
+        height: 115px;
+        padding-top: 48px;
+        border-bottom: 1px solid $color-background-3;
+        img{
+            width: 35px;
+            height: 35px;
+            margin-right: 12px;
+            margin-bottom: 4px;
+        }
+        h1{
+            color: $grey-text;
+            padding-top: 5px;
+            font-size: 20px;
+        }
+    }
+    .blocklyDiv{
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+    .blocklySvg{ //Blockly workspace
+        width: 100%;
+        height: 100%;
+        background-color:$color-background;
+    }
+    .blocklyToolboxDiv{ //blockly panleft
+        background-color:$color-background-2;
+        width: 250px;
+        padding-top:100px;
+        .blocklyTreeRoot{
+            display: flex;
+            flex-flow: row wrap;
+            padding: 17px 0;
+            & > div{
+                width: 100%;
+            }
+        }
+    }
+
+    .blocklyMainBackground{ //border blocky app
+        stroke: none;
+    }
+
+    .blocklyTreeLabel {
+        color: $white-text;
+    }
+
+    .blocklyScrollbarHandle { //scrollbar
+        opacity: .3;
+    }
+    .blocklyScrollbarVertical .blocklyScrollbarHandle {
+        width: 8px !important
+    }
+    .blocklyScrollbarHorizontal .blocklyScrollbarHandle{
+        height: 8px !important
+    }
+    .blocklyFlyout{ //Flying pan
+        background-color: $color-background-3;
+        min-width: 200px;
+        .blocklyFlyoutBackground{
+            fill: none;
+        }
+    }
+    .blocklyTreeRow:not(.blocklyTreeSelected):hover {
+        background-color: $color-background-3;
+        
+    }
+    .blocklyTreeRow{
+        display: flex;
+        align-items: center;
+        height: 30px;
+        margin-bottom: 5px;
+        transition: .1s ease-in-out
+    }
+
+    .autor{
+        position: absolute;
+        bottom: 35px;
+        left: 23px;
+        z-index: 1000;
+        a{
+            background-image: url('../images/icon/info.png');
+            width: 25px;
+            height: 25px;
+            background-size: cover;
+            display: block;
+            opacity: .7;
+        }
+    }
+}
