@@ -6,9 +6,9 @@ const expressServer = express();
 const http = require('http').Server(expressServer);
 const port = 3000;
 const io = require('socket.io')(http); //socket
-// const redis = require('redis');
+const redis = require('redis');
 
-// let redisClient = redis.createClient(6005, '127.0.0.1');
+let redisClient = redis.createClient(6379, 'redis');
 let clientsLogged = new Map();
 let userlist = new Array();
 let grantedUser;
@@ -60,6 +60,7 @@ function initSocket() {
       }
       // post userlist on redis
       console.log(userlist);
+      redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log(err);});
       if(client == grantedUser){
         socket.emit('granted');
       }
@@ -78,6 +79,7 @@ function initSocket() {
         userlist.push({"id": socket.handshake.session.id, "username": login});
         // port userlist on redis
         console.log(userlist);
+        redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log(err);});
         let client = clientsLogged.get(socket.handshake.session.id);
         socket.emit('logged', {name: client.login, ip: client.ip});
       }
@@ -98,6 +100,7 @@ function initSocket() {
         userlist = nuserlist;
         //post userlit on redis
         console.log(userlist);
+        redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log(err);});
       }
     });
 

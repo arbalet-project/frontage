@@ -7,7 +7,7 @@ from threading import Thread
 from server.flaskutils import print_flush
 
 KEY_WS_SEND = "KEY_WS_SEND"
-
+KEY_USERS   = "KEY_USERS"
 
 class Websock(Thread):
     def __init__(self, fap, host='0.0.0.0', port=9988):
@@ -16,6 +16,21 @@ class Websock(Thread):
         self.host = host
         self.port = port
         self.web_socket = None
+
+    @staticmethod
+    def get_users():
+        users = redis.get(KEY_USERS, 'None')
+        if (users == 'None'):
+            return None
+        return users
+
+    @staticmethod
+    def set_isUp(bool=True):
+        redis.set(KEY_ISUP, json.dump({'isup': bool}))
+
+    @staticmethod
+    def set_grantUser(user): # user : { 'id': string, 'login': string}
+        redis.set(KEY_GRANTUSER, json.dump(user))
 
     @staticmethod
     def send_data(code, message, username='', userid=''):
