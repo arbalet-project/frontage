@@ -102,3 +102,8 @@ arbalet/frontage/celerybeat.pid
 postgresdata
 .idea
 
+# npm build
+live/node_modules
+
+# asset cache
+live/asset/css/.sass-cache
