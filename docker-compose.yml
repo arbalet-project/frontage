@@ -17,6 +17,7 @@ services:
     build: .
     restart: unless-stopped
     volumes:
+      - ./live:/usr/live
       - ./arbalet/frontage:/usr/src/app
     command: ["dev"]
     env_file: .env-dev
@@ -62,12 +63,21 @@ services:
       - 5544:5432
     volumes:
       - db-data:/var/lib/postgresql/data
-  snap:
-    build: snap
-    env_file: .env-dev
+  live:
+    image: "node:8"
+    user: "node"
+    working_dir: /home/node/live
+    environment:
+      - NODE_ENV=production
     restart: unless-stopped
+    volumes:
+      - ./live:/home/node/live
+    links:
+      - redis:redis
+      - rabbit:rabbit
     ports:
-      - 8080:80
+      - 8000:3000
+    command: "node main.js"
 
 volumes:
   db-data:

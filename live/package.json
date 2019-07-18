@@ -1,0 +1,87 @@
+{
+  "name": "arbalet_meki_live",
+  "version": "1.1.0",
+  "description": "Desktop Application for Arbalet Meki Live",
+  "main": "main.js",
+  "homepage": "http://www.arbalet-project.org/",
+  "keywords": [
+    "Arbalet",
+    "Meki",
+    "Live",
+    "Education",
+    "Pixel",
+    "Art"
+  ],
+  "author": "Lucas Demarais <lucdems@gmail.com>",
+  "contributors": [
+    {
+      "name": "Simon Paillassa",
+      "email": "simon.paillassa@gmail.com",
+      "url": "https://github.com/SimonPail"
+    },
+    {
+      "name": "William Jacob",
+      "email": "william4456@gmail.com",
+      "url": "https://www.linkedin.com/in/williamjacobnantes/"
+    },
+    {
+      "name": "Nicolas Diot",
+      "email": "nicolasdiot65@gmail.com",
+      "url": "https://github.com/Spooky65"
+    },
+    {
+      "name": "Léo-Paul Dubourg",
+      "email": "leopauldubourg@gmail.com",
+      "url": "https://github.com/LeoPaulD"
+    },
+    {
+      "name": "Lucas Demarais",
+      "email": "lucdems@gmail.com",
+      "url": "https://github.com/lucdems"
+    }
+  ],
+  "dependencies": {
+    "express": "^4.16.4",
+    "express-session": "^1.15.6",
+    "express-socket.io-session": "^1.3.5",
+    "ip": "^1.1.5",
+    "ip6addr": "^0.2.2",
+    "johnny-five": "^1.0.0",
+    "jquery": "^3.3.1",
+    "jsdoc": "^3.5.5",
+    "node-pixel": "^0.10.1",
+    "path": "^0.12.7",
+    "socket.io": "^2.2.0"
+  },
+  "build": {
+    "appId": "com.example.arbalet",
+    "productName": "Arbalet Meki Live",
+    "mac": {
+      "category": "education"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "win": {
+      "target": "portable",
+      "icon": "build/icon.ico"
+    }
+  }
+}
