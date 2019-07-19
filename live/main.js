@@ -7,12 +7,14 @@ const http = require('http').Server(expressServer);
 const port = 3000;
 const io = require('socket.io')(http); //socket
 const redis = require('redis');
+const amqp = require('amqplib/callback_api');
 
 let redisClient = redis.createClient(6379, 'redis');
+let rabbitPublisher;
 let clientsLogged = new Map();
 let userlist = new Array();
-let grantedUser;
-let boardConnected = false;
+let grantedUser = {'id':'turnoff', 'login':'turnoff'};
+let frontageConnected = false;
 
 function initServer() {
 
@@ -77,7 +79,7 @@ function initSocket() {
           ip: getIPV4(socket.handshake.address)
         });
         userlist.push({"id": socket.handshake.session.id, "username": login});
-        // port userlist on redis
+        // post userlist on redis
         console.log(userlist);
         redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log(err);});
         let client = clientsLogged.get(socket.handshake.session.id);
@@ -98,7 +100,7 @@ function initSocket() {
           }
         }
         userlist = nuserlist;
-        //post userlit on redis
+        //post userlist on redis
         console.log(userlist);
         redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log(err);});
       }
@@ -106,7 +108,10 @@ function initSocket() {
 
     socket.on('updateGrid',function(pixelsToUpdate){
       if(boardConnected && (grantedUser === clientsLogged.get(socket.handshake.session.id) )){
-        //post on RabbitMQ pixelsToUpdate
+        //post pixelsToUpdate on RabbitMQ
+        let msg = JSON.stringify({'pixels': pixelsToUpdate});
+        rabbitPublisher.publish('logs', '', Buffer.from(msg));
+        console.log(" [x] Sent %s", msg);
       }
     });
   });
@@ -114,30 +119,54 @@ function initSocket() {
 /**
  * Define the events messages received by the rendering JS process
  */
-// function initEvents() {
-//
-//   ipcMain.on('grantUser', function (event, arg) {
-//     grantedUser = clientsLogged.get(arg);
-//     grantedUser.socket.emit('granted');
-//     grantedUser.socket.broadcast.emit('ungranted');
-//
-//   });
-//
-//   ipcMain.on('ungrantUser', function(event,arg){
-//     clientsLogged.get(arg).socket.emit('ungranted');
-//     grantedUser = '';
-//   });
-//
-//   ipcMain.on('connectBoard',function(event,pin){
-//     initBoard(pin);
-//   });
-//
-// }
+function grant(user) {
+  if (user['id'] != 'turnoff') {
+    clientsLogged.get(user['id']).socket.emit('granted');
+  }
+  // ipcMain.on('grantUser', function (event, arg) {
+  //   grantedUser = clientsLogged.get(arg);
+  //   grantedUser.socket.emit('granted');
+  //   grantedUser.socket.broadcast.emit('ungranted');
+  //
+  // });
+}
 
-// }
+function ungrant(user){
+  if (user['id'] != 'turnoff') {
+    clientsLogged.get(user['id']).socket.emit('ungranted');
+  }
+  // ipcMain.on('ungrantUser', function(event,arg){
+    //   clientsLogged.get(arg).socket.emit('ungranted');
+    //   grantedUser = '';
+    // });
+}
+
+function updateValues(){
+  // may be useless
+  let previousFrontageStatus = false;
+  redisClient.get('KEY_FRONTAGE_IS_UP', function(err, reply) {
+    previousFrontageStatus = frontageConnected;
+    frontageConnected = (reply['isup'] == 'True')? true : false;
+    if (previousFrontageStatus != frontageConnected){
+      if (frontageConnected){
+        // TO DO
+        //start publisher
+      }
+    }
+  });
+  redisClient.get('KEY_GRANTED_USER', function(err, reply) {
+    let newGranted = JSON.parse(reply);
+    if (newGranted['id'] != grantedUser['id']){
+      ungrant(grantedUser);
+      grant(newGranted);
+      grantedUser = newGranted;
+    }
+  });
+}
 
 function initFappInteraction(){
-
+  redisClient.set('KEY_GRANTED_USER', JSON.stringify(grantedUser)); // init redis DB
+  redisClient.set('KEY_FRONTAGE_IS_UP', 'False');
 }
 
 /**
@@ -155,27 +184,26 @@ function getIPV4(ip) {
   }
 }
 
-/**
- * Take the pixel position on grid and returns the pixel index on led strip
- * Works only for a 15*10 grid
- *
- * @param {Object} pixel The pixel position on grid (row and column)
- * @returns {Number} The corresponding index of the pixel in the LED strip
- */
-function coordToIndex(pixel){
-  let index;
-    // If even
-    if(pixel.columnY % 2 == 0){
-      index = (14 + 15*pixel.columnY) - pixel.rowX;
-    }
-    else {
-      index = pixel.columnY*15 + pixel.rowX;
-    }
-
-    return index;
-  }
-
 // main
+const opt = { credentials: require('amqplib').credentials.plain('frontage', 'uHm65hK6]yfabDwUUksqeFDbOu') };
+amqp.connect('amqp://rabbit', opt, function(error0, connection) {
+  if (error0) {
+    throw error0;
+  }
+  connection.createChannel(function(error1, channel) {
+    if (error1) {
+      throw error1;
+    }
+    channel.assertExchange('logs', 'fanout', {
+      durable: false
+    });
+    rabbitPublisher = channel;
+  });
+});
+
 initServer();
 initSocket();
-// initFappInteraction();
+initFappInteraction();
+
+// update granted user and rabbitmq publisher state each 1000ms
+ setInterval(updateValues, 1000);

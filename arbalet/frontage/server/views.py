@@ -1,5 +1,5 @@
 import datetime
-
+import json
 from flask import request, jsonify, abort, Blueprint, g
 from flask_restful import Resource
 from utils.security import authentication_required, generate_user_token, is_admin, verify_password
@@ -7,6 +7,7 @@ from scheduler_state import SchedulerState
 from server.extensions import rest_api
 from server.flaskutils import print_flush
 from flask_expects_json import expects_json
+from utils.websock import Websock
 
 PROTOCOL_VERSION = 1   # Version of protocol betwwen front and back. Mismatch = ask the user to update
 
@@ -435,3 +436,30 @@ def set_initialised(user):
 
     SchedulerState.set_initialised(body['initialised'])
     return jsonify(initialised=SchedulerState.get_initialised())
+
+@blueprint.route('/b/admin/snap/users', methods=['GET'])
+@authentication_required
+def get_users(user):
+    if not is_admin(user):
+        abort(403, "Forbidden Bru")
+    users = (json.loads(Websock.get_users()))['users']
+    guser = (json.loads(Websock.get_grantUser()))
+    print_flush(users, guser)
+    return jsonify(list_clients=users, selected_client=guser)
+
+@blueprint.route('/b/admin/snap/guser', methods=['POST'])
+@authentication_required
+def set_user(user):
+    if not is_admin(user):
+        abort(403, "Forbidden Bru")
+    body = request.get_json()
+    id = body['id']
+    users = (json.loads(Websock.get_users()))['users']
+    guser = None
+    for user in users:
+        if (user['id'] == id):
+            guser = user
+    if (guser == None):
+        return dumps({"success": False, "message": "No such client"})
+    Websock.set_grantUser(guser)
+    return dumps({"success": True, "message": "Client authorized successfully"})

@@ -37,17 +37,18 @@ class Snap(Fap):
         self.nicknames = {}
         self.lock = RLock()
         CORS(self.flask)
-        self.port = int(33450)
+        self.port = int(50000)
         self.loop = None
         self.route()
 
     def route(self):
-
+        ## Routes pour le client snap
         #self.flask.route('/set_pixel_rgb', methods=['POST'])(self.set_pixel_rgb)
         self.flask.route('/set_rgb_matrix', methods=['POST'])(self.set_rgb_matrix)
         self.flask.route('/is_authorized/<nickname>', methods=['GET'])(self.is_authorized)
         self.flask.route('/get_nickname', methods=['GET'])(self.get_nickname)
 
+        ## Routes pour l'application mobile
         self.flask.route('/clients', methods=['GET'])(self.get_clients)
         self.flask.route('/authorize', methods=['POST'])(self.authorize)
 
@@ -62,6 +63,7 @@ class Snap(Fap):
                         self.current_auth_nick = self.OFF
             self.nicknames = temp_dict
 
+    #request handler for mobile application (send the client list)
     @authentication_required
     def get_clients(self, user):
         if not is_admin(user):
@@ -70,6 +72,7 @@ class Snap(Fap):
         self.check_nicknames_validity()
         return dumps({"list_clients": sorted(self.nicknames.keys(), key=lambda x: self.nicknames[x]["appeared"]), "selected_client":self.current_auth_nick})
 
+    #request handler for mobile application (put a client on realtime display)
     @authentication_required
     def authorize(self, user):
         if not is_admin(user):
