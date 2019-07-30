@@ -177,6 +177,8 @@ def admin_app_force(user):
 @authentication_required
 def admin_app_quit(user):
     if is_admin(user):
+        if (SchedulerState.get_current_app()['name'] == "Snap"):
+            Websock.set_grantUser({'id':"turnoff", 'username':"turnoff"})
         removed = SchedulerState.stop_forced_app_request(user)
         return jsonify(removed=removed)
     else:
@@ -440,7 +442,7 @@ def set_initialised(user):
 @blueprint.route('/b/admin/snap/users', methods=['GET'])
 @authentication_required
 def get_users(user):
-    if not is_admin(user):
+    if  (not is_admin(user)):
         abort(403, "Forbidden Bru")
     users = (json.loads(Websock.get_users()))['users']
     guser = (json.loads(Websock.get_grantUser()))
