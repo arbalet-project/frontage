@@ -72,6 +72,10 @@ class Ama(Fap) :
                 (mac, ((x,y),ind)) = self.pixels.popitem()
                 SchedulerState.add_cell(x, y, mac, ind)
             print_flush("Database updated")
+            rows = SchedulerState.get_rows()
+            cols = SchedulerState.get_cols()
+            disabled = SchedulerState.get_disabled()
+            Websock.set_has_changed(True, rows, cols, disabled)
 
         #When addressing is over, but before admin close the F-app : makes App wait.
         def wait_to_be_kill(self):
