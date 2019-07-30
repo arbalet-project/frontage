@@ -6,10 +6,10 @@ from utils.red import redis, redis_get
 from threading import Thread
 from server.flaskutils import print_flush
 
-KEY_WS_SEND   = "KEY_WS_SEND"
-KEY_USERS     = "KEY_USERS"
-KEY_ISUP      = "KEY_FRONTAGE_IS_UP"
-KEY_GRANTUSER = "KEY_GRANTED_USER"
+KEY_WS_SEND         = "KEY_WS_SEND"
+KEY_USERS           = "KEY_USERS"
+KEY_HASCHANGED      = "KEY_FRONTAGE_HAS_CHANGED"
+KEY_GRANTUSER       = "KEY_GRANTED_USER"
 
 class Websock(Thread):
     def __init__(self, fap, host='0.0.0.0', port=9988):
@@ -27,15 +27,20 @@ class Websock(Thread):
         return users
 
     @staticmethod
-    def set_isUp(bool=True):
-        redis.set(KEY_ISUP, json.dump({'isup': bool}))
+    def set_has_changed(bool=False, r=None, c=None, d=None):
+        redis.set(KEY_HASCHANGED, json.dumps({'haschanged': bool,
+                                              'rows': r,
+                                              'cols': c,
+                                              'disabled': d}))
 
     @staticmethod
-    def set_grantUser(user): # user : { 'id': string, 'login': string}
-        redis.set(KEY_GRANTUSER, json.dump(user))
+    def set_grantUser(user): # user : { 'id': string, 'username': string}
+        print_flush(user)
+        redis.set(KEY_GRANTUSER, json.dumps({'id': user['id'],
+                                             'username': user['username']}))
 
     @staticmethod
-    def get_grantUser(): # user : { 'id': string, 'login': string}
+    def get_grantUser(): # user : { 'id': string, 'username': string}
         user = redis_get(KEY_GRANTUSER, 'None')
         if (user == 'None'):
             return None

@@ -1,5 +1,6 @@
-// Modules to control application life and create native browser window
+// Modules to control application life
 const path = require('path');
+const fs = require('fs');
 const ipParser = require('ip6addr');
 const express = require('express');
 const expressServer = express();
@@ -120,43 +121,56 @@ function initSocket() {
  * Define the events messages received by the rendering JS process
  */
 function grant(user) {
-  if (user['id'] != 'turnoff') {
-    clientsLogged.get(user['id']).socket.emit('granted');
+  if (user['id'] != "turnoff") {
+    console.log(user);
+    if (clientsLogged.get(user['id']) == null ){
+      redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log(err);});
+      redisClient.set('KEY_GRANTED_USER', JSON.stringify({'id': "turnoff", 'username': "turnoff"}));
+    } else {
+      clientsLogged.get(user['id']).socket.emit('granted');
+    }
   }
-  // ipcMain.on('grantUser', function (event, arg) {
-  //   grantedUser = clientsLogged.get(arg);
-  //   grantedUser.socket.emit('granted');
-  //   grantedUser.socket.broadcast.emit('ungranted');
-  //
-  // });
 }
 
 function ungrant(user){
-  if (user['id'] != 'turnoff') {
-    clientsLogged.get(user['id']).socket.emit('ungranted');
+  if (user['id'] != "turnoff") {
+    if (clientsLogged.get(user['id']) == null ){
+      redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log(err);});
+      redisClient.set('KEY_GRANTED_USER', JSON.stringify({'id': "turnoff", 'username': "turnoff"}));
+    } else {
+      clientsLogged.get(user['id']).socket.emit('ungranted');
+    }
   }
-  // ipcMain.on('ungrantUser', function(event,arg){
-    //   clientsLogged.get(arg).socket.emit('ungranted');
-    //   grantedUser = '';
-    // });
+}
+
+async function updateConfigFile(data) {
+  let conf = {
+    'language': "fr",
+    'rows': data['rows'],
+    'cols': data['cols'],
+    'disabled': data['disabled'],
+    'project': "Frontage",
+    'simuation': false};
+  console.log(conf);
+  fs.writeFile("./public/config.json", JSON.stringify(conf), function(err) {
+    if (err) throw err;
+  });
+  console.log("config modified !");
 }
 
 function updateValues(){
-  // may be useless
-  let previousFrontageStatus = false;
-  redisClient.get('KEY_FRONTAGE_IS_UP', function(err, reply) {
-    previousFrontageStatus = frontageConnected;
-    frontageConnected = (reply['isup'] == 'True')? true : false;
-    if (previousFrontageStatus != frontageConnected){
-      if (frontageConnected){
-        // TO DO
-        //start publisher
-      }
+  redisClient.get('KEY_FRONTAGE_HAS_CHANGED', function(err, reply) {
+    let change_config = JSON.parse(reply)
+    if (change_config.haschanged){
+      change_config.haschanged = false;
+      redisClient.set('KEY_FRONTAGE_HAS_CHANGED', JSON.stringify(change_config));
+      updateConfigFile(change_config);
     }
   });
   redisClient.get('KEY_GRANTED_USER', function(err, reply) {
     let newGranted = JSON.parse(reply);
     if (newGranted['id'] != grantedUser['id']){
+      console.log("grantedUser : ", grantedUser, "\n newGrantedUser :", newGranted);
       ungrant(grantedUser);
       grant(newGranted);
       grantedUser = newGranted;
