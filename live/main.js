@@ -57,6 +57,7 @@ function initSocket() {
       client.socket = socket;
       client.status = "connected";
       clientsLogged.set(socket.handshake.session.id, client);
+      userlist = new Array();
       for (var c of clientsLogged.values()){
         let user = {"id": c.id, "username": c.login};
         userlist.push(user);
@@ -97,6 +98,10 @@ function initSocket() {
           if (user.id != client.id){
             nuserlist.push(user);
           }
+        }
+        if (client.id == grantedUser.id){
+          grantedUser = {'id': "turnoff", 'username': "turnoff"};
+          redisClient.set('KEY_GRANTED_USER', JSON.stringify({'id': "turnoff", 'username': "turnoff"}));
         }
         userlist = nuserlist;
         //post userlist on redis
