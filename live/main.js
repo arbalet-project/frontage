@@ -14,7 +14,7 @@ let redisClient = redis.createClient(6379, 'redis');
 let rabbitPublisher;
 let clientsLogged = new Map();
 let userlist = new Array();
-let grantedUser = {'id':'turnoff', 'login':'turnoff'};
+let grantedUser = {'id':"turnoff", 'username':"turnoff"};
 let frontageConnected = false;
 
 function initServer() {
@@ -81,7 +81,6 @@ function initSocket() {
         });
         userlist.push({"id": socket.handshake.session.id, "username": login});
         // post userlist on redis
-        console.log(userlist);
         redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log(err);});
         let client = clientsLogged.get(socket.handshake.session.id);
         socket.emit('logged', {name: client.login, ip: client.ip});
@@ -93,7 +92,6 @@ function initSocket() {
         let client = clientsLogged.get(socket.handshake.session.id);
         client.status = "disconnected";
         clientsLogged.set(socket.handshake.session.id, client);
-        console.log('Client disco');
         let nuserlist = new Array();
         for (var user of userlist){
           if (user.id != client.id){
@@ -102,13 +100,12 @@ function initSocket() {
         }
         userlist = nuserlist;
         //post userlist on redis
-        console.log(userlist);
         redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log(err);});
       }
     });
 
     socket.on('updateGrid',function(pixelsToUpdate){
-      if(boardConnected && (grantedUser === clientsLogged.get(socket.handshake.session.id) )){
+      if (grantedUser.id === socket.handshake.session.id){
         //post pixelsToUpdate on RabbitMQ
         let msg = JSON.stringify({'pixels': pixelsToUpdate});
         rabbitPublisher.publish('logs', '', Buffer.from(msg));
@@ -151,11 +148,10 @@ async function updateConfigFile(data) {
     'disabled': data['disabled'],
     'project': "Frontage",
     'simuation': false};
-  console.log(conf);
   fs.writeFile("./public/config.json", JSON.stringify(conf), function(err) {
     if (err) throw err;
   });
-  console.log("config modified !");
+  console.log("config.json modified !");
 }
 
 function updateValues(){
@@ -170,17 +166,11 @@ function updateValues(){
   redisClient.get('KEY_GRANTED_USER', function(err, reply) {
     let newGranted = JSON.parse(reply);
     if (newGranted['id'] != grantedUser['id']){
-      console.log("grantedUser : ", grantedUser, "\n newGrantedUser :", newGranted);
       ungrant(grantedUser);
       grant(newGranted);
       grantedUser = newGranted;
     }
   });
-}
-
-function initFappInteraction(){
-  redisClient.set('KEY_GRANTED_USER', JSON.stringify(grantedUser)); // init redis DB
-  redisClient.set('KEY_FRONTAGE_IS_UP', 'False');
 }
 
 /**
@@ -213,11 +203,12 @@ amqp.connect('amqp://rabbit', opt, function(error0, connection) {
     });
     rabbitPublisher = channel;
   });
+  console.log("pika connection started");
 });
 
 initServer();
 initSocket();
-initFappInteraction();
 
+redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log(err);});
 // update granted user and rabbitmq publisher state each 1000ms
  setInterval(updateValues, 1000);
