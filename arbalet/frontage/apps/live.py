@@ -24,11 +24,11 @@ from utils.websock import Websock
 class Snap(Fap):
     PLAYABLE = True
     ACTIVATED = False
-    OFF = {'id':"turnoff", 'login':"turnoff"}
+    OFF = {'id':"turnoff", 'username':"turnoff"}
 
     def __init__(self, username, userid):
         Fap.__init__(self, username, userid)
-        self.granteduser = Snap.OFF
+        self.user = Snap.OFF
         self.users = []
         self.lock = RLock()
         self.channelserver = None
@@ -41,12 +41,12 @@ class Snap(Fap):
         return min(1., max(0., float(v)/255))
 
     def callback(self, ch, method, properties, body):
-        listpixels = json.loads(body.decode('ascii'))
-        self.user = json.loads(Websock.get_grantUser())
+        listpixels = loads(body.decode('ascii'))
+        self.user = loads(Websock.get_grantUser())
         if self.user['id'] == "turnoff":
             self.erase_all()
         else:
-            set_rgb_matrix(listpixels)
+            self.set_rgb_matrix(listpixels['pixels'])
 
     def set_rgb_matrix(self, listpixels):
         nb_rows = SchedulerState.get_rows()
@@ -55,11 +55,11 @@ class Snap(Fap):
         c = 0
         with self.lock:
             for pix in listpixels:
-                r = pix['rowX']
+                r = pix.get('rowX')
                 c = pix['columnY']
-                hexacolor = pix['color']
-                red = (hexacolor & 0xFF0000) >> 4
-                green = (hexacolor & 0x00FF00) >> 2
+                hexacolor = eval('0x' + pix['color'][1:])
+                red = (hexacolor & 0xFF0000) >> 16
+                green = (hexacolor & 0x00FF00) >> 8
                 blue = (hexacolor & 0x0000FF)
                 self.model.set_pixel(r, c, list(map(Snap.scale, [red, green, blue])))
             self.send_model()
@@ -72,19 +72,20 @@ class Snap(Fap):
         return 'OK'
 
     def run(self, params, expires_at=None):
-        # start communication with mobile app
-        self.start_socket()
-        # start rabbitmq consumer
-        self.connectionserver = pika.BlockingConnection(self.params)
+        users = loads(Websock.get_users())['users']
+        if (len(users) == 1):
+            self.user = users[0]
+        Websock.set_grantUser(self.user)
+        self.connectionserver = pika.BlockingConnection(self.paramsserver)
         self.channelserver = self.connectionserver.channel()
 
         self.channelserver.exchange_declare(exchange='logs', exchange_type='fanout')
 
-        result = self.channelserver.queue_declare(exclusive=True, arguments={"x-max-length": 1})
+        result = self.channelserver.queue_declare('', exclusive=True)
         queue_name = result.method.queue
 
         self.channelserver.queue_bind(exchange='logs', queue=queue_name)
-        self.channelserver.basic_consume(self.callback, queue=queue_name, no_ack=True)
+        self.channelserver.basic_consume(queue_name, self.callback)
 
         print('Waiting for pixel data on queue "{}".'.format(queue_name))
         self.channelserver.start_consuming()
