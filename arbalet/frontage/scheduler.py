@@ -207,6 +207,14 @@ class Scheduler(object):
         if self.count % 100 == 0:
             self.count = 0
             print_flush(" ========== Scheduling ==========")
+            print_flush("-------- Nb Rows")
+            print_flush("\t\t {}".format(SchedulerState.get_rows()))
+            print_flush("-------- Nb Cols")
+            print_flush("\t\t {}".format(SchedulerState.get_cols()))
+            print_flush("-------- Nb Disabled")
+            print_flush("\t\t {}".format(SchedulerState.get_disabled()))
+            print_flush("-------- Nb pixels")
+            print_flush("\t\t {}".format(SchedulerState.get_pixels_dic()))
             print_flush("-------- Enable State")
             print_flush(SchedulerState.get_enable_state())
             print_flush("-------- Is Frontage Up?")
