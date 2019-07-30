@@ -452,16 +452,19 @@ def get_users(user):
 @blueprint.route('/b/admin/snap/guser', methods=['POST'])
 @authentication_required
 def set_user(user):
-    if not is_admin(user):
+    if (not is_admin(user)):
         abort(403, "Forbidden Bru")
     body = request.get_json()
-    id = body['id']
+    id = body['selected_client']
     users = (json.loads(Websock.get_users()))['users']
     guser = None
-    for user in users:
-        if (user['id'] == id):
-            guser = user
-    if (guser == None):
-        return dumps({"success": False, "message": "No such client"})
+    if (id != "turnoff"):
+        for user in users:
+            if (user['id'] == id):
+                guser = user
+        if (guser == None):
+            return jsonify(success=False, message="No such client")
+    else:
+        guser = {'id':"turnoff", 'username':"turnoff" }
     Websock.set_grantUser(guser)
-    return dumps({"success": True, "message": "Client authorized successfully"})
+    return jsonify(success=True, message="Client authorized successfully")
