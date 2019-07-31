@@ -15,7 +15,7 @@ from flask_cors import CORS
 
 from threading import RLock
 
-
+from server.flaskutils import print_flush
 from apps.fap import Fap
 from scheduler_state import SchedulerState
 from utils.security import authentication_required, is_admin
@@ -32,6 +32,7 @@ class Snap(Fap):
         self.users = []
         self.lock = RLock()
         self.channelserver = None
+        self.consumme = 0
         self.connectionserver = None
         credentials = pika.PlainCredentials(environ['RABBITMQ_DEFAULT_USER'], environ['RABBITMQ_DEFAULT_PASS'])
         self.paramsserver = pika.ConnectionParameters(host='rabbit', credentials=credentials, connection_attempts = 100, heartbeat = 0)
@@ -41,6 +42,9 @@ class Snap(Fap):
         return min(1., max(0., float(v)/255))
 
     def callback(self, ch, method, properties, body):
+        self.consumme += 1
+        if (self.consumme % 100 == 0):
+            print_flush("{} has been consummed".format(self.consumme))
         listpixels = loads(body.decode('ascii'))
         self.user = loads(Websock.get_grantUser())
         if self.user['id'] == "turnoff":
@@ -57,7 +61,7 @@ class Snap(Fap):
             for pix in listpixels:
                 r = pix.get('rowX')
                 c = pix['columnY']
-                hexacolor = eval('0x' + pix['color'][1:])
+                hexacolor = eval('0x' + pix['color'][1:]) # FIX ME : get rid of eval function
                 red = (hexacolor & 0xFF0000) >> 16
                 green = (hexacolor & 0x00FF00) >> 8
                 blue = (hexacolor & 0x0000FF)

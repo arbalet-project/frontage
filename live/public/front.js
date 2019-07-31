@@ -9,8 +9,29 @@ let workspace;
 
 createLedTable(nbRows, nbColumns, disabled_pixels);
 initWorkspace();
-configSocket();
 
+if(!simulation_enabled){
+  socket.on('logged',(user) => {
+      $('#user-name').text(user.name);
+      $('#user-ip').text(user.ip);
+      //hideLoginScreen();
+      $('.overlay-popup').hide();
+  });
+
+  socket.on('granted', function () {
+      granted = true;
+      $('.connect-style').replaceWith('<p class="connect-style live">live</p>');
+  });
+
+  socket.on('ungranted', function () {
+      granted = false;
+      $('.live').replaceWith('<p class="connect-style">Connecté au poste</p>');
+  });
+} else {
+  $('.info-user').css({
+      "display": 'none'
+  });
+}
 // Event keys for Blockly, stores the corresponding event in a sharedArray to be read by the worker
     $(document).on('keydown', function (e) {
         if (isRunning) {

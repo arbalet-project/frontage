@@ -459,6 +459,7 @@ def set_user(user):
     users = (json.loads(Websock.get_users()))['users']
     guser = None
     if (id != "turnoff"):
+        print_flush(users)
         for user in users:
             if (user['id'] == id):
                 guser = user

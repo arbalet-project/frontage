@@ -106,15 +106,15 @@ function configName(){
   document.getElementById('doc-infoMod').innerHTML = `Arbalet ${project} Live est un projet opensource développé par les membres d'Arbalet Living Lab pour le <a href="http://www.arbalet-project.org">projet Arbalet</a>`
 }
 
-function configSocket(){
-  if(!simulation_enabled){
-    import("/socketHandler.js");
-  } else {
-    $('.info-user').css({
-        "display": 'none'
-    });
-  }
-}
+// function configSocket(){
+//   if(!simulation_enabled){
+//     import("/socketHandler.js");
+//   } else {
+//     $('.info-user').css({
+//         "display": 'none'
+//     });
+//   }
+// }
 
 
 /**

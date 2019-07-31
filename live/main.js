@@ -9,21 +9,28 @@ const port = 3000;
 const io = require('socket.io')(http); //socket
 const redis = require('redis');
 const amqp = require('amqplib/callback_api');
+const session = require('express-session');
+const redisStore = require('connect-redis')(session);
 
 let redisClient = redis.createClient(6379, 'redis');
 let rabbitPublisher;
 let clientsLogged = new Map();
 let userlist = new Array();
-let grantedUser = {'id':"turnoff", 'username':"turnoff"};
+let grantedUser = {id:"turnoff", username:"turnoff"};
 let frontageConnected = false;
 
 function initServer() {
 
   // Init the session system
-  let session = require('cookie-session')({
+  let session = require('express-session')({
     secret: 'my-secret',
     resave: true,
     saveUninitialized: true,
+    store: new redisStore({ host: 'localhost',
+                            port: 6379,
+                            client: redisClient,
+                            ttl :  43200000
+                          }),
     cookie: {maxAge: 43200000} // time-to-live is set at 12 hours
   });
 
@@ -59,13 +66,11 @@ function initSocket() {
       client.decotime = 0;
       client.status = "connected";
       clientsLogged.set(socket.handshake.session.id, client);
-      userlist = new Array();
-      for (var c of clientsLogged.values()){
-        let user = {"id": c.id, "username": c.login};
-        userlist.push(user);
-      }
+      let user = {id: client.id, username: client.login};
+      userlist.push(user);
       // post userlist on redis
-      redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log("redis l.68 : "+ err);});
+      console.log(userlist);
+      redisClient.set('KEY_USERS', JSON.stringify({users: userlist}));
       if(client == grantedUser){
         socket.emit('granted');
       }
@@ -83,10 +88,11 @@ function initSocket() {
           status: "connected",
           ip: getIPV4(socket.handshake.address)
         });
-        userlist.push({"id": socket.handshake.session.id, "username": login});
+        userlist.push({id: socket.handshake.session.id, username: login});
         // post userlist on redis
         console.log("user : "+ login + " has logged");
-        redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log("redis l.89 : "+ err);});
+        console.log(userlist);
+        redisClient.set('KEY_USERS', JSON.stringify({users: userlist}));
         let client = clientsLogged.get(socket.handshake.session.id);
         socket.emit('logged', {name: client.login, ip: client.ip});
       }
@@ -104,19 +110,20 @@ function initSocket() {
           }
         }
         if (client.id == grantedUser.id){
-          grantedUser = {'id': "turnoff", 'username': "turnoff"};
-          redisClient.set('KEY_GRANTED_USER', JSON.stringify({'id': "turnoff", 'username': "turnoff"}));
+          grantedUser = {id: "turnoff", username: "turnoff"};
+          redisClient.set('KEY_GRANTED_USER', JSON.stringify({id: "turnoff", username: "turnoff"}));
         }
         userlist = nuserlist;
         //post userlist on redis
-        redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log("redis l.112 : " + err);});
+        console.log(userlist);
+        redisClient.set('KEY_USERS', JSON.stringify({users: userlist}));
       }
     });
 
     socket.on('updateGrid',function(pixelsToUpdate){
       if (grantedUser.id === socket.handshake.session.id){
         //post pixelsToUpdate on RabbitMQ
-        let msg = JSON.stringify({'pixels': pixelsToUpdate});
+        let msg = JSON.stringify({pixels: pixelsToUpdate});
         rabbitPublisher.publish('logs', '', Buffer.from(msg));
       }
     });
@@ -127,10 +134,10 @@ function initSocket() {
  */
 function grant(user) {
   if (user['id'] != "turnoff") {
-    console.log(user + " has been granted");
+    console.log(user.username + " has been granted");
     if (clientsLogged.get(user['id']) == null ){
-      redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log("redis l.132 : " + err);});
-      redisClient.set('KEY_GRANTED_USER', JSON.stringify({'id': "turnoff", 'username': "turnoff"}));
+      redisClient.set('KEY_USERS', JSON.stringify({users: userlist}));
+      redisClient.set('KEY_GRANTED_USER', JSON.stringify({id: "turnoff", username: "turnoff"}));
     } else {
       clientsLogged.get(user['id']).socket.emit('granted');
     }
@@ -139,10 +146,10 @@ function grant(user) {
 
 function ungrant(user){
   if (user['id'] != "turnoff") {
-    console.log(user +" has been ungranted");
+    console.log(user.username +" has been ungranted");
     if (clientsLogged.get(user['id']) == null ){
-      redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log("redis l.144 : " + err);});
-      redisClient.set('KEY_GRANTED_USER', JSON.stringify({'id': "turnoff", 'username': "turnoff"}));
+      redisClient.set('KEY_USERS', JSON.stringify({users: userlist}));
+      redisClient.set('KEY_GRANTED_USER', JSON.stringify({id: "turnoff", username: "turnoff"}));
     } else {
       clientsLogged.get(user['id']).socket.emit('ungranted');
     }
@@ -151,12 +158,12 @@ function ungrant(user){
 
 async function updateConfigFile(data) {
   let conf = {
-    'language': "fr",
-    'rows': data['rows'],
-    'cols': data['cols'],
-    'disabled': data['disabled'],
-    'project': "Frontage",
-    'simuation': false};
+    language: "fr",
+    rows: data['rows'],
+    cols: data['cols'],
+    disabled: data['disabled'],
+    project: "Frontage",
+    simuation: false};
   fs.writeFile("./public/config.json", JSON.stringify(conf), function(err) {
     if (err) throw err;
   });
@@ -204,7 +211,7 @@ function sessionManager() {
       session.decotime += 600000;
       console.log("session : " + session.login + " has been down for " + session.decotime + " ms");
     }
-    if (session.decotime >= 43200000){
+    if (session.decotime >= 21600000){
       clientsLogged.delete(session.id);
       console.log("session "+ session.login +" has been revoked");
     }
@@ -212,6 +219,31 @@ function sessionManager() {
       clientsLogged.delete(session.id);
       console.log("session "+ session.login +" has expired");
     }
+  }
+}
+
+function sessionChecker(){
+  for (var client of clientsLogged.values()){
+    try {
+      client.socket.emit('isAlive');
+    } catch (e) {
+      client.status = "disconnected";
+      clientsLogged.set(socket.handshake.session.id, client);
+      let nuserlist = new Array();
+      for (var user of userlist){
+        if (user.id != client.id){
+          nuserlist.push(user);
+        }
+      }
+      if (client.id == grantedUser.id){
+        grantedUser = {id: "turnoff", username: "turnoff"};
+        redisClient.set('KEY_GRANTED_USER', JSON.stringify({id: "turnoff", username: "turnoff"}));
+      }
+      userlist = nuserlist;
+      //post userlist on redis
+      console.log(userlist);
+      redisClient.set('KEY_USERS', JSON.stringify({users: userlist}));
+    } 
   }
 }
 
@@ -236,7 +268,9 @@ amqp.connect('amqp://rabbit', opt, function(error0, connection) {
 initServer();
 initSocket();
 
-redisClient.set('KEY_USERS', JSON.stringify({'users': userlist}), function(err, reply) { console.log("redis l.239 : " + err);});
+redisClient.set('KEY_USERS', JSON.stringify({users: userlist}));
+
 // update granted user and rabbitmq publisher state each 1000ms
 setInterval(updateValues, 1000); // invoke every second
+setInterval(sessionChecker, 1000); // invoke every second
 setInterval(sessionManager, 60000); // invoke every minute
