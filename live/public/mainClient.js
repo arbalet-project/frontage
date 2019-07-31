@@ -14,7 +14,6 @@ let sharedArray;
 
 // Functions
 
-
 /**
  * Runs the blockly program and launch the grid autoupdate
  */
