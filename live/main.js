@@ -19,6 +19,12 @@ let userlist = new Array();
 let grantedUser = {id:"turnoff", username:"turnoff"};
 let frontageConnected = false;
 
+
+/*
+ * Set up the server configuration :
+ *   - distribute the static client
+ *   - set the session config and expiration time (12h)
+ */
 function initServer() {
 
   // Init the session system
@@ -29,7 +35,7 @@ function initServer() {
     store: new redisStore({ host: 'localhost',
                             port: 6379,
                             client: redisClient,
-                            ttl :  43200000
+                            ttl :  43200000 // time-to-live is set at 12 hours
                           }),
     cookie: {maxAge: 43200000} // time-to-live is set at 12 hours
   });
@@ -98,6 +104,8 @@ function initSocket() {
       }
     });
 
+    // When the user is disconnected he is marked it and removed from
+    // the userlist
     socket.on('disconnect', function() {
       if (clientsLogged.has(socket.handshake.session.id)) {
         let client = clientsLogged.get(socket.handshake.session.id);
@@ -120,6 +128,7 @@ function initSocket() {
       }
     });
 
+    // Relay the update pixels to the live.py f-app
     socket.on('updateGrid',function(pixelsToUpdate){
       if (grantedUser.id === socket.handshake.session.id){
         //post pixelsToUpdate on RabbitMQ
@@ -129,8 +138,10 @@ function initSocket() {
     });
   });
 }
+
 /**
- * Define the events messages received by the rendering JS process
+ * grant a user designated by the admin user of mobile app
+ * @param {Object} user format has to be {id : string, username: string}
  */
 function grant(user) {
   if (user['id'] != "turnoff") {
@@ -144,6 +155,10 @@ function grant(user) {
   }
 }
 
+/**
+ * ungrant a user
+ * @param {Object} user format has to be {id : string, username: string}
+ */
 function ungrant(user){
   if (user['id'] != "turnoff") {
     console.log(user.username +" has been ungranted");
@@ -156,6 +171,10 @@ function ungrant(user){
   }
 }
 
+/**
+ * set /public/config.json to match with the configuration set up at frontage installation
+ * @param {Object} data is retrived from redis
+ */
 async function updateConfigFile(data) {
   let conf = {
     language: "fr",
@@ -170,6 +189,9 @@ async function updateConfigFile(data) {
   console.log("config.json modified !");
 }
 
+/**
+ * get informations about frontage geometry and the granted user.
+ */
 function updateValues(){
   redisClient.get('KEY_FRONTAGE_HAS_CHANGED', function(err, reply) {
     let change_config = JSON.parse(reply)
@@ -204,6 +226,10 @@ function getIPV4(ip) {
   }
 }
 
+/**
+ * update the decotime value of deconnected clients
+ * kick session too old (time to be considered too old depends on status)
+ */
 function sessionManager() {
   let now = (new Date()).getTime();
   for (var session of clientsLogged.values()) {
@@ -222,6 +248,9 @@ function sessionManager() {
   }
 }
 
+/**
+ * check if a client is unexpectedly inaccessible (wifi lost)
+ */
 function sessionChecker(){
   for (var client of clientsLogged.values()){
     try {
@@ -243,7 +272,7 @@ function sessionChecker(){
       //post userlist on redis
       console.log(userlist);
       redisClient.set('KEY_USERS', JSON.stringify({users: userlist}));
-    } 
+    }
   }
 }
 
