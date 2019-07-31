@@ -152,7 +152,7 @@ function importWorkspace() {
             var docColumns = racine.getElementsByTagName("nbColumns")[0].innerHTML;
             if (simulation_enabled){
               var pixels = pixmlparse(racine.getElementsByTagName("pixel"));
-              setconfig(docRows, docColumns, pixels);
+              setconfig(docRows, docColumns, JSON.stringify(pixels));
               createLedTable(docRows, docColumns);
             } else if (docRows != nbRows || docColumns != nbColumns){
               throw("error : the dimensions do not match");

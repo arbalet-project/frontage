@@ -80,7 +80,7 @@ $('#import').on('click', function (e) {
 });
 
 $('#export').on('click', function () {
-    document.getElementById('export-input').value = name.replace(' ', '') + ".xml";
+    document.getElementById('export-input').value = name.replace(' ', '_');
     $('.overlay-popup3').fadeIn(200);
     $("#export-module").fadeIn(200, function () {
         $('#export-file').on('click', function () {
