@@ -85,10 +85,12 @@ function initSocket() {
     // When the user logs in (enter his/her name)
     socket.on('login', function (login) {
       if (!clientsLogged.has(socket.handshake.session.id)) {
+        let time = (new Date()).getTime();
         clientsLogged.set(socket.handshake.session.id, {
           socket: socket,
           id: socket.handshake.session.id,
-          firstlog: (new Date()).getTime(),
+          firstlog: time,
+          lastbeacon : time,
           login: login,
           decotime: 0,
           status: "connected",
@@ -135,6 +137,12 @@ function initSocket() {
         let msg = JSON.stringify({pixels: pixelsToUpdate});
         rabbitPublisher.publish('logs', '', Buffer.from(msg));
       }
+    });
+
+    // Beacon handler
+    socket.on('isAlive', function(){
+      let client = clientsLogged.get(socket.handshake.session.id);
+      client.lastbeacon = (new Date()).getTime();
     });
   });
 }
@@ -252,12 +260,17 @@ function sessionManager() {
  * check if a client is unexpectedly inaccessible (wifi lost)
  */
 function sessionChecker(){
+  let time = (new Date()).getTime();
   for (var client of clientsLogged.values()){
     try {
-      client.socket.emit('isAlive');
+      if ((time - client.lastbeacon) > 3000){
+        throw (new Error());
+      } else {
+        client.socket.emit('isAlive');
+      }
     } catch (e) {
       client.status = "disconnected";
-      clientsLogged.set(socket.handshake.session.id, client);
+      clientsLogged.set(client.id, client);
       let nuserlist = new Array();
       for (var user of userlist){
         if (user.id != client.id){

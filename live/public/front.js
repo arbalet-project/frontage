@@ -6,6 +6,7 @@ let name = "";
 document.getElementById('user-name-input').value = generateNickname();
 document.getElementById('version').innerHTML += softVersion;
 let workspace;
+let lastbeacon = null;
 
 createLedTable(nbRows, nbColumns, disabled_pixels);
 initWorkspace();
@@ -15,6 +16,7 @@ if(!simulation_enabled){
       $('#user-name').text(user.name);
       $('#user-ip').text(user.ip);
       //hideLoginScreen();
+      lastbeacon = (new Date()).getTime();
       $('.overlay-popup').hide();
   });
 
@@ -25,8 +27,24 @@ if(!simulation_enabled){
 
   socket.on('ungranted', function () {
       granted = false;
-      $('.live').replaceWith('<p class="connect-style">Connecté au poste</p>');
+      $('.live').replaceWith('<p class="connect-style">Connecté</p>');
   });
+
+  socket.on('isAlive', function () {
+    lastbeacon = (new Date()).getTime();
+    socket.emit('isAlive');
+    console.log("isAlive replied");
+  });
+
+  function beaconChecker() {
+    console.log("beanconChecker");
+    if ( (lastbeacon != null) && (new Date()).getTime() - lastbeacon > 3000){
+      granted = false;
+      $('.connect-style').replaceWith('<p class="connect-style">Déconnecté</p>');
+    }
+  }
+
+  setInterval(beaconChecker, 1000);
 } else {
   $('.info-user').css({
       "display": 'none'
