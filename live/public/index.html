@@ -8,6 +8,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="asset/css/style.css">
     <link rel="shortcur icon" type="image/png" href="asset/images/icon.png">
+    <script type="text/javascript">
+      var _paq = window._paq || [];
+      /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+      _paq.push(['trackPageView']);
+      _paq.push(['enableLinkTracking']);
+      (function() {
+        var u="//127.0.0.1:8080/";
+        _paq.push(['setTrackerUrl', u+'matomo.php']);
+        _paq.push(['setSiteId', '1']);
+        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+        g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+      })();
+    </script>
+    <noscript><p><img src="/matomo/matomo.php?idsite=3&amp;rec=1" style="border:0;" alt="" /></p></noscript>
 </head>
 
 <body>
@@ -414,8 +428,8 @@
                 <div class="led-content">
                     <div class="led-header">
                         <div>
-                            <a id="play" title="Play"></a>
-                            <a id="stop" title="Stop"></a>
+                            <a id="play" onclick="_paq.push(['trackEvent', 'Simulation', 'Play']);" title="Play"></a>
+                            <a id="stop" onclick="_paq.push(['trackEvent', 'Simulation', 'Stop']);" title="Stop"></a>
                         </div>
                         <div>
                             <a id="turn-led" title="Rotation" class="active-rotate-button"></a>
@@ -465,31 +479,31 @@
                   <p>Difficulté</p>
                 </div>
                 <div class="list-example">
-                    <a data-name="frenchFlag.xml" class="example-item">
+                    <a onclick="_paq.push(['trackEvent', 'Load Exemple', 'French Flag']);" data-name="frenchFlag.xml" class="example-item">
                         <p>Drapeau Français</p>
                         <div class="example-difficulty easy"></div>
                     </a>
-                    <a data-name="randomFill.xml" class="example-item">
+                    <a onclick="_paq.push(['trackEvent', 'Load Exemple', 'Random Fill']);" data-name="randomFill.xml" class="example-item">
                         <p>Remplissage aléatoire</p>
                         <div class="example-difficulty easy"></div>
                       </a>
-                    <a data-name="scrollingText.xml" class="example-item">
+                    <a onclick="_paq.push(['trackEvent', 'Load Exemple', 'Scrolling text']);" data-name="scrollingText.xml" class="example-item">
                         <p>Texte défilant</p>
                         <div class="example-difficulty middle"></div>
                     </a>
-                    <a data-name="parallel.xml" class="example-item">
+                    <a onclick="_paq.push(['trackEvent', 'Load Exemple', 'Greek Flag']);" data-name="parallel.xml" class="example-item">
                       <p>Drapeau Grec</p>
                       <div class="example-difficulty middle"></div>
                     </a>
-                    <a data-name="drawByKey.xml" class="example-item">
+                    <a onclick="_paq.push(['trackEvent', 'Load Exemple', 'Key Drawing']);" data-name="drawByKey.xml" class="example-item">
                         <p>Dessin par touches</p>
                         <div class="example-difficulty hard"></div>
                     </a>
-                    <a data-name="colorShooter.xml" class="example-item">
+                    <a onclick="_paq.push(['trackEvent', 'Load Exemple', 'Color Shooter']);" data-name="colorShooter.xml" class="example-item">
                       <p>Tir de couleurs</p>
                       <div class="example-difficulty hard"></div>
                     </a>
-                    <a data-name="snake_v1.xml" class="example-item">
+                    <a onclick="_paq.push(['trackEvent', 'Load Exemple', 'Snake']);" data-name="snake_v1.xml" class="example-item">
                       <p>Snake</p>
                       <div class="example-difficulty hard"></div>
                     </a>

@@ -116,6 +116,7 @@ $('#import').on('click', function (e) {
       }
     }
     $('#fileImport').click();
+    _paq.push(['trackEvent', 'Simulation', 'Load']);
 });
 
 $('#export').on('click', function () {
@@ -134,6 +135,7 @@ $('#export').on('click', function () {
 $('#export-input').keypress(function (event) {
     if (event.which == 13) {
         $('#export-file').click();
+        _paq.push(['trackEvent', 'Simulation', 'Save']);
     }
 });
 
@@ -152,11 +154,12 @@ $('#file').on('click',function(){
       return;
     }
   }
-    workspace.clear();
-    let mainBlock = workspace.newBlock('main_script');
-    mainBlock.initSvg();
-    mainBlock.render();
-    mainBlock.moveBy(300,30);
+  _paq.push(['trackEvent', 'Simulation', 'New Workspace']);
+  workspace.clear();
+  let mainBlock = workspace.newBlock('main_script');
+  mainBlock.initSvg();
+  mainBlock.render();
+  mainBlock.moveBy(300,30);
 });
 
 $('#challenges').on('click', function () {
