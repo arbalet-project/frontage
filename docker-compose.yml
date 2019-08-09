@@ -109,17 +109,17 @@ services:
     links:
       - matomo:matomo
       - live:live
-  # dnsmasq:
-  #   image: "andyshinn/dnsmasq"
-  #   ports:
-  #     - "53:53/tcp"
-  #     - "53:53/udp"
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ./dnsmasq/dnsmasq.conf:/etc/dnsmasq.conf
-  #     - ./dnsmasq/hosts:/etc/hosts
-  #     - ./dnsmasq/hostname:/etc/hostname
-  #     - ./dnsmasq/resolv.conf:/etc/resolv.conf
+  dnsmasq:
+    image: "andyshinn/dnsmasq"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    restart: unless-stopped
+    volumes:
+      - ./dnsmasq/dnsmasq.conf:/etc/dnsmasq.conf
+      - ./dnsmasq/hosts:/etc/hosts
+      - ./dnsmasq/hostname:/etc/hostname
+      - ./dnsmasq/resolv.conf:/etc/resolv.conf
 
 
 volumes:
