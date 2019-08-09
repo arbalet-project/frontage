@@ -75,13 +75,11 @@ services:
     links:
       - redis:redis
       - rabbit:rabbit
-    ports:
-      - 8000:3000
     command: "node main.js"
   mariadb:
     image: "mariadb"
     command: --max-allowed-packet=64MB
-    restart: always
+    restart: unless-stopped
     volumes:
       - mariadb:/var/lib/mysql
     environment:
@@ -90,17 +88,27 @@ services:
       - ./db.env
   matomo:
     image: "matomo"
-    restart: always
+    restart: unless-stopped
     volumes:
       - matomo:/var/www/html
     environment:
-      - MATOMO_DATABASE_HOST=mariadb
+      - MATOMO_DATABASE_HOST=mariadb:3306
     env_file:
       - ./db.env
-    ports:
-      - 8080:80
     links:
       - mariadb:mariadb
+  reverseproxy:
+    image: "nginx:alpine"
+    restart: unless-stopped
+    volumes:
+      - ./vhosts/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:8081
+      - 8082:8082
+      - 443:443
+    links:
+      - matomo:matomo
+      - live:live
 
 volumes:
   db-data:
