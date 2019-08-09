@@ -202,8 +202,8 @@ async function updateConfigFile(data) {
  */
 function updateValues(){
   redisClient.get('KEY_FRONTAGE_HAS_CHANGED', function(err, reply) {
-    let change_config = JSON.parse(reply)
-    if (change_config.haschanged){
+    let change_config = JSON.parse(reply);
+    if (change_config != null && change_config.haschanged){
       change_config.haschanged = false;
       redisClient.set('KEY_FRONTAGE_HAS_CHANGED', JSON.stringify(change_config));
       updateConfigFile(change_config);
@@ -211,7 +211,7 @@ function updateValues(){
   });
   redisClient.get('KEY_GRANTED_USER', function(err, reply) {
     let newGranted = JSON.parse(reply);
-    if (newGranted['id'] != grantedUser['id']){
+    if (newGranted != null && newGranted['id'] != grantedUser['id']){
       ungrant(grantedUser);
       grant(newGranted);
       grantedUser = newGranted;
