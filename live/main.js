@@ -1,7 +1,6 @@
 // Modules to control application life
 const path = require('path');
 const fs = require('fs');
-const ipParser = require('ip6addr');
 const express = require('express');
 const expressServer = express();
 const http = require('http').Server(expressServer);
@@ -94,7 +93,7 @@ function initSocket() {
           login: login,
           decotime: 0,
           status: "connected",
-          ip: getIPV4(socket.handshake.address)
+          ip: socket.handshake.address
         });
         userlist.push({id: socket.handshake.session.id, username: login});
         // post userlist on redis
@@ -217,21 +216,6 @@ function updateValues(){
       grantedUser = newGranted;
     }
   });
-}
-
-/**
- * Format the given ip adress to the ipv4 format
- * @param {Object} ip
- * @returns {String} The formated ip
- */
-function getIPV4(ip) {
-  if (ip == '::1') {
-    return '127.0.0.1';
-  } else {
-    return ipParser.parse(ip).toString({
-      format: 'v4'
-    });
-  }
 }
 
 /**
