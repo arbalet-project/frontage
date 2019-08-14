@@ -102,7 +102,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./reverseproxy/nginx.conf:/etc/nginx/nginx.conf
-      - ./reverseproxy/mime.type:/etc/nginx/mime.type
       - ./reverseproxy/asset:/var/www/frontage/asset
       - ./reverseproxy/index.html:/var/www/frontage/index.html
     ports:
