@@ -1,0 +1,78 @@
+// LEFT PAN STYLE
+
+.left-pan{
+    background-color: $color-background-3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 35%;
+ }
+
+ .head-title{
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    padding-top: 48px;
+    width: 100%;
+    img{
+        width: 35px;
+        height: 35px;
+        margin-left: 48px;
+    }
+    h1{
+        color: $grey-text;
+        padding-left: 15px;
+        margin: 0;
+    }
+}
+
+.apps-icons {
+    width: 65%;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    img {
+        margin: 15px;
+        height: 50px;
+        transition: 0.2s ease-in-out;
+        &:hover {
+            transform: scale(0.96);
+            cursor: pointer;
+        }
+    }
+}
+
+ .right-pan{
+    background-color: $color-background-2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 65%;
+    .explore {
+        background-color: $color-background-3;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: baseline;
+        width: 35%;
+        padding: 15px;
+        color: white;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: 0.2s ease-in-out;
+        p {
+            padding: 0;
+            margin: 0;
+        }
+        .explore-arrow {
+            border: none;
+            width: 12px;
+            height: 12px;
+        }
+        &:hover {
+            transform: scale(0.96);
+        }
+    }
+ }

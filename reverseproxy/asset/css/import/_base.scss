@@ -1,0 +1,102 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body{
+    width: 100%; height: 100%;
+    color: $white-text;
+}
+
+@font-face {
+    font-family: "Raleway";
+    font-weight: 400;
+    src: url('../font/Raleway/Raleway-Regular.ttf') format("truetype"),
+  }
+
+@font-face {
+    font-family: "Raleway";
+    font-weight: 700;
+    src: url('../font/Raleway/Raleway-Bold.ttf') format("truetype"),
+  }
+
+@font-face {
+    font-family: "Raleway";
+    font-weight: 600;
+    src: url('../font/Raleway/Raleway-SemiBold.ttf') format("truetype"),
+  }
+
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+a,
+button,
+div{
+text-align: center;
+font-family: "Raleway", sans-serif
+}
+
+h1{
+    font-weight: 400;
+    font-size: 1.4em;
+}
+
+h2{
+    font-weight: 500;
+    font-size: 1.3em;
+    margin: 1em;
+    color: white;
+}
+
+h3{
+  font-weight: 500;
+  font-size: 1.7em;
+  margin: 1em;
+  color: white;
+}
+
+p, a{
+    font-weight: 300;
+    font-size: 1.2em;
+}
+
+p {
+  padding-bottom: 0.8em;
+  text-align: justify;
+}
+
+a {
+  transition: 0.1s ease-in-out;
+  &:hover{
+    transform: scale(0.93);
+  }
+}
+
+.main{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.content{
+  margin: 20px;
+  display: flex;
+  flex-flow: column wrap;
+  align-items: center;
+  justify-content: flex-start;
+  width: 70%;
+  p {margin-top: 15px;}
+}
+
+.footer {
+  width:90%;
+  p, a {
+      color: $grey-text;
+      font-size: 100%;
+  }
+}
