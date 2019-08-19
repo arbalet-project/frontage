@@ -407,7 +407,7 @@ class SchedulerState(object):
         if time_off in ['sunrise', 'sunset']:
             at = now.strftime('%Y-%m-%d')
             calendar = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
-            if at in calendar:
+            if calendar and at in calendar:
                 v = calendar[at].get(SchedulerState.KEY_OFF_TIME if time_off=='sunrise' else SchedulerState.KEY_ON_TIME, now.isoformat())
                 off_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
                 return off_time + datetime.timedelta(seconds=float(SchedulerState.get_offset_time_off()))
@@ -451,7 +451,7 @@ class SchedulerState(object):
         if time_on in ['sunrise', 'sunset']:
             at = now.strftime('%Y-%m-%d')
             calendar = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
-            if at in calendar:
+            if calendar and at in calendar:
                 v = calendar[at].get(SchedulerState.KEY_OFF_TIME if time_on=='sunrise' else SchedulerState.KEY_ON_TIME, now.isoformat())
                 on_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
                 return on_time + datetime.timedelta(seconds=float(SchedulerState.get_offset_time_on()))
