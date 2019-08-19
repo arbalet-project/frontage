@@ -23,7 +23,7 @@ class Websock(Thread):
     def get_users():
         users = redis_get(KEY_USERS, 'None')
         if (users == 'None'):
-            return None
+            return {'users': {'id': 'turnoff', 'username':'turnoff'}}
         return users
 
     @staticmethod
