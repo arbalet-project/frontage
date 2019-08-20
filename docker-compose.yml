@@ -63,14 +63,12 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
   live:
-    image: "node:8"
+    build : ./live
     user: "node"
     working_dir: /home/node/live
     environment:
       - NODE_ENV=production
     restart: unless-stopped
-    volumes:
-      - ./live:/home/node/live
     links:
       - redis:redis
       - rabbit:rabbit
