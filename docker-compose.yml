@@ -120,12 +120,6 @@ services:
       - "67:67/udp"
       - "67:67/tcp"
     restart: unless-stopped
-    volumes:
-      - ./dnsmasq/dnsmasq.conf:/etc/dnsmasq.conf
-      - ./dnsmasq/hosts:/etc/hosts
-      - ./dnsmasq/hostname:/etc/hostname
-      - ./dnsmasq/resolv.conf:/etc/resolv.conf
-
 
 volumes:
   db-data:
