@@ -113,6 +113,9 @@ services:
       - queue:queue
   dnsmasq:
     build: ./dnsmasq
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
     ports:
       - "53:53/tcp"
       - "53:53/udp"
