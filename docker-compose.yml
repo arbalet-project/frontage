@@ -17,7 +17,6 @@ services:
     build: .
     restart: unless-stopped
     volumes:
-      - ./live:/usr/live
       - ./arbalet/frontage:/usr/src/app
     command: ["dev"]
     env_file: .env-dev
@@ -113,10 +112,12 @@ services:
       - app:app
       - queue:queue
   dnsmasq:
-    image: "andyshinn/dnsmasq"
+    build: ./dnsmasq
     ports:
       - "53:53/tcp"
       - "53:53/udp"
+      - "67:67/udp"
+      - "67:67/tcp"
     restart: unless-stopped
     volumes:
       - ./dnsmasq/dnsmasq.conf:/etc/dnsmasq.conf
