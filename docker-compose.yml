@@ -79,10 +79,10 @@ services:
     restart: unless-stopped
     volumes:
       - mariadb:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=test43T
+    # environment:
+    #   - MYSQL_ROOT_PASSWORD=test43T
     env_file:
-      - ./db.env
+      - ./.env
   matomo:
     image: "matomo"
     environment:
@@ -91,7 +91,7 @@ services:
     volumes:
       - matomo:/var/www/html
     env_file:
-      - ./db.env
+      - ./.env
     links:
       - mariadb:mariadb
   reverseproxy:
