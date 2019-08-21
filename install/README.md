@@ -1,5 +1,8 @@
 # Installation
 
+Lancer le script d'installation *install.sh* depuis la racine du dépôt git en tant que root ou sudoer.
+
+## Ancienne Procédure d'Installation
 
 ```
 sudo apt install docker-compose avahi-daemon openssh-server
