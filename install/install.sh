@@ -49,7 +49,11 @@ function get_pkgmanager {
     list_cmd="list --installed"
     end_chr="/"
     pip=pip3
-    pkg_list=`echo $pkg_list | sed 's/python/python3/'`
+    for var in $pkg_list; do
+      tmp+=`echo $var | sed 's/python/python3/'`
+      tmp+=" "
+    done
+    pkg_list=$tmp
     ;;
   esac
 }
@@ -159,8 +163,8 @@ function gen_password {
       fi
     done
   fi
-  sed "s/$TOKEN/$passwd/" .env > .tmp
-  mv .tmp .env
+  sed "s/$TOKEN/$passwd/" ../.env > .tmp
+  mv .tmp ../.env
 }
 
 # MAIN
