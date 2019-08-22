@@ -34,7 +34,6 @@ pkg_to_install=""
 # find the package manager corresponding to the linux distribution
 # and adjust the parameter corresponding to it
 function get_pkgmanager {
-  echo "$1"
   case $1 in
     "Arch Linux" )
     package_manager=pacman
@@ -49,7 +48,7 @@ function get_pkgmanager {
     list_cmd="list --installed"
     end_chr="/"
     pip=pip3
-    pkg_list=`sed 's/python/python3/' $pkg_list`
+    pkg_list=`echo $pkg_list | sed 's/python/python3/'`
     ;;
   esac
 }
