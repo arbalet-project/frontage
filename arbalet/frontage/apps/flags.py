@@ -76,7 +76,7 @@ class Flags(Fap):
                             'vietnam',
                             'yemen']}
 
-    def french(self):
+    def french(self): # scalable
         cols = SchedulerState.get_cols()
         b1 = cols // 3
         b2 = cols - b1
@@ -87,7 +87,7 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('red'))
 
-    def italy(self):
+    def italy(self): # scalable
         cols = SchedulerState.get_cols()
         b1 = cols // 3
         b2 = cols - b1
@@ -95,10 +95,10 @@ class Flags(Fap):
             self.model.set_column(i, name_to_rgb('green'))
         for i in range(b1, b2):
             self.model.set_column(i, name_to_rgb('white'))
-        for i in range(b3, cols):
+        for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('firebrick'))
 
-    def spain(self):
+    def spain(self): # scalable
         r = name_to_rgb('red')
         y = name_to_rgb('yellow')
         rows = SchedulerState.get_rows()
@@ -111,7 +111,7 @@ class Flags(Fap):
         for i in range(b2, rows) :
             self.model.set_line(i, r)
 
-    def germany(self):
+    def germany(self): # scalable
         d = name_to_rgb('black')
         r = name_to_rgb('red')
         y = name_to_rgb('yellow')
@@ -125,7 +125,7 @@ class Flags(Fap):
         for i in range(b2, rows) :
             self.model.set_line(i, y)
 
-    def algeria(self):
+    def algeria(self): # FIXED
         for i in range(0, 9):
             self.model.set_column(i, name_to_rgb('darkgreen'))
         for i in range(9, 18):
@@ -134,14 +134,14 @@ class Flags(Fap):
         self.model.set_pixel(2, 8, name_to_rgb('red'))
         self.model.set_pixel(2, 9, name_to_rgb('red'))
 
-    def saudi(self):
+    def saudi(self): # FIXED
         self.model.set_all('darkgreen')
         for i in range(5, 14):
             self.model.set_pixel(1, i, name_to_rgb('white'))
         for i in range(7, 12):
             self.model.set_pixel(2, i, name_to_rgb('white'))
 
-    def argentina(self):
+    def argentina(self): # FIXED
         self.model.set_line(0, name_to_rgb('skyblue'))
         self.model.set_line(1, name_to_rgb('white'))
         self.model.set_line(2, name_to_rgb('skyblue'))
@@ -149,27 +149,27 @@ class Flags(Fap):
         for c in range(8, 11):
             self.model.set_pixel(1, c, name_to_rgb('yellow'))
 
-    def armenia(self):
+    def armenia(self): # FIXED
         self.model.set_line(0, name_to_rgb('darkred'))
         self.model.set_line(1, name_to_rgb('navy'))
         self.model.set_line(2, name_to_rgb('yellow'))
         self.model.set_line(3, name_to_rgb('black'))
 
-    def australia(self):
+    def australia(self): # FIXED
         self.model.set_all('navy')
-        self.model.set_pixel(1, i, name_to_rgb('red'))
+        self.model.set_pixel(1, i, name_to_rgb('red')) # i is not defined
         self.model.set_pixel(0, 4, name_to_rgb('red'))
         self.model.set_pixel(2, 4, name_to_rgb('red'))
         for r, c in [(0, 14), (1, 11), (1, 16), (2, 13), (3, 12), (0, 3), (2, 3), (0, 5), (2, 5), (3, 4)]:
             self.model.set_pixel(r, c, name_to_rgb('white'))
 
-    def austria(self):
+    def austria(self): # FIXED
         self.model.set_line(0, (0.75, 0.25, 0.25))
         self.model.set_line(1, name_to_rgb('white'))
         self.model.set_line(2, (0.75, 0.25, 0.25))
         self.model.set_line(3, name_to_rgb('black'))
 
-    def belgium(self):
+    def belgium(self): # scalable
         a = name_to_rgb('black')
         b = name_to_rgb('yellow')
         c = name_to_rgb('red')
@@ -183,7 +183,7 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, c)
 
-    def brazil(self):
+    def brazil(self): # FIXED
         y = name_to_rgb('yellow')
         self.model.set_all('green')
         for i in range(7, 11):
@@ -198,7 +198,7 @@ class Flags(Fap):
             self.model.set_pixel(r, c, name_to_rgb('darkblue'))
         self.model.set_column(18, (0, 0, 0))
 
-    def burkina(self):
+    def burkina(self): # FIXED
         self.model.set_line(0, (0.75, 0.25, 0.25))
         self.model.set_line(1, (0.75, 0.25, 0.25))
         self.model.set_line(2, (0, 0.62, 0.27))
@@ -207,7 +207,7 @@ class Flags(Fap):
             for c in range(8, 11):
                 self.model.set_pixel(r, c, name_to_rgb('yellow'))
 
-    def cameroon(self):
+    def cameroon(self): # scalable
         a = (0, 0.62, 0.27)
         b = (0.75, 0.25, 0.25)
         y = name_to_rgb('yellow')
@@ -227,7 +227,7 @@ class Flags(Fap):
             for c in range(b1+(b1//3), b2-(b1//3)):
                 self.model.set_pixel(r, c, name_to_rgb('yellow'))
 
-    def canada(self):
+    def canada(self): # FIXED
         a = (0.83, 0.17, 0.12)
         b = (1, 1, 1)
         for i in range(0, 5):
@@ -242,7 +242,7 @@ class Flags(Fap):
             self.model.set_pixel(2, c, a)
         self.model.set_pixel(0, 9, a)
 
-    def chile(self):
+    def chile(self): # FIXED
         for i in range(0, 6):
             self.model.set_column(i, name_to_rgb('navy'))
         for i in range(6, 19):
@@ -250,19 +250,19 @@ class Flags(Fap):
         self.model.set_line(2, (0.75, 0.25, 0.25))
         self.model.set_line(3, (0.75, 0.25, 0.25))
 
-    def china(self):
+    def china(self): # FIXED
         self.model.set_all('red')
         for r in range(0, 2):
             for c in [1, 2, 4]:
                 self.model.set_pixel(r, c, name_to_rgb('yellow'))
 
-    def colombia(self):
+    def colombia(self): # FIXED
         self.model.set_line(0, name_to_rgb('yellow'))
         self.model.set_line(1, name_to_rgb('yellow'))
         self.model.set_line(2, name_to_rgb('navy'))
         self.model.set_line(3, name_to_rgb('red'))
 
-    def ivory(self):
+    def ivory(self): # scalable
         cols = SchedulerState.get_cols()
         b1 = cols // 3
         b2 = cols - b1
@@ -273,20 +273,20 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, (0, 0.62, 0.38))
 
-    def denmark(self):
+    def denmark(self): # scalable
         rows = SchedulerState.get_rows()
         cols = SchedulerState.get_cols()
         self.model.set_all((0.78, 0, 0.17))
         self.model.set_line(rows//2, (1, 1, 1))
         self.model.set_column(cols//3, (1, 1, 1))
 
-    def emirates(self):
+    def emirates(self): # FIXED
         self.model.set_line(0, (0, 0.45, 0.18))
         self.model.set_line(1, (1, 1, 1))
         for c in range(6):
             self.model.set_column(c, (1, 0, 0))
 
-    def usa(self):
+    def usa(self): # FIXED
         self.model.set_line(0, (0.73, 0.04, 0.23))
         self.model.set_line(1, (1, 1, 1))
         self.model.set_line(2, (0.73, 0.04, 0.23))
@@ -295,14 +295,14 @@ class Flags(Fap):
             for c in range(8):
                 self.model.set_pixel(r, c, (0, 0.13, 0.4) if r % 2 == c % 2 else (1, 1, 1))
 
-    def finland(self):
+    def finland(self): # FIXED
         self.model.set_all((1, 1, 1))
         self.model.set_line(1, (0, 0.2, 0.5))
         self.model.set_line(2, (0, 0.2, 0.5))
         self.model.set_column(6, (0, 0.2, 0.5))
         self.model.set_column(7, (0, 0.2, 0.5))
 
-    def greece(self):
+    def greece(self): # FIXED
         self.model.set_line(0, (0, 0.4, 0.7))
         self.model.set_line(1, (1, 1, 1))
         self.model.set_line(2, (0, 0.4, 0.7))
@@ -314,19 +314,19 @@ class Flags(Fap):
             self.model.set_pixel(2, c, (1, 1, 1))
         self.model.set_column(2, (1, 1, 1))
 
-    def india(self):
+    def india(self): # FIXED
         self.model.set_line(0, (1, 0.6, 0.18))
         self.model.set_line(1, (1, 1, 1))
         self.model.set_line(2, (1, 1, 1))
         self.model.set_line(3, (0, 0.6, 0))
 
-    def indonesia(self):
+    def indonesia(self): # FIXED
         self.model.set_line(0, name_to_rgb('red'))
         self.model.set_line(1, name_to_rgb('red'))
         self.model.set_line(2, name_to_rgb('white'))
         self.model.set_line(3, name_to_rgb('white'))
 
-    def ireland(self):
+    def ireland(self): # scalable
         cols = SchedulerState.get_cols()
         b1 = cols // 3
         b2 = cols - b1
@@ -337,22 +337,22 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, (0.96, 0.5, 0))
 
-    def iceland(self):
+    def iceland(self): # FIXED
         self.model.set_all((0, 0.31, 0.63))
         self.model.set_line(1, (0.86, 0.1, 0.2))
         self.model.set_column(6, (0.86, 0.1, 0.2))
 
-    def japan(self):
+    def japan(self): # FIXED
         self.model.set_all((1, 1, 1))
         for r in range(1, 3):
             for c in range(8, 11):
                 self.model.set_pixel(r, c, name_to_rgb('red'))
 
-    def latvia(self):
+    def latvia(self): # FIXED
         self.model.set_all((0.62, 0.18, 0.21))
         self.model.set_line(2, (1, 1, 1))
 
-    def lebanon(self):
+    def lebanon(self): # FIXED
         self.model.set_all((1, 1, 1))
         self.model.set_line(0, (1, 0, 0))
         self.model.set_line(3, (1, 0, 0))
@@ -360,7 +360,7 @@ class Flags(Fap):
             self.model.set_pixel(1, c, name_to_rgb('darkgreen'))
             self.model.set_pixel(2, c, name_to_rgb('darkgreen'))
 
-    def lgbtq(self):
+    def lgbtq(self): # FIXED
         self.model.set_column(0, (0.46, 0., 0.52))
         self.model.set_column(1, (0.46, 0., 0.52))
         self.model.set_column(2, (0.46, 0., 0.52))
@@ -382,27 +382,27 @@ class Flags(Fap):
         self.model.set_column(18, (0, 0, 0))
 
 
-    def libya(self):
+    def libya(self): # FIXED
         self.model.set_line(0, (1, 0, 0))
         self.model.set_line(3, name_to_rgb('darkgreen'))
 
-    def liechtenstein(self):
+    def liechtenstein(self): # FIXED
         self.model.set_line(0, (0, 0.16, 0.5))
         self.model.set_line(1, (0, 0.16, 0.5))
         self.model.set_line(2, (0.8, 0.05, 0.13))
         self.model.set_line(3, (0.8, 0.05, 0.13))
 
-    def lituania(self):
+    def lituania(self): # FIXED
         self.model.set_line(0, name_to_rgb('yellow'))
         self.model.set_line(1, name_to_rgb('darkgreen'))
         self.model.set_line(2, name_to_rgb('red'))
 
-    def luxembourg(self):
+    def luxembourg(self): # FIXED
         self.model.set_line(0, name_to_rgb('red'))
         self.model.set_line(1, name_to_rgb('white'))
         self.model.set_line(2, name_to_rgb('skyblue'))
 
-    def mali(self):
+    def mali(self): # scalable
         cols = SchedulerState.get_cols()
         b1 = cols // 3
         b2 = cols - b1
@@ -413,7 +413,7 @@ class Flags(Fap):
         for i in range(b2, rows):
             self.model.set_column(i, name_to_rgb('red'))
 
-    def malta(self):
+    def malta(self): # scalable
         cols = SchedulerState.get_cols()
         b1 = cols // 2
         for i in range(0, b2):
@@ -421,19 +421,19 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('red'))
 
-    def morocco(self):
+    def morocco(self): # FIXED
         self.model.set_all((0.73, 0.13, 0.16))
         for c in range(8, 11):
             self.model.set_pixel(1, c, (0, 0.4, 0.2))
             self.model.set_pixel(2, c, (0, 0.4, 0.2))
 
-    def mexico(self):
+    def mexico(self): # scalable (bizzar)
         return self.italy()
 
-    def monaco(self):
+    def monaco(self): # FIXED (bizzar)
         return self.indonesia()
 
-    def nigeria(self):
+    def nigeria(self): # scalable
         cols = SchedulerState.get_cols()
         b1 = cols // 3
         b2 = cols - b1
@@ -444,12 +444,12 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, (0, 0.53, 0.31))
 
-    def norway(self):
+    def norway(self): # FIXED
         self.model.set_all((0.86, 0.1, 0.2))
         self.model.set_line(1, (0, 0.31, 0.63))
         self.model.set_column(6, (0, 0.31, 0.63))
 
-    def newzealand(self):
+    def newzealand(self): # FIXED
         self.model.set_all('navy')
         for i in range(0, 9):
             self.model.set_pixel(1, i, name_to_rgb('firebrick'))
@@ -458,20 +458,20 @@ class Flags(Fap):
         for r, c in [(0, 14), (1, 11), (1, 16), (2, 13), (0, 3), (2, 3), (0, 5), (2, 5)]:
             self.model.set_pixel(r, c, name_to_rgb('firebrick'))
 
-    def netherlands(self):
+    def netherlands(self): # FIXED
         self.model.set_line(0, name_to_rgb('firebrick'))
         self.model.set_line(1, name_to_rgb('white'))
         self.model.set_line(2, name_to_rgb('navy'))
 
-    def pakistan(self):
+    def pakistan(self): # FIXED
         self.model.set_all((0, 0.25, 0.1))
         for c in range(6):
             self.model.set_column(c, (1, 1, 1))
 
-    def paraguay(self):
+    def paraguay(self): # FIXED (bizzar)
         return self.netherlands()
 
-    def peru(self):
+    def peru(self): # scalable
         cols = SchedulerState.get_cols()
         b1 = cols // 3
         b2 = cols - b1
@@ -482,23 +482,23 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('red'))
 
-    def poland(self):
+    def poland(self): # FIXED
         self.model.set_line(3, name_to_rgb('red'))
         self.model.set_line(2, name_to_rgb('red'))
         self.model.set_line(1, name_to_rgb('white'))
         self.model.set_line(0, name_to_rgb('white'))
 
-    def portugal(self):
+    def portugal(self): # FIXED
         self.model.set_all((1, 0, 0))
         for i in range(0, 6):
             self.model.set_column(i, (0, 1, 0))
 
-    def qatar(self):
+    def qatar(self): # FIXED
         self.model.set_all((0.57, 0.08, 0.23))
         for i in range(0, 6):
             self.model.set_column(i, (1, 1, 1))
 
-    def romania(self):
+    def romania(self): # scalable
         cols = SchedulerState.get_cols()
         b1 = cols // 3
         b2 = cols - b1
@@ -509,7 +509,7 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('firebrick'))
 
-    def uk(self):
+    def uk(self): # FIXED
         self.model.set_all(name_to_rgb('navy'))
         self.model.set_line(1, (0.81, 0.05, 0.16))
         self.model.set_line(2, (0.81, 0.05, 0.16))
@@ -525,7 +525,7 @@ class Flags(Fap):
             self.model.set_pixel(3, 18 - c, (0.81, 0.05, 0.16))
             self.model.set_pixel(2, 18 - c, name_to_rgb('navy'))
 
-    def russia(self):
+    def russia(self): # scalable
         cols = SchedulerState.get_cols()
         b1 = cols // 3
         b2 = cols - b1
@@ -536,21 +536,21 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('firebrick'))
 
-    def sweden(self):
+    def sweden(self): # FIXED
         self.model.set_all((0, 0.41, 0.66))
         self.model.set_line(1, name_to_rgb('yellow'))
         self.model.set_line(2, name_to_rgb('yellow'))
         self.model.set_column(6, name_to_rgb('yellow'))
         self.model.set_column(7, name_to_rgb('yellow'))
 
-    def swiss(self):
+    def swiss(self): # FIXED
         self.model.set_all((1, 0, 0))
         self.model.set_line(1, name_to_rgb('white'))
         self.model.set_line(2, name_to_rgb('white'))
         self.model.set_column(9, name_to_rgb('white'))
         self.model.set_column(10, name_to_rgb('white'))
 
-    def syria(self):
+    def syria(self): # FIXED
         self.model.set_all((1, 1, 1))
         self.model.set_line(0, name_to_rgb('red'))
         self.model.set_line(1, name_to_rgb('red'))
@@ -558,7 +558,7 @@ class Flags(Fap):
             for c in [4, 5, 13, 14]:
                 self.model.set_pixel(r, c, name_to_rgb('darkgreen'))
 
-    def czech(self):
+    def czech(self): # FIXED
         self.model.set_line(0, name_to_rgb('white'))
         self.model.set_line(1, name_to_rgb('white'))
         self.model.set_line(2, name_to_rgb('red'))
@@ -569,22 +569,22 @@ class Flags(Fap):
         for r, c in [(1, 6), (1, 5), (2, 6), (2, 5), (1, 4), (1, 3), (2, 4), (2, 3), (2, 2), (2, 1)]:
             self.model.set_pixel(r, c, name_to_rgb('navy'))
 
-    def tunisia(self):
+    def tunisia(self): # FIXED
         self.model.set_all('red')
         for c in range(8, 11):
             self.model.set_pixel(1, c, (1, 1, 1))
             self.model.set_pixel(2, c, (1, 1, 1))
 
-    def turkey(self):
+    def turkey(self): # FIXED (bizzar)
         return self.tunisia()
 
-    def ukraine(self):
+    def ukraine(self): # FIXED
         self.model.set_line(3, (1, 0.83, 0))
         self.model.set_line(2, (1, 0.83, 0))
         self.model.set_line(1, (0, 0.35, 0.74))
         self.model.set_line(0, (0, 0.35, 0.74))
 
-    def uruguay(self):
+    def uruguay(self): # FIXED
         self.model.set_line(0, name_to_rgb('navy'))
         self.model.set_line(1, (1, 1, 1))
         self.model.set_line(2, name_to_rgb('navy'))
@@ -593,20 +593,20 @@ class Flags(Fap):
             for c in [0, 1, 2]:
                 self.model.set_pixel(r, c, name_to_rgb('yellow'))
 
-    def venezuela(self):
+    def venezuela(self): # FIXED
         self.model.set_line(0, name_to_rgb('yellow'))
         self.model.set_line(1, name_to_rgb('navy'))
         self.model.set_line(2, name_to_rgb('firebrick'))
         for c in [8, 9, 10]:
             self.model.set_pixel(1, c, name_to_rgb('white'))
 
-    def vietnam(self):
+    def vietnam(self): # FIXED
         self.model.set_all('red')
         for c in range(8, 11):
             self.model.set_pixel(1, c, name_to_rgb('yellow'))
             self.model.set_pixel(2, c, name_to_rgb('yellow'))
 
-    def yemen(self):
+    def yemen(self): # FIXED
         self.model.set_line(0, name_to_rgb('red'))
         self.model.set_line(1, name_to_rgb('white'))
 
