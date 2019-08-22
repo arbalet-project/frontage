@@ -236,9 +236,6 @@ cp artnet.service /lib/systemd/system/
 # build arbalet service
 cp arbalet.service /lib/systemd/system/
 
-# enable coexisting systemd-resolved and dnsmasq
-sed 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf > /etc/systemd/resolved.conf
-
 # set up services
 ln -fs /etc/systemd/system/autologin@.service /etc/systemd/system/getty.target.wants/getty@tty1.service
 systemctl set-default multi-user.target
@@ -249,3 +246,8 @@ systemctl enable arbalet.service
 
 # build containers
 docker-compose -f docker-compose.prod.yml run --rm app init
+docker-compose build
+
+# Disable systemd-resolved
+systemctl stop systemd-resolved
+systemctl disable systemd-resolved
