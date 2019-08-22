@@ -196,9 +196,8 @@ fi
 # Arbalet installation
 
 # check if git respository is here if not download it
-if [[ [-f .git/config] && `grep "url = https://github.com/arbalet-project/frontage.git" .git/config` != "" ]]; then
+if [[ [-f ../.git/config] && `grep "url = https://github.com/arbalet-project/frontage.git" ../.git/config` != "" ]]; then
   echo "Repository already donwload : Skipp donwloading"
-  cd ./install
 else
   cd ~
   git clone http://github.com/arbalet-project/frontage.git
