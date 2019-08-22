@@ -24,7 +24,7 @@ pkg_list="git \
           python-numpy \
           makepasswd \
           net-tools \
-          netplan \
+          netplan.io \
           openssh-server \
           "
           #ufw \
@@ -236,7 +236,7 @@ gen_password PWD_MQL $reply
 
 # build artnet service
 $pip install --no-cache-dir git+https://github.com/arbalet-project/python-artnet.git
-PWD_RBB=`grep RABBITMQ_DEFAULT_PASS .env | cut --delimiter== -f 2`
+PWD_RBB=`grep RABBITMQ_DEFAULT_PASS ../.env | cut --delimiter== -f 2`
 echo "[Service]" >> artnet.service
 echo "Environment=\"RABBITMQ_DEFAULT_USER=frontage\"" >> artnet.service
 echo "Environment=\"RABBITMQ_DEFAULT_PASS=$PWD_RBB\"" >> artnet.service
@@ -256,6 +256,7 @@ systemctl enable arbalet.service
 # build containers
 docker-compose -f docker-compose.prod.yml run --rm app init
 docker-compose build
+docker-compose up --no-start
 
 # Disable systemd-resolved
 systemctl stop systemd-resolved
