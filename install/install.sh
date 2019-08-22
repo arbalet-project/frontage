@@ -1,3 +1,4 @@
+#!/bin/bash
 # script to install easily arbalet server
 # has to be execute as root
 
@@ -114,12 +115,14 @@ function netplan_config {
   fi
   artnet_interface=$1
   lan_interface=$2
-  sed "s/artnet_interface/$artnet_interface/" 10-arbalet.yaml > 10-arbalet.yaml
-  sed "s/lan_interface/$lan_interface/" 10-arbalet.yaml > 10-arbalet.yaml
+  cp 10-arbalet.yaml 10-arbalet.yaml.base
+  sed "s/artnet_interface/$artnet_interface/" 10-arbalet.yaml > tmp.yaml
+  sed "s/lan_interface/$lan_interface/" tmp.yaml > 10-arbalet.yaml
   cp 10-arbalet.yaml /etc/netplan/10-arbalet.yaml
-  # TO DO modify /etc/netplan/10-arbalet.yaml
-  ifconfig up $artnet_interface
-  ifconfig up $lan_interface
+  cp 10-arbalet.yaml.base 10-arbalet.yaml
+  rm tmp.yaml 10-arbalet.yaml.base
+  ifconfig $artnet_interface up
+  ifconfig $lan_interface up
   netplan apply
 }
 
@@ -156,7 +159,8 @@ function gen_password {
       fi
     done
   fi
-  sed "s/$TOKEN/$passwd/" .env > .env
+  sed "s/$TOKEN/$passwd/" .env > .tmp
+  mv .tmp .env
 }
 
 # MAIN
@@ -195,9 +199,11 @@ fi
 # Arbalet installation
 
 # check if git respository is here if not download it
-if [[ [-f ../.git/config] && `grep "url = https://github.com/arbalet-project/frontage.git" ../.git/config` != "" ]]; then
+exist=`[ -f ../.git/config ] && echo true || echo false`
+if [[ "$exist" == "true" && `grep "url = https://github.com/arbalet-project/frontage.git" ../.git/config` != "" ]]; then
   echo "Repository already donwload : Skipp donwloading"
 else
+  echo "Donwloading Repository"
   cd ~
   git clone http://github.com/arbalet-project/frontage.git
   cd ~/frontage/install
