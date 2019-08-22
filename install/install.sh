@@ -22,7 +22,7 @@ pkg_list="git \
           python-pika \
           python-numpy \
           makepasswd \
-          ifconfig \
+          net-tools \
           netplan \
           openssh-server \
           "
