@@ -60,7 +60,7 @@ function get_pkgmanager {
 # 192.168.0.32 to 192.168.0.127 will be granted acces on
 # 22 (ssh), 53 (dns), 67 (dhcp), 80 (http) and 443 (https) ports
 function ufw_config {
-  if [[ "$1" != "yes" ]]; then
+  if [[ "$1" != "y" ]]; then
     systemctl stop ufw
     systemctl disable ufw
   else
@@ -211,7 +211,7 @@ adduser arbalet docker
 netplan_config `ip link show | grep \ en | cut --delimiter=: -f 2`
 
 # firewall
-read -p "Do you want to set up a firewall ? (yes/NO)" reply
+read -p "Do you want to set up a firewall ? (y/N)" reply
 ufw_config $reply
 
 #set passwords
