@@ -179,18 +179,18 @@ to_install $pkg_list
 if [[ "$pkg_to_install" != "" ]]; then
   echo "Packages$pkg_to_install need to be installed"
   $package_manager $install_cmd $pkg_to_install
+  # Check installation
+  pkg_to_install=""
+  to_install $pkg_list
+
+  if [[ "$pkg_to_install" != "" ]]; then
+    echo "ERROR :$pkg_to_install packages are missing ==> Abort"
+    exit 1
+  fi
 else
   echo "All required packages are installed ==> skipping installation"
 fi
 
-# Check installation
-pkg_to_install=""
-to_install $pkg_list
-
-if [[ "$pkg_to_install" != "" ]]; then
-  echo "ERROR :$pkg_to_install packages are missing ==> Abort"
-  exit 1
-fi
 
 # Arbalet installation
 
