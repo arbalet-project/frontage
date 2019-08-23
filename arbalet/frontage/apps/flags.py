@@ -125,21 +125,30 @@ class Flags(Fap):
         for i in range(b2, rows) :
             self.model.set_line(i, y)
 
-    def algeria(self): # FIXED
-        for i in range(0, 9):
+    def algeria(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        midc = cols // 2
+        midr = rows // 2
+        croissant = [(-1,0), (0,-1), (1,0)]
+        for i in range(0, midc):
             self.model.set_column(i, name_to_rgb('darkgreen'))
-        for i in range(9, 18):
+        for i in range(midc, cols):
             self.model.set_column(i, name_to_rgb('white'))
-        self.model.set_pixel(1, 8, name_to_rgb('red'))
-        self.model.set_pixel(2, 8, name_to_rgb('red'))
-        self.model.set_pixel(2, 9, name_to_rgb('red'))
+        if (rows > 2 and cols > 2):
+            for pix in croissant:
+                self.model.set_pixel(midr + pix[0], midc + pix[1], name_to_rgb('red'))
 
-    def saudi(self): # FIXED
+    def saudi(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        quarc = cols // 4
+        midr = rows // 2
         self.model.set_all('darkgreen')
-        for i in range(5, 14):
-            self.model.set_pixel(1, i, name_to_rgb('white'))
-        for i in range(7, 12):
-            self.model.set_pixel(2, i, name_to_rgb('white'))
+        for i in range(quarc, quarc*2):
+            self.model.set_pixel(midr, i, name_to_rgb('white'))
+        for i in range(quarc + 2, (quarc-1)*2):
+            self.model.set_pixel(midr+1, i, name_to_rgb('white'))
 
     def argentina(self): # FIXED
         self.model.set_line(0, name_to_rgb('skyblue'))
@@ -149,11 +158,20 @@ class Flags(Fap):
         for c in range(8, 11):
             self.model.set_pixel(1, c, name_to_rgb('yellow'))
 
-    def armenia(self): # FIXED
-        self.model.set_line(0, name_to_rgb('darkred'))
-        self.model.set_line(1, name_to_rgb('navy'))
-        self.model.set_line(2, name_to_rgb('yellow'))
-        self.model.set_line(3, name_to_rgb('black'))
+    def armenia(self): # scalable
+        rows = SchedulerState.get_rows()
+        quarr = rows // 4
+        if (rows < 4):
+            self.model.set_all('darked')
+        else :
+            for i in range(0, max(quarr*2, 1)):
+                self.model.set_line(i, name_to_rgb('darkred'))
+            for i in range(quarr, max(quarr*2, 2)):
+                self.model.set_line(i, name_to_rgb('navy'))
+            for i in range(max(quarr*2, 2), max(quarr*3, 3)):
+                self.model.set_line(i, name_to_rgb('yellow'))
+            for i in range(max(quarr*3, 3), max(rows, 4)):
+                self.model.set_line(i, name_to_rgb('black'))
 
     def australia(self): # FIXED
         self.model.set_all('navy')
@@ -360,26 +378,16 @@ class Flags(Fap):
             self.model.set_pixel(1, c, name_to_rgb('darkgreen'))
             self.model.set_pixel(2, c, name_to_rgb('darkgreen'))
 
-    def lgbtq(self): # FIXED
-        self.model.set_column(0, (0.46, 0., 0.52))
-        self.model.set_column(1, (0.46, 0., 0.52))
-        self.model.set_column(2, (0.46, 0., 0.52))
-        self.model.set_column(3, (0., 0.3, 1.))
-        self.model.set_column(4, (0., 0.3, 1.))
-        self.model.set_column(5, (0., 0.3, 1.))
-        self.model.set_column(6, (0., 0.5, 0.16))
-        self.model.set_column(7, (0., 0.5, 0.16))
-        self.model.set_column(8, (0., 0.5, 0.16))
-        self.model.set_column(9, (1, 1, 0))
-        self.model.set_column(10, (1, 1, 0))
-        self.model.set_column(11, (1, 1, 0))
-        self.model.set_column(12, (1, 0.54, 0))
-        self.model.set_column(13, (1, 0.54, 0))
-        self.model.set_column(14, (1, 0.54, 0))
-        self.model.set_column(15, (1, 0, 0))
-        self.model.set_column(16, (1, 0, 0))
-        self.model.set_column(17, (1, 0, 0))
-        self.model.set_column(18, (0, 0, 0))
+    def lgbtq(self): # scalable above 6
+        cols = SchedulerState.get_cols()
+        widness = cols // 6
+        colors = [(0.46, 0., 0.52),(0., 0.3, 1.),(0., 0.5, 0.16),(1, 1, 0),(1, 0.54, 0),(1, 0, 0)]
+        self.model.set_all((0,0,0))
+        start = (cols - (widness // 6))//2
+        if (cols >= 6):
+            for i in range(start, cols, widness):
+                for j in range(widness):
+                    self.model.set_column(i+j, colors[i])
 
 
     def libya(self): # FIXED
