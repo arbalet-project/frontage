@@ -12,6 +12,7 @@ from utils.web_key_pub import PUBLIC_WEB_KEY
 TEN_YEARS = 60 * 60 * 24 * 7 * 52 * 10
 ONE_YEARS = (60 * 60 * 24 * 7 * 52)
 ONE_HOUR = 60 * 60
+HALF_A_DAY = 60 * 60 * 12
 
 TOKEN_ALGO = 'RS512'
 
@@ -91,13 +92,13 @@ def admin_required(f):
 
 def generate_user_token(username, is_admin=False):
     now = datetime.datetime.utcnow()
-    delta = datetime.timedelta(seconds=ONE_YEARS)
+    delta = datetime.timedelta(seconds=HALF_A_DAY)
 
     payload = {
         # Reserved claims
         'iat': now,
         'nbf': now,
-        'exp': now + delta,
+        'exp': now + delta, # expiration de la session client coté client ou serveur ?
         'iss': 'ARBA',
         # 'aud': audience
     }
