@@ -11,7 +11,7 @@ import sys
 
 import pika
 from os import environ
-from scheduler_state import SchedulerState
+# from scheduler_state import SchedulerState
 from pygame import color, event, display, draw, Rect, QUIT
 from pygame.time import Clock
 from model import Model
@@ -24,7 +24,7 @@ def print_flush(s):
     sys.stdout.flush()
 
 class Simulator(object):
-    def __init__(self, row=SchedulerState.get_rows(), col=SchedulerState.get_cols(), port=33460):
+    def __init__(self, row=10, col=20, port=33460):
         factor_sim = 40
         self.clock = Clock()
         self.model = Model(row, col)
@@ -86,14 +86,14 @@ class Simulator(object):
 
         self.channel.exchange_declare(exchange='pixels', exchange_type='fanout')
 
-        result = self.channel.queue_declare(exclusive=True)
+        result = self.channel.queue_declare('', exclusive=True)
         queue_name = result.method.queue
 
         self.channel.queue_bind(exchange='pixels', queue=queue_name)
 
         print('Waiting for pixel data.')
 
-        self.channel.basic_consume(self.callback, queue=queue_name, no_ack=True)
+        self.channel.basic_consume(queue_name, self.callback)
         self.channel.start_consuming()
 
 
