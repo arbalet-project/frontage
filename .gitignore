@@ -106,4 +106,4 @@ postgresdata
 live/node_modules
 
 # asset cache
-live/asset/css/.sass-cache
+.sass-cache
