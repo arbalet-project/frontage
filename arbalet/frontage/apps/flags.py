@@ -4,7 +4,7 @@ from apps.fap import Fap
 from utils.colors import name_to_rgb
 from json import loads
 from scheduler_state import SchedulerState
-
+from server.flaskutils import print_flush
 
 class Flags(Fap):
     PLAYABLE = False
@@ -18,7 +18,6 @@ class Flags(Fap):
                             'saudi',
                             'argentina',
                             'armenia',
-                            'australia',
                             'austria',
                             'belgium',
                             'brazil',
@@ -53,7 +52,6 @@ class Flags(Fap):
                             'monaco',
                             'nigeria',
                             'norway',
-                            'newzealand',
                             'netherlands',
                             'pakistan',
                             'paraguay',
@@ -62,7 +60,6 @@ class Flags(Fap):
                             'portugal',
                             'qatar',
                             'romania',
-                            'uk',
                             'russia',
                             'sweden',
                             'swiss',
@@ -142,50 +139,59 @@ class Flags(Fap):
     def saudi(self): # scalable
         cols = SchedulerState.get_cols()
         rows = SchedulerState.get_rows()
-        quarc = cols // 4
+        quarc = cols / 4
         midr = rows // 2
         self.model.set_all('darkgreen')
-        for i in range(quarc, quarc*2):
-            self.model.set_pixel(midr, i, name_to_rgb('white'))
-        for i in range(quarc + 2, (quarc-1)*2):
-            self.model.set_pixel(midr+1, i, name_to_rgb('white'))
+        for i in range(int(quarc), int(quarc*3)+1):
+            self.model.set_pixel(midr-1, i, name_to_rgb('white'))
+        if (int(quarc) + 2 >= int(quarc -1)*2):
+            self.model.set_pixel(midr+1, int(quarc*2), name_to_rgb('white'))
+        else:
+            for i in range(int(quarc) + 2, int(quarc*2)-2):
+                self.model.set_pixel(midr+1, i, name_to_rgb('white'))
 
-    def argentina(self): # FIXED
-        self.model.set_line(0, name_to_rgb('skyblue'))
-        self.model.set_line(1, name_to_rgb('white'))
-        self.model.set_line(2, name_to_rgb('skyblue'))
-        self.model.set_line(3, name_to_rgb('skyblue'))
-        for c in range(8, 11):
-            self.model.set_pixel(1, c, name_to_rgb('yellow'))
+    def argentina(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        midc = cols // 2
+        midr = rows // 2
+        tierr = rows / 3
+        if (cols < 3 or rows < 3):
+            self.model.set_all((0,0,0))
+        else :
+            self.model.set_all('skyblue')
+            for i in range(max(int(tierr), 1), max(int(tierr*2), 2)):
+                self.model.set_line(i, name_to_rgb('white'))
+            for c in range(max(midc -1, 1), max(midc+2, 2)):
+                self.model.set_pixel(midr, c, name_to_rgb('yellow'))
 
     def armenia(self): # scalable
         rows = SchedulerState.get_rows()
-        quarr = rows // 4
-        if (rows < 4):
+        tierr = rows / 3
+        if (rows < 3):
             self.model.set_all('darked')
         else :
-            for i in range(0, max(quarr*2, 1)):
-                self.model.set_line(i, name_to_rgb('darkred'))
-            for i in range(quarr, max(quarr*2, 2)):
+            for i in range(0, max(int(tierr), 1)):
+                self.model.set_line(i, name_to_rgb('red'))
+            for i in range(int(tierr), max(int(tierr*2), 2)):
                 self.model.set_line(i, name_to_rgb('navy'))
-            for i in range(max(quarr*2, 2), max(quarr*3, 3)):
+            for i in range(max(int(tierr*2), 2), rows):
                 self.model.set_line(i, name_to_rgb('yellow'))
-            for i in range(max(quarr*3, 3), max(rows, 4)):
-                self.model.set_line(i, name_to_rgb('black'))
 
-    def australia(self): # FIXED
-        self.model.set_all('navy')
-        self.model.set_pixel(1, i, name_to_rgb('red')) # i is not defined
-        self.model.set_pixel(0, 4, name_to_rgb('red'))
-        self.model.set_pixel(2, 4, name_to_rgb('red'))
-        for r, c in [(0, 14), (1, 11), (1, 16), (2, 13), (3, 12), (0, 3), (2, 3), (0, 5), (2, 5), (3, 4)]:
-            self.model.set_pixel(r, c, name_to_rgb('white'))
+    def austria(self): # scalable
+        rows = SchedulerState.get_rows()
+        tierr = rows / 3
+        if (rows < 3):
+            self.model.set_all('darked')
+        else:
+            print_flush("a row tier is {}, 2 tier are {}".format(int(tierr), int(tierr*2)))
+            for i in range(0, int(tierr )):
+                self.model.set_line(i, (0.75, 0.25, 0.25))
+            for i in range(int(tierr ), int(2*tierr)):
+                self.model.set_line(i, name_to_rgb('white'))
+            for i in range(int(2*tierr), rows):
+                self.model.set_line(i, (0.75, 0.25, 0.25))
 
-    def austria(self): # FIXED
-        self.model.set_line(0, (0.75, 0.25, 0.25))
-        self.model.set_line(1, name_to_rgb('white'))
-        self.model.set_line(2, (0.75, 0.25, 0.25))
-        self.model.set_line(3, name_to_rgb('black'))
 
     def belgium(self): # scalable
         a = name_to_rgb('black')
@@ -201,28 +207,67 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, c)
 
-    def brazil(self): # FIXED
+    def brazil(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        midr = rows / 2
+        midc = cols /2
         y = name_to_rgb('yellow')
-        self.model.set_all('green')
-        for i in range(7, 11):
-            self.model.set_pixel(0, i, y)
-        for i in range(4, 14):
-            self.model.set_pixel(1, i, y)
-        for i in range(1, 17):
-            self.model.set_pixel(2, i, y)
-        for i in range(6, 12):
-            self.model.set_pixel(3, i, y)
-        for r, c in [(2, 8), (2, 9), (1, 8), (1, 9)]:
-            self.model.set_pixel(r, c, name_to_rgb('darkblue'))
-        self.model.set_column(18, (0, 0, 0))
+        self.model.set_all(name_to_rgb('green'))
+        if (rows %2 == 0):
+            cinf = int(midc)-1
+            csup = int(midc)+1
+        else :
+            cinf = int(midc)
+            csup = int(midc)+1
+        for r in range(1, int(midr)):
+            for c in range(cinf, csup):
+                self.model.set_pixel(r,c, y)
+            if (midc > midr):
+                cinf = max(cinf -2,1)
+                csup = min(csup +2, cols-1)
+            else :
+                cinf = max(cinf -1,1)
+                csup = min(csup +1, cols-1)
+        if (rows %2 == 0):
+            cinf = int(midc)-1
+            csup = int(midc)+1
+        else :
+            cinf = int(midc)
+            csup = int(midc)+1
+        for r in range(rows-2, int(midr)-1, -1):
+            for c in range(cinf, csup):
+                self.model.set_pixel(r,c, y)
+            if (midc > midr):
+                cinf = max(cinf -2,1)
+                csup = min(csup +2, cols-1)
+            else :
+                cinf = max(cinf -1,1)
+                csup = min(csup +1, cols-1)
+        quarr = rows / 4
+        quarc = cols / 4
+        rank = min(quarc, quarr)
+        for i in range(int(midr-rank), int(midr+rank)):
+            for j in range(int(midc-rank), int(midc+rank)):
+                self.model.set_pixel(i,j, name_to_rgb('navy'))
 
-    def burkina(self): # FIXED
-        self.model.set_line(0, (0.75, 0.25, 0.25))
-        self.model.set_line(1, (0.75, 0.25, 0.25))
-        self.model.set_line(2, (0, 0.62, 0.27))
-        self.model.set_line(3, (0, 0.62, 0.27))
-        for r in range(1, 3):
-            for c in range(8, 11):
+    def burkina(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
+        if (rows < 2 or cols < 2):
+            self.model.set_all((0,0,0))
+            return
+        midc = cols // 2
+        midr = rows // 2
+        if (midr * 2 != rows):
+            rows = rows -1
+        self.model.set_all((0,0,0))
+        for i in range(0, midr):
+            self.model.set_line(i, (0.75, 0.25, 0.25))
+        for i in range(midr, rows):
+            self.model.set_line(i, (0, 0.62, 0.27))
+        for r in range(max(0,midr-1), max(midr+1,2)):
+            for c in range(max(0,midc-1), max(2,midc+1)):
                 self.model.set_pixel(r, c, name_to_rgb('yellow'))
 
     def cameroon(self): # scalable
@@ -245,40 +290,53 @@ class Flags(Fap):
             for c in range(b1+(b1//3), b2-(b1//3)):
                 self.model.set_pixel(r, c, name_to_rgb('yellow'))
 
-    def canada(self): # FIXED
+    def canada(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        quarc = cols / 4
+        tierr = rows / 3
         a = (0.83, 0.17, 0.12)
         b = (1, 1, 1)
-        for i in range(0, 5):
+        self.model.set_all(b)
+        for i in range(0, int(quarc)):
             self.model.set_column(i, a)
-        for i in range(5, 14):
-            self.model.set_column(i, b)
-        for i in range(14, 19):
+        for i in range(int(cols-quarc), cols):
             self.model.set_column(i, a)
-        for c in range(7, 12):
-            self.model.set_pixel(1, c, a)
-        for c in range(8, 11):
-            self.model.set_pixel(2, c, a)
-        self.model.set_pixel(0, 9, a)
+        for c in range(1, rows-1):
+            self.model.set_pixel(c, cols//2, a)
+        for c in range(2, rows-2):
+            self.model.set_pixel(c, cols//2-1, a)
+        for c in range(2, rows-2):
+            self.model.set_pixel(c, cols//2+1, a)
 
-    def chile(self): # FIXED
-        for i in range(0, 6):
+    def chile(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
+        midr = rows // 2
+        tierc = cols // 3
+        for i in range(0, midr):
+            self.model.set_line(i, name_to_rgb('white'))
+        for i in range(0, tierc):
             self.model.set_column(i, name_to_rgb('navy'))
-        for i in range(6, 19):
-            self.model.set_column(i, name_to_rgb('white'))
-        self.model.set_line(2, (0.75, 0.25, 0.25))
-        self.model.set_line(3, (0.75, 0.25, 0.25))
+        for i in range(midr, rows):
+            self.model.set_line(i, (0.75, 0.25, 0.25))
+        self.model.set_pixel((rows // 4), 1, name_to_rgb('white'))
 
-    def china(self): # FIXED
+    def china(self): # scalable
         self.model.set_all('red')
         for r in range(0, 2):
             for c in [1, 2, 4]:
                 self.model.set_pixel(r, c, name_to_rgb('yellow'))
 
-    def colombia(self): # FIXED
-        self.model.set_line(0, name_to_rgb('yellow'))
-        self.model.set_line(1, name_to_rgb('yellow'))
-        self.model.set_line(2, name_to_rgb('navy'))
-        self.model.set_line(3, name_to_rgb('red'))
+    def colombia(self): # scalable
+        rows = SchedulerState.get_rows()
+        quarr = rows // 4
+        for i in range(0, rows // 2):
+            self.model.set_line(i, name_to_rgb('yellow'))
+        for i in range(rows //2, 3*quarr):
+            self.model.set_line(i, name_to_rgb('navy'))
+        for i in range(3* quarr, rows):
+            self.model.set_line(i, name_to_rgb('red'))
 
     def ivory(self): # scalable
         cols = SchedulerState.get_cols()
@@ -298,51 +356,69 @@ class Flags(Fap):
         self.model.set_line(rows//2, (1, 1, 1))
         self.model.set_column(cols//3, (1, 1, 1))
 
-    def emirates(self): # FIXED
-        self.model.set_line(0, (0, 0.45, 0.18))
-        self.model.set_line(1, (1, 1, 1))
-        for c in range(6):
-            self.model.set_column(c, (1, 0, 0))
+    def emirates(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        tierr = rows / 3
+        self.model.set_all((0,0,0))
+        for i in range(0, int(tierr)):
+            self.model.set_line(i, (0, 0.45, 0.18))
+        for i in range(int(tierr), int(2*tierr)):
+            self.model.set_line(i, (1, 1, 1))
+        for i in range(max(1,cols//3)):
+            self.model.set_column(i, (1, 0, 0))
 
-    def usa(self): # FIXED
-        self.model.set_line(0, (0.73, 0.04, 0.23))
-        self.model.set_line(1, (1, 1, 1))
-        self.model.set_line(2, (0.73, 0.04, 0.23))
-        self.model.set_line(3, (1, 1, 1))
-        for r in range(2):
-            for c in range(8):
+    def usa(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
+        for i in range(0, rows, 2):
+            self.model.set_line(i, (0.73, 0.04, 0.23))
+        for i in range(1, rows, 2):
+            self.model.set_line(i, (1, 1, 1))
+        for r in range(rows //2 +1):
+            for c in range(cols //3 + 1):
                 self.model.set_pixel(r, c, (0, 0.13, 0.4) if r % 2 == c % 2 else (1, 1, 1))
 
-    def finland(self): # FIXED
+    def finland(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
+        midr = rows //2
+        tierc = cols /3
         self.model.set_all((1, 1, 1))
-        self.model.set_line(1, (0, 0.2, 0.5))
-        self.model.set_line(2, (0, 0.2, 0.5))
-        self.model.set_column(6, (0, 0.2, 0.5))
-        self.model.set_column(7, (0, 0.2, 0.5))
+        for i in range(min(1,midr-1), midr+1):
+            self.model.set_line(i, (0, 0.2, 0.5))
+        for i in range(min(int(tierc-1), 1), int(tierc+1)):
+            self.model.set_column(i, (0, 0.2, 0.5))
 
-    def greece(self): # FIXED
-        self.model.set_line(0, (0, 0.4, 0.7))
-        self.model.set_line(1, (1, 1, 1))
-        self.model.set_line(2, (0, 0.4, 0.7))
-        self.model.set_line(3, (1, 1, 1))
-        for r in (1, 3):
-            for c in range(5):
-                self.model.set_pixel(r, c, (0, 0.4, 0.7))
-        for c in range(5):
-            self.model.set_pixel(2, c, (1, 1, 1))
-        self.model.set_column(2, (1, 1, 1))
+    def greece(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
+        for i in range(0, rows, 2):
+            self.model.set_line(i, (0, 0.4, 0.7))
+        for i in range(1, rows, 2):
+            self.model.set_line(i, (1, 1, 1))
+        for j in range(cols//3):
+            for i in range(rows // 2):
+                if ( i != 2 and j != 2):
+                    self.model.set_pixel(i,j, (1, 1, 1))
+                else:
+                    self.model.set_pixel(i,j, (0, 0.4, 0.7))
 
-    def india(self): # FIXED
-        self.model.set_line(0, (1, 0.6, 0.18))
-        self.model.set_line(1, (1, 1, 1))
-        self.model.set_line(2, (1, 1, 1))
-        self.model.set_line(3, (0, 0.6, 0))
+    def india(self): # scalable
+        rows = SchedulerState.get_rows()
+        for i in range(0, rows // 3):
+            self.model.set_line(i, (1, 0.6, 0.18))
+        for i in range(rows//3, int(rows/ 3 *2)):
+            self.model.set_line(i, (1, 1, 1))
+        for i in range(int(rows/ 3 *2), rows):
+            self.model.set_line(i, (0, 0.6, 0))
 
-    def indonesia(self): # FIXED
-        self.model.set_line(0, name_to_rgb('red'))
-        self.model.set_line(1, name_to_rgb('red'))
-        self.model.set_line(2, name_to_rgb('white'))
-        self.model.set_line(3, name_to_rgb('white'))
+    def indonesia(self): # scalable
+        rows = SchedulerState.get_rows()
+        for i in range(rows//2):
+            self.model.set_line(i, name_to_rgb('red'))
+        for i in range(rows//2, rows):
+            self.model.set_line(i, name_to_rgb('white'))
 
     def ireland(self): # scalable
         cols = SchedulerState.get_cols()
@@ -355,60 +431,87 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, (0.96, 0.5, 0))
 
-    def iceland(self): # FIXED
+    def iceland(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
         self.model.set_all((0, 0.31, 0.63))
-        self.model.set_line(1, (0.86, 0.1, 0.2))
-        self.model.set_column(6, (0.86, 0.1, 0.2))
+        self.model.set_line(rows // 2, (0.86, 0.1, 0.2))
+        self.model.set_column(cols//3, (0.86, 0.1, 0.2))
 
-    def japan(self): # FIXED
+    def japan(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
         self.model.set_all((1, 1, 1))
-        for r in range(1, 3):
-            for c in range(8, 11):
+        for r in range(max(1, rows//4), max(3,int(rows/4*3))):
+            for c in range(max(1,cols//3), max(3, int(cols/3 *2))):
                 self.model.set_pixel(r, c, name_to_rgb('red'))
 
-    def latvia(self): # FIXED
+    def latvia(self): # scalable
+        rows = SchedulerState.get_rows()
         self.model.set_all((0.62, 0.18, 0.21))
-        self.model.set_line(2, (1, 1, 1))
+        self.model.set_line(rows //2, (1, 1, 1))
 
-    def lebanon(self): # FIXED
+    def lebanon(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
         self.model.set_all((1, 1, 1))
-        self.model.set_line(0, (1, 0, 0))
-        self.model.set_line(3, (1, 0, 0))
-        for c in range(8, 11):
-            self.model.set_pixel(1, c, name_to_rgb('darkgreen'))
-            self.model.set_pixel(2, c, name_to_rgb('darkgreen'))
+        for i in range(rows//3):
+            self.model.set_line(i, (1, 0, 0))
+        for i in range(int(rows/3*2), rows):
+            self.model.set_line(i, (1, 0, 0))
+        for c in range(cols//3, int(cols/3*2)):
+            for r in range(rows //3 , int(rows/3*2)):
+                self.model.set_pixel(r, c, name_to_rgb('darkgreen'))
 
     def lgbtq(self): # scalable above 6
         cols = SchedulerState.get_cols()
         widness = cols // 6
         colors = [(0.46, 0., 0.52),(0., 0.3, 1.),(0., 0.5, 0.16),(1, 1, 0),(1, 0.54, 0),(1, 0, 0)]
         self.model.set_all((0,0,0))
-        start = (cols - (widness // 6))//2
         if (cols >= 6):
-            for i in range(start, cols, widness):
+            k = 0
+            for i in range(0, cols-1, widness):
                 for j in range(widness):
-                    self.model.set_column(i+j, colors[i])
+                    self.model.set_column(i+j, colors[k])
+                k += 1
 
 
-    def libya(self): # FIXED
-        self.model.set_line(0, (1, 0, 0))
-        self.model.set_line(3, name_to_rgb('darkgreen'))
+    def libya(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
+        self.model.set_all((0,0,0))
+        for i in range(rows//3):
+            self.model.set_line(i, (1, 0, 0))
+        for i in range(int(rows/3*2), rows):
+            self.model.set_line(i, name_to_rgb('darkgreen'))
 
-    def liechtenstein(self): # FIXED
-        self.model.set_line(0, (0, 0.16, 0.5))
-        self.model.set_line(1, (0, 0.16, 0.5))
-        self.model.set_line(2, (0.8, 0.05, 0.13))
-        self.model.set_line(3, (0.8, 0.05, 0.13))
+    def liechtenstein(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
+        for i in range(0, rows//2):
+            self.model.set_line(i, (0, 0.16, 0.5))
+        for i in range(rows//2, rows):
+            self.model.set_line(i, (0.8, 0.05, 0.13))
 
-    def lituania(self): # FIXED
-        self.model.set_line(0, name_to_rgb('yellow'))
-        self.model.set_line(1, name_to_rgb('darkgreen'))
-        self.model.set_line(2, name_to_rgb('red'))
+    def lituania(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
+        for i in range(rows//3):
+            self.model.set_line(i, name_to_rgb('yellow'))
+        for i in range(rows//3, int(rows/3*2)):
+            self.model.set_line(i, name_to_rgb('darkgreen'))
+        for i in range(int(rows/3*2), rows):
+            self.model.set_line(i, name_to_rgb('red'))
 
-    def luxembourg(self): # FIXED
-        self.model.set_line(0, name_to_rgb('red'))
-        self.model.set_line(1, name_to_rgb('white'))
-        self.model.set_line(2, name_to_rgb('skyblue'))
+    def luxembourg(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
+        for i in range(rows//3):
+            self.model.set_line(i, name_to_rgb('red'))
+        for i in range(rows//3, int(rows/3*2)):
+            self.model.set_line(i, name_to_rgb('white'))
+        for i in range(int(rows/3*2), rows):
+            self.model.set_line(i, name_to_rgb('skyblue'))
 
     def mali(self): # scalable
         cols = SchedulerState.get_cols()
@@ -418,27 +521,29 @@ class Flags(Fap):
             self.model.set_column(i, name_to_rgb('green'))
         for i in range(b1, b2):
             self.model.set_column(i, name_to_rgb('yellow'))
-        for i in range(b2, rows):
+        for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('red'))
 
     def malta(self): # scalable
         cols = SchedulerState.get_cols()
         b1 = cols // 2
-        for i in range(0, b2):
+        for i in range(0, b1):
             self.model.set_column(i, name_to_rgb('white'))
-        for i in range(b2, cols):
+        for i in range(b1, cols):
             self.model.set_column(i, name_to_rgb('red'))
 
-    def morocco(self): # FIXED
+    def morocco(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
         self.model.set_all((0.73, 0.13, 0.16))
-        for c in range(8, 11):
-            self.model.set_pixel(1, c, (0, 0.4, 0.2))
-            self.model.set_pixel(2, c, (0, 0.4, 0.2))
+        for c in range(int(cols/10*5),int(cols/10*6)):
+            for r in range(int(rows/6*3),int(rows/6*4)):
+                self.model.set_pixel(r, c, (0, 0.4, 0.2))
 
     def mexico(self): # scalable (bizzar)
         return self.italy()
 
-    def monaco(self): # FIXED (bizzar)
+    def monaco(self): # scalable (bizzar)
         return self.indonesia()
 
     def nigeria(self): # scalable
@@ -452,31 +557,31 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, (0, 0.53, 0.31))
 
-    def norway(self): # FIXED
+    def norway(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
         self.model.set_all((0.86, 0.1, 0.2))
-        self.model.set_line(1, (0, 0.31, 0.63))
-        self.model.set_column(6, (0, 0.31, 0.63))
+        self.model.set_line(int(rows/2), (0, 0.31, 0.63))
+        self.model.set_column(int(cols/10*4) , (0, 0.31, 0.63))
 
-    def newzealand(self): # FIXED
-        self.model.set_all('navy')
-        for i in range(0, 9):
-            self.model.set_pixel(1, i, name_to_rgb('firebrick'))
-        self.model.set_pixel(0, 4, name_to_rgb('firebrick'))
-        self.model.set_pixel(2, 4, name_to_rgb('firebrick'))
-        for r, c in [(0, 14), (1, 11), (1, 16), (2, 13), (0, 3), (2, 3), (0, 5), (2, 5)]:
-            self.model.set_pixel(r, c, name_to_rgb('firebrick'))
+    def netherlands(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        for i in range(0, rows//3):
+            self.model.set_line(i, name_to_rgb('firebrick'))
+        for i in range(rows//3, int(rows/3*2)):
+            self.model.set_line(i, name_to_rgb('white'))
+        for i in range(int(rows/3*2), rows):
+            self.model.set_line(i, name_to_rgb('navy'))
 
-    def netherlands(self): # FIXED
-        self.model.set_line(0, name_to_rgb('firebrick'))
-        self.model.set_line(1, name_to_rgb('white'))
-        self.model.set_line(2, name_to_rgb('navy'))
-
-    def pakistan(self): # FIXED
+    def pakistan(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
         self.model.set_all((0, 0.25, 0.1))
-        for c in range(6):
+        for c in range(cols//3):
             self.model.set_column(c, (1, 1, 1))
 
-    def paraguay(self): # FIXED (bizzar)
+    def paraguay(self): # scalable (bizzar)
         return self.netherlands()
 
     def peru(self): # scalable
@@ -490,20 +595,27 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('red'))
 
-    def poland(self): # FIXED
-        self.model.set_line(3, name_to_rgb('red'))
-        self.model.set_line(2, name_to_rgb('red'))
-        self.model.set_line(1, name_to_rgb('white'))
-        self.model.set_line(0, name_to_rgb('white'))
+    def poland(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        for i in range(0, rows//2):
+            self.model.set_line(0, name_to_rgb('white'))
+        for i in range(rows//2, rows):
+            self.model.set_line(i, name_to_rgb('red'))
 
-    def portugal(self): # FIXED
+
+    def portugal(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
         self.model.set_all((1, 0, 0))
-        for i in range(0, 6):
+        for i in range(0, cols//3):
             self.model.set_column(i, (0, 1, 0))
 
-    def qatar(self): # FIXED
+    def qatar(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
         self.model.set_all((0.57, 0.08, 0.23))
-        for i in range(0, 6):
+        for i in range(0, cols//3):
             self.model.set_column(i, (1, 1, 1))
 
     def romania(self): # scalable
@@ -517,22 +629,6 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('firebrick'))
 
-    def uk(self): # FIXED
-        self.model.set_all(name_to_rgb('navy'))
-        self.model.set_line(1, (0.81, 0.05, 0.16))
-        self.model.set_line(2, (0.81, 0.05, 0.16))
-        self.model.set_column(9, (0.81, 0.05, 0.16))
-        self.model.set_column(10, (0.81, 0.05, 0.16))
-        for c in range(0, 5):
-            self.model.set_pixel(0, c, (0.81, 0.05, 0.16))
-            self.model.set_pixel(1, c, name_to_rgb('navy'))
-            self.model.set_pixel(3, c, (0.81, 0.05, 0.16))
-            self.model.set_pixel(2, c, name_to_rgb('navy'))
-            self.model.set_pixel(0, 18 - c, (0.81, 0.05, 0.16))
-            self.model.set_pixel(1, 18 - c, name_to_rgb('navy'))
-            self.model.set_pixel(3, 18 - c, (0.81, 0.05, 0.16))
-            self.model.set_pixel(2, 18 - c, name_to_rgb('navy'))
-
     def russia(self): # scalable
         cols = SchedulerState.get_cols()
         b1 = cols // 3
@@ -544,79 +640,114 @@ class Flags(Fap):
         for i in range(b2, cols):
             self.model.set_column(i, name_to_rgb('firebrick'))
 
-    def sweden(self): # FIXED
+    def sweden(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
         self.model.set_all((0, 0.41, 0.66))
-        self.model.set_line(1, name_to_rgb('yellow'))
-        self.model.set_line(2, name_to_rgb('yellow'))
-        self.model.set_column(6, name_to_rgb('yellow'))
-        self.model.set_column(7, name_to_rgb('yellow'))
+        for i in range(rows//2, rows//2+1):
+            self.model.set_line(i, name_to_rgb('yellow'))
+        for i in range(cols//3, cols//3 + 2):
+            self.model.set_column(i, name_to_rgb('yellow'))
 
-    def swiss(self): # FIXED
+    def swiss(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
         self.model.set_all((1, 0, 0))
-        self.model.set_line(1, name_to_rgb('white'))
-        self.model.set_line(2, name_to_rgb('white'))
-        self.model.set_column(9, name_to_rgb('white'))
-        self.model.set_column(10, name_to_rgb('white'))
-
-    def syria(self): # FIXED
-        self.model.set_all((1, 1, 1))
+        for i in range(int(rows/2 /5 *4), max(int(rows /2 /5 *6),int(rows/2 /5 *4)+2)):
+            self.model.set_line(i, name_to_rgb('white'))
+        for i in range(int(cols/2 /5 *4), int(cols /2 /5 *6)):
+            self.model.set_column(i, name_to_rgb('white'))
         self.model.set_line(0, name_to_rgb('red'))
-        self.model.set_line(1, name_to_rgb('red'))
-        for r in [2, 3]:
-            for c in [4, 5, 13, 14]:
+        self.model.set_line(rows-1, name_to_rgb('red'))
+        self.model.set_column(0, name_to_rgb('red'))
+        self.model.set_column(cols-1, name_to_rgb('red'))
+
+    def syria(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        for i in range(0, max(1,rows // 3)):
+            self.model.set_line(i, name_to_rgb('red'))
+        for i in range(max(1, rows //3), max(2, int(rows/3*2))):
+            self.model.set_line(i, (1, 1, 1))
+        for i in range(max(2, int(rows/3*2)), rows):
+            self.model.set_line(i, (0,0,0))
+        for r in [rows //3, rows //3 +1 ]:
+            for c in [cols//3, int(cols/3*2)]:
                 self.model.set_pixel(r, c, name_to_rgb('darkgreen'))
+                self.model.set_pixel(r, c+1, name_to_rgb('darkgreen'))
 
-    def czech(self): # FIXED
-        self.model.set_line(0, name_to_rgb('white'))
-        self.model.set_line(1, name_to_rgb('white'))
-        self.model.set_line(2, name_to_rgb('red'))
-        self.model.set_line(3, name_to_rgb('red'))
-        self.model.set_column(0, name_to_rgb('navy'))
-        self.model.set_column(1, name_to_rgb('navy'))
-        self.model.set_column(2, name_to_rgb('navy'))
-        for r, c in [(1, 6), (1, 5), (2, 6), (2, 5), (1, 4), (1, 3), (2, 4), (2, 3), (2, 2), (2, 1)]:
-            self.model.set_pixel(r, c, name_to_rgb('navy'))
+    def czech(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        for i in range(rows//2):
+            self.model.set_line(i, name_to_rgb('white'))
+        for i in range(rows//2, rows):
+            self.model.set_line(i, name_to_rgb('red'))
+        rinf= 0
+        rsup = rows
+        for c in range(0, cols //2+1):
+            for r in range(rinf, rsup):
+                self.model.set_pixel(r,c, name_to_rgb('navy'))
+            rinf = min(rinf +1, rows//2)
+            rsup = max (rsup -1, rows//2 )
 
-    def tunisia(self): # FIXED
+    def tunisia(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
         self.model.set_all('red')
-        for c in range(8, 11):
-            self.model.set_pixel(1, c, (1, 1, 1))
-            self.model.set_pixel(2, c, (1, 1, 1))
+        for c in range(int(cols/8*3), int(cols/8*6) ):
+            self.model.set_pixel(rows//2, c, (1, 1, 1))
+            self.model.set_pixel(rows//2+1, c, (1, 1, 1))
 
-    def turkey(self): # FIXED (bizzar)
+    def turkey(self): # scalable (bizzar)
         return self.tunisia()
 
-    def ukraine(self): # FIXED
-        self.model.set_line(3, (1, 0.83, 0))
-        self.model.set_line(2, (1, 0.83, 0))
-        self.model.set_line(1, (0, 0.35, 0.74))
-        self.model.set_line(0, (0, 0.35, 0.74))
+    def ukraine(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        for i in range(0, rows//2):
+            self.model.set_line(i, (1, 0.83, 0))
+        for i in range(rows//2, rows):
+            self.model.set_line(i, (0, 0.35, 0.74))
 
-    def uruguay(self): # FIXED
-        self.model.set_line(0, name_to_rgb('navy'))
-        self.model.set_line(1, (1, 1, 1))
-        self.model.set_line(2, name_to_rgb('navy'))
-        self.model.set_line(3, (1, 1, 1))
+    def uruguay(self): # scalable
+        rows = SchedulerState.get_rows()
+        cols = SchedulerState.get_cols()
+        for i in range(0, rows, 2):
+            self.model.set_line(i, name_to_rgb('navy'))
+        for i in range(1, rows, 2):
+            self.model.set_line(i, (1, 1, 1))
         for r in range(0, 2):
-            for c in [0, 1, 2]:
+            for c in [0, 1]:
                 self.model.set_pixel(r, c, name_to_rgb('yellow'))
 
-    def venezuela(self): # FIXED
-        self.model.set_line(0, name_to_rgb('yellow'))
-        self.model.set_line(1, name_to_rgb('navy'))
-        self.model.set_line(2, name_to_rgb('firebrick'))
-        for c in [8, 9, 10]:
-            self.model.set_pixel(1, c, name_to_rgb('white'))
+    def venezuela(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        for i in range(0, rows//3):
+            self.model.set_line(i, name_to_rgb('yellow'))
+        for i in range(rows//3, int(rows / 3*2)):
+            self.model.set_line(i, name_to_rgb('navy'))
+        for i in range(int(rows/3*2), rows):
+            self.model.set_line(i, name_to_rgb('firebrick'))
 
-    def vietnam(self): # FIXED
+    def vietnam(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
         self.model.set_all('red')
-        for c in range(8, 11):
-            self.model.set_pixel(1, c, name_to_rgb('yellow'))
-            self.model.set_pixel(2, c, name_to_rgb('yellow'))
+        for c in range(cols//2, cols//2 + 2):
+            self.model.set_pixel(rows//2, c, name_to_rgb('yellow'))
+            self.model.set_pixel(rows//2 +1, c, name_to_rgb('yellow'))
 
-    def yemen(self): # FIXED
-        self.model.set_line(0, name_to_rgb('red'))
-        self.model.set_line(1, name_to_rgb('white'))
+    def yemen(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
+        for i in range(0, rows//3):
+            self.model.set_line(i, name_to_rgb('red'))
+        for i in range(rows//3, int(rows / 3*2)):
+            self.model.set_line(i, name_to_rgb('white'))
+        for i in range(int(rows/3*2), rows):
+            self.model.set_line(i, (0,0,0))
 
     def handle_message(self, data, path=None):  # noqa
         if data is not None:
