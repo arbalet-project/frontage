@@ -6,30 +6,4 @@
     align-items: center;
     justify-content: space-between;
     width: 65%;
-    .explore {
-        background-color: $color-background-3;
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: space-between;
-        align-items: baseline;
-        width: 35%;
-        padding: 15px;
-        color: white;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: 0.2s ease-in-out;
-        p {
-            text-align: left;
-            padding: 0;
-            margin: 0;
-        }
-        .explore-arrow {
-            border: none;
-            width: 12px;
-            height: 12px;
-        }
-        &:hover {
-            transform: scale(0.96);
-        }
-    }
  }
