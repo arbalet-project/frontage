@@ -323,9 +323,11 @@ class Flags(Fap):
         self.model.set_pixel((rows // 4), 1, name_to_rgb('white'))
 
     def china(self): # scalable
+        cols = SchedulerState.get_cols()
+        rows = SchedulerState.get_rows()
         self.model.set_all('red')
-        for r in range(0, 2):
-            for c in [1, 2, 4]:
+        for r in range(0, min(2, rows)):
+            for c in map(lambda x: min(x,cols),[1, 2, 4]):
                 self.model.set_pixel(r, c, name_to_rgb('yellow'))
 
     def colombia(self): # scalable
