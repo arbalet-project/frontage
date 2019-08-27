@@ -60,12 +60,15 @@ class Snap(Fap):
         with self.lock:
             for pix in listpixels:
                 r = pix.get('rowX')
-                c = pix['columnY']
-                hexacolor = int(pix['color'][1:], 16)
-                red = (hexacolor & 0xFF0000) >> 16
-                green = (hexacolor & 0x00FF00) >> 8
-                blue = (hexacolor & 0x0000FF)
-                self.model.set_pixel(r, c, list(map(Snap.scale, [red, green, blue])))
+                c = pix.get('columnY')
+                try:
+                    hexacolor = int(pix.get('color')[1:], 16)
+                    red = (hexacolor & 0xFF0000) >> 16
+                    green = (hexacolor & 0x00FF00) >> 8
+                    blue = (hexacolor & 0x0000FF)
+                    self.model.set_pixel(r, c, list(map(Snap.scale, [red, green, blue])))
+                except:
+                    print_flush("ERRROR : unvalid pixel {}".format(pix))
             self.send_model()
             return 'OK'
 
