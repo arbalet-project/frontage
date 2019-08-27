@@ -70,7 +70,7 @@ services:
       - NODE_ENV=production
     restart: unless-stopped
     volumes:
-      - live/public/config.json:/home/node/live/public/config.json
+      - ./live/public/config.json:/home/node/live/public/config.json
     links:
       - redis:redis
       - rabbit:rabbit
