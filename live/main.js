@@ -76,7 +76,7 @@ function initSocket() {
       let user = {id: client.id, username: client.login};
       userlist.push(user);
       // post userlist on redis
-      console.log(userlist);
+      console.log("a user has connected: " + userlist);
       redisClient.set('KEY_USERS', JSON.stringify({users: userlist}));
       if(client == grantedUser){
         socket.emit('granted');
@@ -100,7 +100,7 @@ function initSocket() {
         userlist.push({id: socket.handshake.session.id, username: login});
         // post userlist on redis
         console.log("user : "+ login + " has logged");
-        console.log(userlist);
+        console.log("list of users: " + userlist);
         redisClient.set('KEY_USERS', JSON.stringify({users: userlist}));
         let client = clientsLogged.get(socket.handshake.session.id);
         socket.emit('logged', {name: client.login, ip: client.ip});
@@ -126,7 +126,7 @@ function initSocket() {
         }
         userlist = nuserlist;
         //post userlist on redis
-        console.log(userlist);
+        console.log("a user has disconnected:" + userlist);
         redisClient.set('KEY_USERS', JSON.stringify({users: userlist}));
       }
     });
