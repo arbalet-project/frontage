@@ -65,10 +65,12 @@ function initSocket() {
   io.on('connection', function (socket) {
     // If the user is already logged in we send him/her the related informations
     if(clientsLogged.has(socket.handshake.session.id)){
+      let time = (new Date()).getTime();
       let client = clientsLogged.get(socket.handshake.session.id);
       socket.emit('logged',{name: client.login, ip: client.ip});
       client.socket = socket;
       client.decotime = 0;
+      client.lastbeacon = time,
       client.status = "connected";
       clientsLogged.set(socket.handshake.session.id, client);
       let user = {id: client.id, username: client.login};
