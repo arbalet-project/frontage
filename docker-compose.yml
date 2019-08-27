@@ -69,6 +69,8 @@ services:
     environment:
       - NODE_ENV=production
     restart: unless-stopped
+    volumes:
+      - live/public/config.json:/home/node/live/public/config.json
     links:
       - redis:redis
       - rabbit:rabbit
@@ -79,8 +81,6 @@ services:
     restart: unless-stopped
     volumes:
       - mariadb:/var/lib/mysql
-    # environment:
-    #   - MYSQL_ROOT_PASSWORD=test43T
     env_file:
       - ./.env
   matomo:
