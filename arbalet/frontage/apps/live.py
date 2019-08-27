@@ -48,6 +48,7 @@ class Snap(Fap):
         listpixels = loads(body.decode('ascii'))
         self.user = loads(Websock.get_grantUser())
         if self.user['id'] == "turnoff":
+            print_flush("extinct all pixels")
             self.erase_all()
         else:
             self.set_rgb_matrix(listpixels['pixels'])
