@@ -27,10 +27,9 @@
         a#setting{
             background-image: url('../images/icon/setting.png');
             background-size: contain;
-            width: 62px;
-            height: 62px;
+            width: 18px;
+            height: 18px;
             opacity: .7;
-            cursor: pointer;
         }
     }
 
@@ -123,9 +122,6 @@
         display: block;
         margin-top: 100%;
       }
-      #led-table td:hover{
-
-      }
       #led-table td .led {
         position: absolute;
         margin: 2px;
@@ -134,12 +130,40 @@
         left: 0;
         right: 0;
         background: black;
-      }
+        /* Display the pixel position in an infobulle*/
+        &:hover .led-coords,
+        &:hover .led-coords p {
+            visibility: visible;
+            z-index: 100;
+        }
+        .led-coords {
+            z-index: 100;
+            position: relative;
+            background-color: #aaaaaa;
+            border-radius: 4px;
+            width: 85px;
+            visibility: hidden;
+            top: 25px;
+            left: -40px;
+            opacity: .9;
+            p {
+                visibility: hidden;
+                margin-left: 0px;
+                padding: 3px;
+                border: 0;
+                text-align: center;
+                color: black;
+            }
+        }
+    }
 }
 
 //Rotate Table Led
-.active-rotate{
-    transform: rotate(-90deg)
+.active-rotate {
+    transform: rotate(-90deg);
+}
+.active-rotate-revert {
+    transform: rotate(90deg) translate(-25px, 40px);
 }
 .active-rotate-button{
     transform: rotate(-90deg) !important;
@@ -148,6 +172,7 @@
 // Menu Setting
 
 .setting-menu{
+    z-index: 50000;
     visibility: hidden;
     position: absolute;
     width: 100%;
@@ -163,7 +188,7 @@
         background-color: $color-background-2;
         color: $white-text;
         &:hover{
-            transform: scale(0.5);
+            transform: scale(0.96);
             background-color: $color-background-3;
           }
     }
@@ -192,7 +217,7 @@
         top: -31px;
         right: 23px;
         cursor: pointer;
-        transform: rotate(45deg)
+        transform: rotate(45deg);
     }
 }
 

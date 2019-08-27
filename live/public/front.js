@@ -11,6 +11,9 @@ let lastbeacon = null;
 createLedTable(nbRows, nbColumns, disabled_pixels);
 initWorkspace();
 
+/**
+ * Display informations relative to backend only if a backend is connected
+ */
 if(!simulation_enabled){
   socket.on('logged',(user) => {
       $('#user-name').text(user.name);
@@ -111,7 +114,7 @@ $('#config').on('click', function (e) {
 $('#import').on('click', function (e) {
     e.preventDefault();
     if (Blockly.mainWorkspace.getAllBlocks().length > 1){
-      if (!confirm('Êtes vous sûr(e) de vouloir continuer ?')){
+      if (!confirm('Vous allez perdre votre travail. Êtes vous sûr(e) de vouloir continuer ?')){
         return;
       }
     }
@@ -150,7 +153,7 @@ $('#example').on('click', function () {
 
 $('#file').on('click',function(){
   if (Blockly.mainWorkspace.getAllBlocks().length > 1){
-    if (!confirm('Êtes vous sûr(e) de vouloir continuer ?')){
+    if (!confirm('Vous allez perdre votre travail. Êtes vous sûr(e) de vouloir continuer ?')){
       return;
     }
   }
@@ -214,6 +217,7 @@ $('#user-name-input').keypress(function (event) {
 $('#turn-led').on('click', function(e){
     e.preventDefault();
     $('#led-table').toggleClass('active-rotate');
+    $('.led-coords').toggleClass('active-rotate-revert');
     $(this).toggleClass('active-rotate-button');
 });
 
@@ -290,7 +294,7 @@ function createLedTable(nbRows, nbColumns) {
           if (is_disabled(i, j)) {
             newRow.insertCell(j).innerHTML = `<div class="dled" data-r="${i}" data-c="${j}"></div>`;
           } else {
-            newRow.insertCell(j).innerHTML = `<div class="led" data-r="${i}" data-c="${j}"><span>[${i},${j}]</span></div>`;
+            newRow.insertCell(j).innerHTML = `<div class="led" data-r="${i}" data-c="${j}"><div class="led-coords"><p>Ligne ${i}</p><p>Colonne ${j}</p></div></div>`;
           }
         }
     }

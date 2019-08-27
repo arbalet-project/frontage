@@ -53,10 +53,19 @@
     img{width: 20px; height: 20px; margin-right: 10px;}
 }
 
+#version {
+    color: #FFFFFF;
+    line-height: 16px;
+    text-align: left;
+}
+    
+
 // Popup Input Style
 
 .input-window{
     position: relative;
+    margin-top: 5px;
+    margin-bottom: 20px;
     input[type=text]{
         background-color: $color-background-3;
         border: none;
@@ -64,6 +73,20 @@
         text-align: center;
         caret-color: $white-text;
         color: $white-text;
+        font-family: 'Raleway', sans-serif;
+        font-weight: 600;
+        border-radius: 11px;
+        &:focus{
+            outline: none;
+        }
+    }
+    input[type=number] {
+        background-color: #252C34;
+        border: none;
+        padding: 10px 30px 10px 20px;
+        text-align: center;
+        caret-color: #D5D4D3;
+        color: #D5D4D3;
         font-family: 'Raleway', sans-serif;
         font-weight: 600;
         border-radius: 11px;
@@ -107,6 +130,10 @@
         color: $white-text;
         margin-bottom: 40px;
     }
+    p {
+        margin-bottom: 15px;
+        color: $grey-text;
+    }
 }
 
 //Example Module Style
@@ -145,7 +172,6 @@
         padding: 20px 45px;
         border-bottom: 1px solid $color-background-3;
         &:hover{
-            transform: scale(1);
             background-color: $color-background-3;
           }
     }
@@ -174,14 +200,29 @@
         display: none;
         height: auto;
     .content{
-        p{color: $grey-text;}
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
-        align-items: center;
+        text-align: center;
+        p{
+            color: $grey-text;
+            margin: 10px;
+        }
     }
     .input-window{
         margin-top: 15px;
+        margin-bottom: 15px;
+        margin-left: auto;
+        margin-right: auto;
+        input[type=number] {
+            width: 120px;
+        }
+        input[type=text] {
+            width: 100%;
+            padding: 10px 0px 10px 0px;
+        }
+        button[type=submit] {
+            position: relative;
+            right: 0;
+            top: 0;
+        }
     }
 }
 

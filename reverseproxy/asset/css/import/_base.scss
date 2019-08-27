@@ -100,3 +100,51 @@ a {
       font-size: 100%;
   }
 }
+
+.buttons {
+  display: flex;
+  flex-flow: row wrap;
+  width: 95%;
+}
+
+.button {
+  background-color: $color-background-3;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px;
+  margin: 5px;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+  p {
+      text-align: left;
+      padding: 0;
+      margin-bottom: 0;
+  }
+  .button-arrow {
+      border: none;
+      width: 12px;
+      height: 12px;
+  }
+  &:hover {
+      transform: scale(0.96);
+  }
+}
+
+.button-large {
+  @extend .button;
+  width: 60%;
+  border: $blue-text solid 3px;
+  color: $blue-text;
+}
+
+.button-short {
+  @extend .button;
+  width: 30%;
+  color: $grey-text;
+  border: $grey-text solid 3px;
+  justify-content: center;
+}

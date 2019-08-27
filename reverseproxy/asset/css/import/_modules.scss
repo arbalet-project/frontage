@@ -1,0 +1,48 @@
+// App store popup
+
+.overlay-popup#store {
+    display: none;
+}
+
+.overlay-popup{
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: $color-background-2;
+    z-index: 1000;
+}
+
+.window-popup{
+    display: flex;
+    flex-direction: column;
+    z-index: 20000;
+    width: 500px;
+    position: absolute;
+    top: 50%; left: 50%;
+    padding: 60px;
+    transform: translate(-50%, -50%);
+    background-color: $color-background;
+    -webkit-box-shadow: 0px 6px 30px rgba(0,0,0,0.3);
+    -moz-box-shadow: 0px 6px 30px rgba(0,0,0,0.3);
+    box-shadow: 0px 6px 30px rgba(0,0,0,0.3);
+    border-radius: 10px;
+}
+
+
+.store-popup{
+    display: none;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+    h1{
+        color: $white-text;
+        margin-bottom: 40px;
+    }
+    > p {
+        margin-bottom: 15px;
+    }
+}
+

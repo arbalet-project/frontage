@@ -21,8 +21,8 @@
                 <p>A la tombée de la nuit, Arbalet Frontage s'illumine en couleurs. Vous pouvez alors utiliser l'application mobile pour interagir, dessiner et jouer avec elle.</p>
             </div>
             <div class="apps-icons">
-                <img src="asset/images/google.png" />
-                <img src="asset/images/apple.png" />
+                <img src="asset/images/google.png" id="google-store"/>
+                <img src="asset/images/apple.png" id="apple-store"/>
               </div>
             <div class="footer">
             </div>
@@ -36,9 +36,9 @@
             <p>La programmation informatique est un des socles de base des métiers du numérique. Des ateliers ouverts à tou.te.s encadrés par des formateurs vous permettront de vous y initier et visualiser votre propre création sur le bâtiment. </p>
             <p>Rapprochez-vous du responsable d'établissement afin de connaître les ateliers disponibles et leurs dates. En attendant, si vous êtes sur ordinateur ou tablette vous programmer sur simulateur et exporter votre création pour plus tard.</p>
           </div>
-          <div class="explore">
-              <p>Programmer sur simulateur</p>
-              <img class="explore-arrow" src="./asset/images/icon/submit-arrow.png"></img>
+          <div class="button" id="live">
+              <p>Programmer maintenant</p>
+              <img class="button-arrow" src="./asset/images/icon/submit-arrow.png"></img>
           </div>
           <div class="footer">
             <p>Ce réseau Wifi ne permet pas d'accéder à Internet. 
@@ -46,5 +46,28 @@
           </div>
         </div>
     </div>
+
+    <!-- Modules -->
+
+    <!-- Store Module -->
+    <div class="overlay-popup" id="store">
+      <div class="window-popup store-popup">
+          <h1>Passer en 3G pour installer l'application</h1>
+          <p>Veuillez désactiver votre Wifi et activer votre connexion 3G.</p>
+          <p>Puis cliquez ci-dessous pour télécharger l'application «&nbsp;Arbalet&nbsp;Frontage&nbsp;» sur votre store.</p>
+          <div class="buttons">
+            <div class="button-large" id="go-store">
+              <p>Aller sur le store</p>
+              <img class="button-arrow" src="./asset/images/icon/submit-arrow.png"></img>
+            </div>
+            <div class="button-short" id="cancel-store">
+              <p>Annuler</p>
+            </div>
+          </div>
+        </div>
+    </div>
+    <!-- End Store module -->
+    <script src="asset/js/jquery/jquery.js"></script>
+    <script src="asset/js/landing.js"></script>
   </body>
 </html>

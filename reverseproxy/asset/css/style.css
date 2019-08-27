@@ -83,6 +83,45 @@ a {
     color: #7A7B7D;
     font-size: 100%; }
 
+.buttons {
+  display: flex;
+  flex-flow: row wrap;
+  width: 95%; }
+
+.button, .button-large, .button-short {
+  background-color: #252C34;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px;
+  margin: 5px;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s ease-in-out; }
+  .button p, .button-large p, .button-short p {
+    text-align: left;
+    padding: 0;
+    margin-bottom: 0; }
+  .button .button-arrow, .button-large .button-arrow, .button-short .button-arrow {
+    border: none;
+    width: 12px;
+    height: 12px; }
+  .button:hover, .button-large:hover, .button-short:hover {
+    transform: scale(0.96); }
+
+.button-large {
+  width: 60%;
+  border: #2196f3 solid 3px;
+  color: #2196f3; }
+
+.button-short {
+  width: 30%;
+  color: #7A7B7D;
+  border: #7A7B7D solid 3px;
+  justify-content: center; }
+
 .left-pan {
   background-color: #252C34;
   display: flex;
@@ -126,26 +165,28 @@ a {
   align-items: center;
   justify-content: space-between;
   width: 65%; }
-  .right-pan .explore {
+  .right-pan .button, .right-pan .button-large, .right-pan .button-short {
     background-color: #252C34;
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: baseline;
     width: 35%;
+    min-width: 170px;
+    margin-bottom: 30px;
     padding: 15px;
     color: white;
     border-radius: 10px;
     cursor: pointer;
     transition: 0.2s ease-in-out; }
-    .right-pan .explore p {
+    .right-pan .button p, .right-pan .button-large p, .right-pan .button-short p {
       padding: 0;
       margin: 0; }
-    .right-pan .explore .explore-arrow {
+    .right-pan .button .button-arrow, .right-pan .button-large .button-arrow, .right-pan .button-short .button-arrow {
       border: none;
       width: 12px;
       height: 12px; }
-    .right-pan .explore:hover {
+    .right-pan .button:hover, .right-pan .button-large:hover, .right-pan .button-short:hover {
       transform: scale(0.96); }
 
 .right-pan {
@@ -155,34 +196,68 @@ a {
   align-items: center;
   justify-content: space-between;
   width: 65%; }
-  .right-pan .explore {
-    background-color: #252C34;
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: baseline;
-    width: 35%;
-    padding: 15px;
-    color: white;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.2s ease-in-out; }
-    .right-pan .explore p {
-      text-align: left;
-      padding: 0;
-      margin: 0; }
-    .right-pan .explore .explore-arrow {
-      border: none;
-      width: 12px;
-      height: 12px; }
-    .right-pan .explore:hover {
-      transform: scale(0.96); }
+
+.overlay-popup#store {
+  display: none; }
+
+.overlay-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-color: #1B2024;
+  z-index: 1000; }
+
+.window-popup {
+  display: flex;
+  flex-direction: column;
+  z-index: 20000;
+  width: 500px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 60px;
+  transform: translate(-50%, -50%);
+  background-color: #20262C;
+  -webkit-box-shadow: 0px 6px 30px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 0px 6px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 6px 30px rgba(0, 0, 0, 0.3);
+  border-radius: 10px; }
+
+.store-popup {
+  display: none;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  height: 400px; }
+  .store-popup h1 {
+    color: #D5D4D3;
+    margin-bottom: 40px; }
+  .store-popup > p {
+    margin-bottom: 15px; }
 
 @media (max-width: 995px) {
   .left-pan {
     width: 100%; }
 
   .right-pan {
-    width: 100%; } }
+    width: 100%; }
+
+  .window-popup {
+    display: flex;
+    flex-direction: column;
+    z-index: 20000;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 99%;
+    padding: 5%;
+    transform: translate(-50%, -50%);
+    background-color: #20262C;
+    -webkit-box-shadow: 0px 6px 30px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0px 6px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 6px 30px rgba(0, 0, 0, 0.3);
+    border-radius: 10px; } }
 
 /*# sourceMappingURL=style.css.map */

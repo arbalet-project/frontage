@@ -1,7 +1,7 @@
 /**
  * @fileoverview This file contains the setting application's handler
  */
- const softVersion = "1.1.0";
+ const softVersion = "1.1.1";
 
 let config= {};
 getconfig();
@@ -10,7 +10,7 @@ let nbRows = config["rows"];
 let nbColumns = config["cols"];
 let project = config["project"];
 let language = config["language"];
-let simulation_enabled = config["simuation"];
+let simulation_enabled = config["simulation"];
 let disabled_pixels = config["disabled"];
 configName();
 
@@ -105,17 +105,6 @@ function configName(){
   document.getElementById('doc-startMod').innerHTML = `Bienvenue sur Arbalet ${project} Live !`;
   document.getElementById('doc-infoMod').innerHTML = `Arbalet ${project} Live est un projet opensource développé par les membres d'Arbalet Living Lab pour le <a href="http://www.arbalet-project.org">projet Arbalet</a>`
 }
-
-// function configSocket(){
-//   if(!simulation_enabled){
-//     import("/socketHandler.js");
-//   } else {
-//     $('.info-user').css({
-//         "display": 'none'
-//     });
-//   }
-// }
-
 
 /**
  * Build the setting formular by displaying the current value in the form fields
