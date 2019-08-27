@@ -95,9 +95,9 @@ class Tetris(Fap):
         self.PARAMS_LIST = {'speed': 0.15}
         self.colors = ['black', 'deeppink', 'green', 'darkred', 'orangered', 'darkblue', 'cyan', 'yellow']
         self.next_stone = tetris_shapes[rand(len(tetris_shapes))]
-        Tetris.cols = SchedulerState.get_cols()
-        Tetris.rows = SchedulerState.get_rows()
-        print_flush("Init of TETORISU", self.model.height, self.model.width)
+        Tetris.cols = SchedulerState.get_rows()
+        Tetris.rows = SchedulerState.get_cols()
+        print_flush("Init of TETRIS", self.model.height, self.model.width)
         self.init_game()
 
     def new_stone(self):
