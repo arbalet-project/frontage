@@ -46,10 +46,15 @@ class Snap(Fap):
         if (self.consumme % 100 == 0):
             print_flush("{} has been consummed".format(self.consumme))
         listpixels = loads(body.decode('ascii'))
-        self.user = loads(Websock.get_grantUser())
-        if self.user['id'] == "turnoff":
+        nuser = loads(Websock.get_grantUser())
+
+        if(nuser.get('id') is None or nuser.get('id') == "turnoff"):
             print_flush("extinct all pixels")
             self.erase_all()
+        elif nuser['id'] != self.user['id']:
+            self.user = nuser
+            self.erase_all()
+            self.set_rgb_matrix(listpixels['pixels'])
         else:
             self.set_rgb_matrix(listpixels['pixels'])
 
@@ -75,11 +80,14 @@ class Snap(Fap):
 
     def erase_all(self):
         with self.lock:
-            self.model.set_all("black")
+            self.model.set_all((0,0,0))
             self.send_model()
         return 'OK'
 
     def run(self, params, expires_at=None):
+        with self.lock:
+            self.model.set_all((0,0,0))
+            self.send_model()
         users = loads(Websock.get_users())['users']
         if (len(users) == 1):
             self.user = users[0]
