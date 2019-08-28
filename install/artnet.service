@@ -5,16 +5,16 @@ After=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/home/arbalet/Arbalet/frontage/arbalet/frontage
+WorkingDirectory=WD
 ExecStart=/usr/bin/python3 artnet_client.py
 StandardOutput=journal
 KillSignal=SIGINT
 SuccessExitStatus=SIGINT
 RestartSec=10
 Restart=always
-
+Environment="RABBITMQ_DEFAULT_USER=frontage"
+Environment="RABBITMQ_DEFAULT_PASS=PWD_RBB"
 [Install]
 WantedBy=multi-user.target
 
 # Keep a new line at EOF
-

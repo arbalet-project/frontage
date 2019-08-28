@@ -120,11 +120,10 @@ function netplan_config {
   artnet_interface=$1
   lan_interface=$2
   cp 10-arbalet.yaml 10-arbalet.yaml.base
-  sed "s/artnet_interface/$artnet_interface/" 10-arbalet.yaml > tmp.yaml
-  sed "s/lan_interface/$lan_interface/" tmp.yaml > 10-arbalet.yaml
-  cp 10-arbalet.yaml /etc/netplan/10-arbalet.yaml
-  cp 10-arbalet.yaml.base 10-arbalet.yaml
-  rm tmp.yaml 10-arbalet.yaml.base
+  sed -i "s/artnet_interface/$artnet_interface/" 10-arbalet.yaml
+  sed -i "s/lan_interface/$lan_interface/" 10-arbalet.yaml
+  mv 10-arbalet.yaml /etc/netplan/10-arbalet.yaml
+  mv 10-arbalet.yaml.base 10-arbalet.yaml
   ifconfig $artnet_interface up
   ifconfig $lan_interface up
   netplan apply
@@ -163,8 +162,7 @@ function gen_password {
       fi
     done
   fi
-  sed "s/$TOKEN/$passwd/" ../.env > .tmp
-  mv .tmp ../.env
+  sed -i "s/$TOKEN/$passwd/" ../.env
 }
 
 # MAIN
@@ -205,10 +203,13 @@ fi
 # check if git respository is here if not download it
 exist=`[ -f ../.git/config ] && echo true || echo false`
 if [[ "$exist" == "true" && `grep "url = https://github.com/arbalet-project/frontage.git" ../.git/config` != "" ]]; then
+  directory=`echo $directory | sed 's/\/install//'`
   echo "Repository already donwload : Skipp donwloading"
 else
   echo "Donwloading Repository"
   cd ~
+  directory=`pwd`
+  directory+=/frontage
   git clone http://github.com/arbalet-project/frontage.git
   cd ~/frontage/install
 fi
@@ -237,12 +238,12 @@ gen_password PWD_MQL $reply
 # build artnet service
 $pip install --no-cache-dir git+https://github.com/arbalet-project/python-artnet.git
 PWD_RBB=`grep RABBITMQ_DEFAULT_PASS ../.env | cut --delimiter== -f 2`
-echo "[Service]" >> artnet.service
-echo "Environment=\"RABBITMQ_DEFAULT_USER=frontage\"" >> artnet.service
-echo "Environment=\"RABBITMQ_DEFAULT_PASS=$PWD_RBB\"" >> artnet.service
+sed -i "s/WD/$directory\/arbalet\/frontage/" artnet.service
+sed -i "s/PWD_RBB/$PWD_RBB/" artnet.service
 cp artnet.service /lib/systemd/system/
 
 # build arbalet service
+sed -i "s/WD/$directory/" arbalet.service
 cp arbalet.service /lib/systemd/system/
 
 # set up services
