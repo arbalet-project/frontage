@@ -204,6 +204,7 @@ fi
 exist=`[ -f ../.git/config ] && echo true || echo false`
 if [[ "$exist" == "true" && `grep "url = https://github.com/arbalet-project/frontage.git" ../.git/config` != "" ]]; then
   directory=`echo $directory | sed 's/\/install//'`
+  echo $directory
   echo "Repository already donwload : Skipp donwloading"
 else
   echo "Donwloading Repository"
@@ -255,8 +256,8 @@ systemctl enable artnet.service
 systemctl enable arbalet.service
 
 # build containers
-docker-compose -f docker-compose.prod.yml up --no-start
-docker-compose -f docker-compose.prod.yml run --rm app init
+docker-compose -f ../docker-compose.prod.yml up --no-start
+docker-compose -f ../docker-compose.prod.yml run --rm app init
 
 # Disable systemd-resolved
 systemctl stop systemd-resolved
