@@ -255,9 +255,8 @@ systemctl enable artnet.service
 systemctl enable arbalet.service
 
 # build containers
+docker-compose -f docker-compose.prod.yml up --no-start
 docker-compose -f docker-compose.prod.yml run --rm app init
-docker-compose build
-docker-compose up --no-start
 
 # Disable systemd-resolved
 systemctl stop systemd-resolved
