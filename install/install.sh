@@ -152,7 +152,7 @@ function gen_password {
   passwd=""
   confirm="unconfirm"
   if [[ "$2" != "n" ]]; then
-    passwd=`makepasswd -l 16`
+    passwd=`makepasswd --chars 16`
   else
     while [[ "$passwd" != "$confirm" || "$passwd" == "" ]]; do
       read -p "Enter password :" passwd
