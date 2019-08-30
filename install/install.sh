@@ -241,6 +241,7 @@ $pip install --no-cache-dir git+https://github.com/arbalet-project/python-artnet
 PWD_RBB=`grep RABBITMQ_DEFAULT_PASS ../.env | cut --delimiter== -f 2`
 sed -i "s#WD#$directory/arbalet/frontage#" artnet.service
 sed -i "s/PWD_RBB/$PWD_RBB/" artnet.service
+sed -i "s/PWD_RBB/$PWD_RBB/" ../live/main.js
 cp artnet.service /lib/systemd/system/
 
 # build arbalet service
