@@ -252,7 +252,7 @@ systemctl enable arbalet.service
 cd ../prod
 docker-compose up --no-start
 docker-compose run --rm app init
-cd $directory
+cd $directory/install
 
 # ethernet interfaces
 netplan_config `ip link show | grep \ en | cut --delimiter=: -f 2`
