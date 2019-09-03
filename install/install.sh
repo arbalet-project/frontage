@@ -264,3 +264,5 @@ ufw_config $reply
 # Disable systemd-resolved
 systemctl stop systemd-resolved
 systemctl disable systemd-resolved
+systemctl disable systemd-networkd-wait-online.service
+systemctl mask systemd-networkd-wait-online.service
