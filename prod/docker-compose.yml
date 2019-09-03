@@ -3,7 +3,7 @@ services:
   redis:
     image: "redis"
     volumes:
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ../redis/redis.conf:/usr/local/etc/redis/redis.conf
     restart: unless-stopped
   rabbit:
     image: "rabbitmq:3-management"
@@ -17,7 +17,7 @@ services:
     build: .
     restart: unless-stopped
     volumes:
-      - ./arbalet/frontage:/usr/src/app
+      - ../arbalet/frontage:/usr/src/app
     command: ["prod"]
     env_file: .env
     links:
@@ -30,7 +30,7 @@ services:
     build: .
     restart: unless-stopped
     volumes:
-      - ./arbalet/frontage:/usr/src/app
+      - ../arbalet/frontage:/usr/src/app
     env_file: .env
     links:
       - redis:redis
@@ -41,10 +41,10 @@ services:
       - 6454:6454/udp
     command: ["scheduler"]
   queue:
-    build: .
+    build: ../arbalet
     restart: unless-stopped
     volumes:
-      - ./arbalet/frontage:/usr/src/app
+      - ../arbalet/frontage:/usr/src/app
     env_file: .env
     links:
       - rabbit:rabbit
@@ -63,14 +63,14 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
   live:
-    build : ./live
+    build : ../live
     user: "node"
     working_dir: /home/node/live
     environment:
       - NODE_ENV=production
     restart: unless-stopped
     volumes:
-      - ./live/public/config.json:/home/node/live/public/config.json
+      - ../live/public/config.json:/home/node/live/public/config.json
     links:
       - redis:redis
       - rabbit:rabbit
@@ -98,9 +98,9 @@ services:
     image: "nginx:alpine"
     restart: unless-stopped
     volumes:
-      - ./reverseproxy/nginx.conf:/etc/nginx/nginx.conf
-      - ./reverseproxy/asset:/var/www/frontage/asset
-      - ./reverseproxy/index.html:/var/www/frontage/index.html
+      - ../reverseproxy/nginx.conf:/etc/nginx/nginx.conf
+      - ../reverseproxy/asset:/var/www/frontage/asset
+      - ../reverseproxy/index.html:/var/www/frontage/index.html
     ports:
       - 80:80
       - 443:443
@@ -110,7 +110,7 @@ services:
       - app:app
       - queue:queue
   dnsmasq:
-    build: ./dnsmasq
+    build: ../dnsmasq
     network_mode: host
     cap_add:
       - NET_ADMIN
