@@ -237,7 +237,7 @@ sed -i "s/PWD_RBB/$PWD_RBB/" artnet.service
 cp artnet.service /lib/systemd/system/
 
 # build arbalet service
-sed -i "s#WD#$directory#" arbalet.service
+sed -i "s#WD#$directory/prod/#" arbalet.service
 cp arbalet.service /lib/systemd/system/
 
 # set up services
