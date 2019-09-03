@@ -248,10 +248,6 @@ systemctl enable docker.service
 systemctl enable artnet.service
 systemctl enable arbalet.service
 
-# Disable systemd-resolved
-systemctl stop systemd-resolved
-systemctl disable systemd-resolved
-
 # build containers
 cd ../prod
 docker-compose up --no-start
@@ -263,3 +259,7 @@ netplan_config `ip link show | grep \ en | cut --delimiter=: -f 2`
 # firewall
 read -p "Do you want to set up a firewall ? (y/N)" reply
 ufw_config $reply
+
+# Disable systemd-resolved
+systemctl stop systemd-resolved
+systemctl disable systemd-resolved
