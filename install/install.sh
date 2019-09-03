@@ -162,7 +162,7 @@ function gen_password {
       fi
     done
   fi
-  sed -i "s/$TOKEN/$passwd/" ../.env
+  sed -i "s/$TOKEN/$passwd/" ../prod/.env
 }
 
 # MAIN
@@ -205,9 +205,9 @@ exist=`[ -f ../.git/config ] && echo true || echo false`
 if [[ "$exist" == "true" && `grep "url = https://github.com/arbalet-project/frontage.git" ../.git/config` != "" ]]; then
   directory=`echo $directory | sed 's/\/install//'`
   echo $directory
-  echo "Repository already donwload : Skipp donwloading"
+  echo "Repository already downloaded : Skipp downloading"
 else
-  echo "Donwloading Repository"
+  echo "Downloading Repository"
   cd ~
   directory=`pwd`
   directory+=/frontage
@@ -241,7 +241,6 @@ $pip install --no-cache-dir git+https://github.com/arbalet-project/python-artnet
 PWD_RBB=`grep RABBITMQ_DEFAULT_PASS ../.env | cut --delimiter== -f 2`
 sed -i "s#WD#$directory/queue#" artnet.service
 sed -i "s/PWD_RBB/$PWD_RBB/" artnet.service
-sed -i "s/PWD_RBB/$PWD_RBB/" ../live/main.js
 cp artnet.service /lib/systemd/system/
 
 # build arbalet service

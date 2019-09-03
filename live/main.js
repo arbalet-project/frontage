@@ -276,7 +276,7 @@ function sessionChecker(){
 }
 
 // main
-const opt = { credentials: require('amqplib').credentials.plain('frontage', 'PWD_RBB') };
+const opt = { credentials: require('amqplib').credentials.plain('frontage', process.env.RABBITMQ_DEFAULT_PASS) };
 amqp.connect('amqp://rabbit', opt, function(error0, connection) {
   if (error0) {
     throw error0;
