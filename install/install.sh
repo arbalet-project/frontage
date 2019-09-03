@@ -44,8 +44,8 @@ function get_pkgmanager {
     pip=pip
     ;;
     "Ubuntu" )
-    package_manager=apt
-    install_cmd="install"
+    package_manager="apt-get"
+    install_cmd="install -y "
     list_cmd="list --installed"
     end_chr="/"
     pip=pip3
@@ -218,13 +218,6 @@ fi
 # docker
 adduser arbalet docker
 
-# ethernet interfaces
-netplan_config `ip link show | grep \ en | cut --delimiter=: -f 2`
-
-# firewall
-read -p "Do you want to set up a firewall ? (y/N)" reply
-ufw_config $reply
-
 #set passwords
 gen_password CKK_RBB yes
 read -p "generate automatically rabbitmq password ? (Y/n)" reply
@@ -260,6 +253,13 @@ systemctl stop systemd-resolved
 systemctl disable systemd-resolved
 
 # build containers
-cd prod
+cd ../prod
 docker-compose up --no-start
 docker-compose run --rm app init
+
+# ethernet interfaces
+netplan_config `ip link show | grep \ en | cut --delimiter=: -f 2`
+
+# firewall
+read -p "Do you want to set up a firewall ? (y/N)" reply
+ufw_config $reply
