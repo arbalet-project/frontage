@@ -44,7 +44,7 @@ function get_pkgmanager {
     pip=pip
     ;;
     "Ubuntu" )
-    package_manager="apt-get"
+    package_manager="apt"
     install_cmd="install -y "
     list_cmd="list --installed"
     end_chr="/"
@@ -231,7 +231,7 @@ gen_password PWD_MQL $reply
 
 # build artnet service
 $pip install --no-cache-dir git+https://github.com/arbalet-project/python-artnet.git
-PWD_RBB=`grep RABBITMQ_DEFAULT_PASS ../.env | cut --delimiter== -f 2`
+PWD_RBB=`grep RABBITMQ_DEFAULT_PASS ../prod/.env | cut --delimiter== -f 2`
 sed -i "s#WD#$directory/queue#" artnet.service
 sed -i "s/PWD_RBB/$PWD_RBB/" artnet.service
 cp artnet.service /lib/systemd/system/
