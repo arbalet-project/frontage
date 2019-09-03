@@ -1,10 +1,11 @@
 import time
+import logging
 
 from apps.fap import Fap
 from utils.colors import name_to_rgb
 from json import loads
 from scheduler_state import SchedulerState
-from server.flaskutils import print_flush
+
 
 class Flags(Fap):
     PLAYABLE = False
@@ -184,7 +185,6 @@ class Flags(Fap):
         if (rows < 3):
             self.model.set_all('darked')
         else:
-            print_flush("a row tier is {}, 2 tier are {}".format(int(tierr), int(tierr*2)))
             for i in range(0, int(tierr )):
                 self.model.set_line(i, (0.75, 0.25, 0.25))
             for i in range(int(tierr ), int(2*tierr)):

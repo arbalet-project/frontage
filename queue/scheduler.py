@@ -2,6 +2,7 @@
 import json
 import datetime
 import time
+import logging
 
 from time import sleep
 from utils.red import redis
@@ -13,13 +14,12 @@ from scheduler_state import SchedulerState
 from apps.fap import Fap
 from db.base import Base
 from utils.sentry_client import SENTRY
-from server.flaskutils import print_flush
 from utils.websock import Websock
 from apps import *
 
 
 EXPIRE_SOON_DELAY = 30
-
+logging.basicConfig(level=logging.INFO)
 
 class Scheduler(object):
     def __init__(self):
@@ -76,7 +76,7 @@ class Scheduler(object):
     def stop_app(self, c_app, stop_code=None, stop_message=None):
         # flask_log(" ========= STOP_APP ====================")
         if not c_app or 'task_id' not in c_app:
-            print_flush('Cannot stop invalid app')
+            logging.error('Cannot stop invalid app')
             return
 
         from tasks.celery import app
@@ -109,10 +109,10 @@ class Scheduler(object):
 
     def stop_current_app_start_next(self, queue, c_app, next_app):
         SchedulerState.set_event_lock(True)
-        print_flush('## Revoking app [stop_current_app_start_next]')
+        logging.info('## Revoking app [stop_current_app_start_next]')
         self.stop_app(c_app, Fap.CODE_EXPIRE, 'Someone else turn')
         # Start app
-        print_flush("## Starting {} [stop_current_app_start_next]".format(next_app['name']))
+        logging.info("## Starting {} [stop_current_app_start_next]".format(next_app['name']))
         start_fap.apply_async(args=[next_app], queue='userapp')
         SchedulerState.wait_task_to_start()
 
@@ -129,7 +129,7 @@ class Scheduler(object):
             default_scheduled_app['default_params']['name'] = default_scheduled_app['name']  # Fix for Colors (see TODO refactor in colors.py)
             SchedulerState.set_event_lock(True)
 
-            print_flush("## Starting {} [DEFAULT]".format(default_scheduled_app['name']))
+            logging.info("## Starting {} [DEFAULT]".format(default_scheduled_app['name']))
             start_default_fap.apply_async(args=[default_scheduled_app], queue='userapp')
             SchedulerState.wait_task_to_start()
 
@@ -149,12 +149,12 @@ class Scheduler(object):
             close_request, close_userid = SchedulerState.get_close_app_request()
             if close_request:
                 message = Fap.CODE_CLOSE_APP if close_userid != c_app['userid'] else None
-                print_flush('## Stopping app upon user reques [check_app_scheduler]')
+                logging.info('## Stopping app upon user reques [check_app_scheduler]')
                 self.stop_app(c_app, message, 'Executing requested app closure')
                 redis.set(SchedulerState.KEY_STOP_APP_REQUEST, '{}')
                 return
             if len(forced_app) > 0 and not SchedulerState.get_forced_app():
-                print_flush('## Closing previous app for forced one [check_app_scheduler]')
+                logging.info('## Closing previous app for forced one [check_app_scheduler]')
                 SchedulerState.clear_user_app_queue()
                 self.stop_app(c_app, Fap.CODE_CLOSE_APP, 'The admin started a forced app')
                 return
@@ -169,7 +169,7 @@ class Scheduler(object):
             if self.app_is_expired(c_app) or c_app.get('is_default', False):
                 # is the current_app a FORCED_APP ?
                 if SchedulerState.get_forced_app():
-                    print_flush('## Stopping expired forced app [check_app_scheduler]')
+                    logging.info('## Stopping expired forced app [check_app_scheduler]')
                     self.stop_app(c_app)
                     return
                 # is some user-app are waiting in queue ?
@@ -180,7 +180,7 @@ class Scheduler(object):
                 else:
                     # is a defautl scheduled app ?
                     if c_app.get('is_default', False) and self.app_is_expired(c_app):
-                        print_flush('## Stopping expired default scheduled app [check_app_scheduler]')
+                        logging.info('## Stopping expired default scheduled app [check_app_scheduler]')
                         self.stop_app(c_app)
                         return
                     # it's a USER_APP, we let it running, do nothing
@@ -188,7 +188,7 @@ class Scheduler(object):
                         pass
         else:
             if len(forced_app) > 0 and not SchedulerState.get_forced_app():
-                print_flush("## Starting {} [FORCED]".format(forced_app['name']))
+                logging.info("## Starting {} [FORCED]".format(forced_app['name']))
                 SchedulerState.set_event_lock(True)
                 SchedulerState.clear_forced_app_request()
                 start_forced_fap.apply_async(args=[forced_app], queue='userapp')
@@ -198,7 +198,7 @@ class Scheduler(object):
             elif len(queue) > 0:
                 SchedulerState.set_event_lock(True)
                 start_fap.apply_async(args=[queue[0]], queue='userapp')
-                print_flush(" Starting {} [QUEUE]".format(queue[0]['name']))
+                logging.info(" Starting {} [QUEUE]".format(queue[0]['name']))
                 return
             else:
                 return self.start_default_app()
@@ -206,31 +206,27 @@ class Scheduler(object):
     def print_scheduler_info(self):
         if self.count % 100 == 0:
             self.count = 0
-            print_flush(" ========== Scheduling ==========")
-            print_flush("-------- Nb Rows")
-            print_flush("\t\t {}".format(SchedulerState.get_rows()))
-            print_flush("-------- Nb Cols")
-            print_flush("\t\t {}".format(SchedulerState.get_cols()))
-            print_flush("-------- Nb Disabled")
-            print_flush("\t\t {}".format(SchedulerState.get_disabled()))
-            print_flush("-------- Nb pixels")
-            print_flush("\t\t {}".format(SchedulerState.get_pixels_dic()))
-            print_flush("-------- Enable State")
-            print_flush(SchedulerState.get_enable_state())
-            print_flush("-------- Is Frontage Up?")
-            print_flush(SchedulerState.is_frontage_on())
-            print_flush("-------- Usable?")
-            print_flush(SchedulerState.usable())
-            print_flush("-------- Current App")
-            print_flush(SchedulerState.get_current_app())
-            print_flush('Forced App ?', SchedulerState.get_forced_app())
-            print_flush("---------- Waiting Queue")
-            print_flush(SchedulerState.get_user_app_queue())
+            logging.info(" ========== Scheduling ==========")
+            logging.info("-------- Geometry")
+            logging.info("\t\t {} rows * {} cols".format(SchedulerState.get_rows(), SchedulerState.get_cols()))
+            logging.info("-------- Disabled")
+            logging.info("\t\t {}".format(SchedulerState.get_disabled()))
+            logging.info("-------- Enable State")
+            logging.info(SchedulerState.get_enable_state())
+            logging.info("-------- Is Frontage Up?")
+            logging.info(SchedulerState.is_frontage_on())
+            logging.info("-------- Usable?")
+            logging.info(SchedulerState.usable())
+            logging.info("-------- Current App")
+            logging.info(SchedulerState.get_current_app())
+            logging.info('Forced App ? {}'.format(SchedulerState.get_forced_app()))
+            logging.info("---------- Waiting Queue")
+            logging.info(SchedulerState.get_user_app_queue())
             if SchedulerState.get_enable_state() == 'scheduled':
-                print_flush("---------- Scheduled ON")
-                print_flush(SchedulerState.get_scheduled_on_time())
-                print_flush("---------- Scheduled OFF")
-                print_flush(SchedulerState.get_scheduled_off_time())
+                logging.info("---------- Scheduled ON")
+                logging.info(SchedulerState.get_scheduled_on_time())
+                logging.info("---------- Scheduled OFF")
+                logging.info(SchedulerState.get_scheduled_off_time())
         self.count += 1
 
     def run(self):
@@ -239,12 +235,12 @@ class Scheduler(object):
         SchedulerState.set_frontage_on(True)
         SchedulerState.set_enable_state(SchedulerState.get_enable_state())
         # usable = SchedulerState.usable()
-        print_flush('[SCHEDULER] Entering loop')
+        logging.info('[SCHEDULER] Entering loop')
         self.frontage.start()
         try:
             while True:
                 if SchedulerState.is_event_lock():
-                    print_flush('Locked')
+                    logging.info('Locked')
                 else:
                     self.run_scheduler()
                     self.print_scheduler_info()

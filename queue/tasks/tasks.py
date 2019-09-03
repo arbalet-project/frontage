@@ -3,12 +3,10 @@ from __future__ import print_function
 
 import datetime
 import time
-
-from logging import INFO
+import logging
 
 from server.extensions import celery
 from celery.utils.log import get_task_logger
-from server.flaskutils import print_flush
 
 from scheduler_state import SchedulerState
 from utils.red import redis, redis_get

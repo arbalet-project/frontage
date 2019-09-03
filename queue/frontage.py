@@ -4,7 +4,6 @@ from os import environ
 from model import Model
 from db.models import DimensionsModel
 from threading import Thread
-from server.flaskutils import print_flush
 
 from scheduler_state import SchedulerState
 import pika
@@ -91,4 +90,3 @@ class Frontage(Thread):
 
     def close(self):
         self.frontage_running = False
-        print("==> Frontage Controler Ended. ByeBye")

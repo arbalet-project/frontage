@@ -19,7 +19,6 @@ from apps.fap import Fap
 from apps.actions import Actions
 from utils.tools import Rate
 from utils.colors import name_to_rgb
-from server.flaskutils import print_flush
 
 # from arbalet.core import Application, Rate
 # import pygame
@@ -45,8 +44,6 @@ class Snake(Fap):
                             'food': 1}
 
         Fap.__init__(self, username, userid)
-        print_flush("Init of SNAKE", self.model.height, self.model.width)
-
         self.DIRECTION = DOWN
         self.HEAD = (0, 0)
         self.queue = [self.HEAD]
@@ -71,7 +68,6 @@ class Snake(Fap):
                 self.DIRECTION = new_dir
 
     def game_over(self):
-        print("Game OVER")
         self.send_game_over()
         time.sleep(1)
         self.flash()
@@ -84,11 +80,8 @@ class Snake(Fap):
             while True:
                 f = (random.randint(0, self.model.height - 1), random.randint(0, self.model.width - 1))
                 if f not in self.queue and f not in self.FOOD_POSITIONS:
-                    print_flush("Muri desu yo!")
                     break
             self.FOOD_POSITIONS[f] = True
-            print_flush("New food generated")
-
             self.model.set_pixel(f[0], f[1], self.FOOD_COLOR)
 
     def run(self, params, expires_at=None):
@@ -107,11 +100,9 @@ class Snake(Fap):
         for x, y in self.FOOD_POSITIONS:
             self.model.set_pixel(x, y, self.FOOD_COLOR)
         self.send_model()
-        print_flush("Started party with", self.start_food, "food.")
 
         while True:
             rate.sleep_dur = 1.0 / self.rate
-            print_flush("Snake = ", self.queue, "; Apple = ", self.FOOD_POSITIONS)
             with self.model:
                 new_pos = ((self.HEAD[0] + self.DIRECTION[0]) % self.model.height, (self.HEAD[1] + self.DIRECTION[1]) % self.model.width)
 

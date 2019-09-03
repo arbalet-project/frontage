@@ -9,6 +9,7 @@
     License: GPL version 3 http://www.gnu.org/licenses/gpl.html
 """
 import random
+import logging
 from json import loads
 
 from apps.fap import Fap
@@ -20,7 +21,6 @@ from scheduler_state import SchedulerState
 from db.models import FappModel
 from db.base import session_factory
 from json import dumps
-from server.flaskutils import print_flush
 
 class Drawing(Fap):
     PLAYABLE = True
@@ -28,10 +28,9 @@ class Drawing(Fap):
     def __init__(self, username, userid):
         self.rate = Rate(10)
         Fap.__init__(self, username, userid)
-        print_flush("Init of DRAWING", self.model.height, self.model.width)
+
 
     def handle_message(self, json_data, path=None): # noqa
-        print_flush("Received something :3")
         if json_data is None:
             raise ValueError("Error : message received on websocket is empty.")
         elif isinstance(json_data, str):

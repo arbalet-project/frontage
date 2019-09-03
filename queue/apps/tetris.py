@@ -18,7 +18,6 @@ from apps.fap import Fap
 from apps.actions import Actions
 from utils.colors import name_to_rgb
 from scheduler_state import SchedulerState
-from server.flaskutils import print_flush
 
 from random import randrange as rand
 from time import sleep
@@ -97,7 +96,6 @@ class Tetris(Fap):
         self.next_stone = tetris_shapes[rand(len(tetris_shapes))]
         Tetris.cols = SchedulerState.get_rows()
         Tetris.rows = SchedulerState.get_cols()
-        print_flush("Init of TETRIS", self.model.height, self.model.width)
         self.init_game()
 
     def new_stone(self):

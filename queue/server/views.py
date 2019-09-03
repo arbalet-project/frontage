@@ -1,11 +1,11 @@
 import datetime
 import json
+import logging
 from flask import request, jsonify, abort, Blueprint, g
 from flask_restful import Resource
 from utils.security import authentication_required, generate_user_token, is_admin, verify_password
 from scheduler_state import SchedulerState
 from server.extensions import rest_api
-from server.flaskutils import print_flush
 from flask_expects_json import expects_json
 from utils.websock import Websock
 
@@ -367,7 +367,6 @@ def set_building_dimensions(user):
 @blueprint.route('/b/admin/settings/mesh/dimensions', methods=['GET'])
 @authentication_required
 def get_building_dimensions(user):
-    print_flush(SchedulerState.get_pixels_dic())
     return jsonify(height=SchedulerState.get_rows(),
                   width=SchedulerState.get_cols(),
                   amount=SchedulerState.get_amount(),
@@ -385,12 +384,10 @@ def set_pixel_position(user):
         abort(415, 'Missing height value')
     if 'column' not in body:
         abort(415, 'Missing width value')
-    print_flush("fait chier")
 
     #TODO: variable mac a changer en string pour voir l'erreur
-    mac = 1;
-
-    SchedulerState.add_cell(body['column'], body['row'], mac);
+    mac = 1
+    SchedulerState.add_cell(body['column'], body['row'], mac)
 
     return jsonify(row=body['row'], column=body['column'])
 
@@ -400,10 +397,9 @@ def reset_pixel_position(user):
     if not is_admin(user):
         abort(403, "Forbidden Bru")
 
-    print_flush("reset")
+    logging.info("reset")
     return jsonify(success='true')
     # body = request.get_json()
-    # print_flush(body)
     # return jsonify(row=body['row'],
     #                column=body['column'])
 
@@ -413,7 +409,7 @@ def confirm_pixel_position(user):
     if not is_admin(user):
         abort(403, "Forbidden Bru")
 
-    print_flush("confirmed")
+    logging.info("confirmed")
     return jsonify(success='true')
 
 
@@ -446,7 +442,6 @@ def get_users(user):
         abort(403, "Forbidden Bru")
     users = (json.loads(Websock.get_users()))['users']
     guser = (json.loads(Websock.get_grantUser()))
-    print_flush(users, guser)
     return jsonify(list_clients=users, selected_client=guser)
 
 @blueprint.route('/b/admin/snap/guser', methods=['POST'])
@@ -459,7 +454,6 @@ def set_user(user):
     users = (json.loads(Websock.get_users()))['users']
     guser = None
     if (id != "turnoff"):
-        print_flush(users)
         for user in users:
             if (user['id'] == id):
                 guser = user

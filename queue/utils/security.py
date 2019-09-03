@@ -1,4 +1,5 @@
 import jwt
+import logging
 import datetime
 import string
 from random import choices
@@ -22,13 +23,13 @@ def extract_payload(token):
         payload = jwt.decode(token, PUBLIC_WEB_KEY, algorithm=TOKEN_ALGO)
         return payload
     except jwt.ExpiredSignatureError as e:
-        print(str(e) + " ExpiredSignatureError")
+        logging.error(str(e) + " ExpiredSignatureError")
         raise
     except jwt.InvalidTokenError as e:
-        print(str(e) + " InvalidTokenError")
+        logging.error(str(e) + " InvalidTokenError")
         raise
     except Exception as e:
-        print(str(e) + " Error")
+        logging.error(str(e) + " Error")
         raise
     return False
 

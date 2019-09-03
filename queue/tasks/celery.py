@@ -27,5 +27,4 @@ def get_celery_worker_status():
 
 
 if __name__ == '__main__':
-    print('=========== STARTED CELERY IN MAIN MODE ===========')
     app.start()

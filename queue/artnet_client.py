@@ -201,7 +201,7 @@ class ArtnetClient(object):
             self.channel.queue_bind(exchange='pixels', queue=queue_name)
             self.channel.basic_consume(self.callback, queue=queue_name, no_ack=True)
 
-            print('Waiting for pixel data on queue "{}".'.format(queue_name))
+            logging.info('Waiting for pixel data on queue "{}".'.format(queue_name))
             self.channel.start_consuming()
         except Exception as e:
             self.close_dmx()
@@ -216,6 +216,6 @@ class ArtnetClient(object):
 if __name__ == '__main__':
     artnet = ArtnetClient()
     logger = logging.getLogger("artnet.dmx")
-    logger.setLevel(logging.ERROR)
+    logger.setLevel(logging.INFO)
     artnet.run()
 

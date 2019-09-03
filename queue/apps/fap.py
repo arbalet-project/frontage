@@ -1,5 +1,6 @@
 import time
 import pika
+import logging
 
 from os import environ
 from scheduler_state import SchedulerState
@@ -94,12 +95,12 @@ class Fap(object):
 
     def send_model(self):
         if not self.LOCK.acquire_write(2):
-            print('Wait for RWLock for too long in Bufferize...Stopping')
+            logging.error('Wait for RWLock for too long in Bufferize...Stopping')
             return
         try:
             self.channel.basic_publish(exchange='model', routing_key='', body=self.model.json())
         except Exception as e:
-            print('FAP Cannot send model to scheduler')
+            logging.error('FAP Cannot send model to scheduler')
             raise e
         finally:
             self.LOCK.release()

@@ -21,7 +21,7 @@ from numpy import array
 
 from time import sleep
 
-from server.flaskutils import print_flush
+import logging
 
 class Ama(Fap) :
         PLAYABLE = True
@@ -42,7 +42,6 @@ class Ama(Fap) :
 
         #Event handler function, calls every time a message is received from the Frontend
         def handle_message(self, json_data, path=None) :
-            print_flush(json_data)
             #Retrieving and extracting the message
             if json_data is None :
                     raise ValueError("Error : empty message received from WebSocket")
@@ -58,7 +57,7 @@ class Ama(Fap) :
             elif (data.get('action') != None): #User specified validity of their input
                     self.action = data.get('action')
             else :
-                    print_flush("Received unknown message from frontend")
+                    logging.warning("Received unknown message from frontend")
 
         #Updates the Database : memorize the addressing of the pixels.
         def update_DB(self) :
@@ -67,11 +66,11 @@ class Ama(Fap) :
             #Update DB
             if (self.params['mode'] == 'ama' or self.params['mode'] == 'skip') : # in case of initial addressing, the previous configuration is first deleted.
                 SchedulerState.drop_dic()
-                print_flush("Database cleaned")
+                logging.info("Database cleaned")
             while (len(self.pixels) != 0) : #Pixels are then added one by one to the database
                 (mac, ((x,y),ind)) = self.pixels.popitem()
                 SchedulerState.add_cell(x, y, mac, ind)
-            print_flush("Database updated")
+            logging.info("Database updated")
             rows = SchedulerState.get_rows()
             cols = SchedulerState.get_cols()
             disabled = SchedulerState.get_disabled()
@@ -80,7 +79,7 @@ class Ama(Fap) :
         #When addressing is over, but before admin close the F-app : makes App wait.
         def wait_to_be_kill(self):
             while True:
-                print_flush("Addressing is over...")
+                logging.info("Addressing is over...")
                 time.sleep(0.05)
 
         def run(self, params, expires_at=None) :

@@ -18,11 +18,6 @@ from model import Model
 
 __all__ = ['Simulator']
 
-
-def print_flush(s):
-    print(s)
-    sys.stdout.flush()
-
 class Simulator(object):
     def __init__(self, row=10, col=20, port=33460):
         factor_sim = 40

@@ -6,6 +6,7 @@
     License: GPL version 3 http://www.gnu.org/licenses/gpl.html
 """
 import pika
+import logging
 from os import environ
 import sys
 from json import dumps, loads
@@ -15,7 +16,6 @@ from flask_cors import CORS
 
 from threading import RLock
 
-from server.flaskutils import print_flush
 from apps.fap import Fap
 from scheduler_state import SchedulerState
 from utils.security import authentication_required, is_admin
@@ -43,13 +43,11 @@ class Snap(Fap):
 
     def callback(self, ch, method, properties, body):
         self.consumme += 1
-        if (self.consumme % 100 == 0):
-            print_flush("{} has been consummed".format(self.consumme))
         listpixels = loads(body.decode('ascii'))
         nuser = loads(Websock.get_grantUser())
 
         if(nuser.get('id') is None or nuser.get('id') == "turnoff"):
-            print_flush("extinct all pixels")
+            logging.info("Turn off request")
             self.erase_all()
         elif nuser['id'] != self.user['id']:
             self.user = nuser
@@ -74,7 +72,7 @@ class Snap(Fap):
                     blue = (hexacolor & 0x0000FF)
                     self.model.set_pixel(r, c, list(map(Snap.scale, [red, green, blue])))
                 except:
-                    print_flush("ERRROR : unvalid pixel {}".format(pix))
+                    logging.error("ERRROR : invalid pixel {}".format(pix))
             self.send_model()
             return 'OK'
 
@@ -103,5 +101,5 @@ class Snap(Fap):
         self.channelserver.queue_bind(exchange='logs', queue=queue_name)
         self.channelserver.basic_consume(queue_name, self.callback)
 
-        print('Waiting for pixel data on queue "{}".'.format(queue_name))
+        logging.info('Waiting for pixel data on queue "{}".'.format(queue_name))
         self.channelserver.start_consuming()
