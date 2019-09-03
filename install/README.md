@@ -48,15 +48,16 @@ sudo journalctl -u arbalet -f
 ```
 
 ```
-docker-compose -f docker-compose.prod.yml run --rm app set_admin_credentials  # Change your admin password
-docker-compose -f docker-compose.prod.yml run --rm app reset  # Factory reset (Dropping DB)
+cd prod
+docker-compose run --rm app set_admin_credentials  # Change your admin password
+docker-compose run --rm app reset  # Factory reset (Dropping DB)
 ```
 
 # Troubleshooting
 ```
 sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) FATAL:  password authentication failed for user "some_suer"
 ```
-First make sure `.env` has non-empty random passwords. In case the prod server is being reinstalled, make sure you destroy all the volumes `docker-compose -f docker-compose.prod.yml down -v`. Also do not forget `-f` to specify the prod config.
+First make sure `.env` has non-empty random passwords. In case the prod server is being reinstalled, make sure you destroy all the volumes `docker-compose down -v`. Also do not forget `-f` to specify the prod config.
 
 # Internet
 

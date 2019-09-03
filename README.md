@@ -48,4 +48,4 @@ Refer to the [install](install) procedure to deploy the app on a production serv
 
 ## How to...?
 ### Reset database and settings
-`docker-compose down -v` will get rid of the database, you will then need to initialize a new one with `docker-compose run --rm app init`. If this is intended to be executed on the production server, add `-f docker-compose.prod.yml` to the `docker-compose commands`.
+`docker-compose down -v` will get rid of the database, you will then need to initialize a new one with `docker-compose run --rm app init`.

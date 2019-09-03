@@ -6,7 +6,7 @@ After=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=WD
-ExecStart=/usr/bin/docker-compose -f docker-compose.prod.yml up --force-recreate
+ExecStart=/usr/bin/docker-compose up --force-recreate
 StandardOutput=journal
 KillSignal=SIGINT
 SuccessExitStatus=SIGINT
