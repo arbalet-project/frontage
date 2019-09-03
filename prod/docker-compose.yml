@@ -14,10 +14,10 @@ services:
       - 5672:5672
       - 15672:15672
   app:
-    build: .
+    build: ../queue
     restart: unless-stopped
     volumes:
-      - ../arbalet/frontage:/usr/src/app
+      - ../queue:/usr/src/app
     command: ["prod"]
     env_file: .env
     links:
@@ -27,7 +27,7 @@ services:
     ports:
       - 33405:33405
   scheduler:
-    build: .
+    build: ../queue
     restart: unless-stopped
     volumes:
       - ../arbalet/frontage:/usr/src/app
@@ -41,10 +41,10 @@ services:
       - 6454:6454/udp
     command: ["scheduler"]
   queue:
-    build: ../arbalet
+    build: ../queue
     restart: unless-stopped
     volumes:
-      - ../arbalet/frontage:/usr/src/app
+      - ../queue:/usr/src/app
     env_file: .env
     links:
       - rabbit:rabbit
@@ -71,6 +71,8 @@ services:
     restart: unless-stopped
     volumes:
       - ../live/public/config.json:/home/node/live/public/config.json
+    env_file:
+      - .env
     links:
       - redis:redis
       - rabbit:rabbit
@@ -82,7 +84,7 @@ services:
     volumes:
       - mariadb:/var/lib/mysql
     env_file:
-      - ./.env
+      - .env
   matomo:
     image: "matomo"
     environment:
@@ -91,7 +93,7 @@ services:
     volumes:
       - matomo:/var/www/html
     env_file:
-      - ./.env
+      - .env
     links:
       - mariadb:mariadb
   reverseproxy:

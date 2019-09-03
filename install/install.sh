@@ -239,7 +239,7 @@ gen_password PWD_MQL $reply
 # build artnet service
 $pip install --no-cache-dir git+https://github.com/arbalet-project/python-artnet.git
 PWD_RBB=`grep RABBITMQ_DEFAULT_PASS ../.env | cut --delimiter== -f 2`
-sed -i "s#WD#$directory/arbalet/frontage#" artnet.service
+sed -i "s#WD#$directory/queue#" artnet.service
 sed -i "s/PWD_RBB/$PWD_RBB/" artnet.service
 sed -i "s/PWD_RBB/$PWD_RBB/" ../live/main.js
 cp artnet.service /lib/systemd/system/
@@ -256,10 +256,11 @@ systemctl enable docker.service
 systemctl enable artnet.service
 systemctl enable arbalet.service
 
-# build containers
-docker-compose -f ../docker-compose.prod.yml up --no-start
-docker-compose -f ../docker-compose.prod.yml run --rm app init
-
 # Disable systemd-resolved
 systemctl stop systemd-resolved
 systemctl disable systemd-resolved
+
+# build containers
+cd prod
+docker-compose up --no-start
+docker-compose run --rm app init

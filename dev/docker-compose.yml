@@ -3,7 +3,7 @@ services:
   redis:
     image: "redis"
     volumes:
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ../redis/redis.conf:/usr/local/etc/redis/redis.conf
     restart: unless-stopped
   rabbit:
     image: "rabbitmq:3-management"
@@ -14,10 +14,10 @@ services:
       - 5672:5672
       - 15672:15672
   app:
-    build: .
+    build: ../queue
     restart: unless-stopped
     volumes:
-      - ./arbalet/frontage:/usr/src/app
+      - ../queue:/usr/src/app
     command: ["dev"]
     env_file: .env-dev
     links:
@@ -27,10 +27,10 @@ services:
     ports:
       - 33405:33405
   scheduler:
-    build: .
+    build: ../queue
     restart: unless-stopped
     volumes:
-      - ./arbalet/frontage:/usr/src/app
+      - ../queue:/usr/src/app
     env_file: .env-dev
     links:
       - redis:redis
@@ -41,10 +41,10 @@ services:
       - 6454:6454/udp
     command: ["scheduler"]
   queue:
-    build: .
+    build: ../queue
     restart: unless-stopped
     volumes:
-      - ./arbalet/frontage:/usr/src/app
+      - ../queue:/usr/src/app
     env_file: .env-dev
     links:
       - rabbit:rabbit
@@ -63,14 +63,16 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
   live:
-    build : ./live
+    build : ../live
     user: "node"
     working_dir: /home/node/live
     environment:
       - NODE_ENV=production
     restart: unless-stopped
     volumes:
-      - ./live/public/config.json:/home/node/live/public/config.json
+      - ../live/public/config.json:/home/node/live/public/config.json
+    env_file:
+      - .env-dev
     links:
       - redis:redis
       - rabbit:rabbit
@@ -82,7 +84,7 @@ services:
     volumes:
       - mariadb:/var/lib/mysql
     env_file:
-      - ./.env
+      - .env-dev
   matomo:
     image: "matomo"
     environment:
@@ -91,16 +93,16 @@ services:
     volumes:
       - matomo:/var/www/html
     env_file:
-      - ./.env
+      - .env-dev
     links:
       - mariadb:mariadb
   reverseproxy:
     image: "nginx:alpine"
     restart: unless-stopped
     volumes:
-      - ./reverseproxy/nginx.conf:/etc/nginx/nginx.conf
-      - ./reverseproxy/asset:/var/www/frontage/asset
-      - ./reverseproxy/index.html:/var/www/frontage/index.html
+      - ../reverseproxy/nginx.conf:/etc/nginx/nginx.conf
+      - ../reverseproxy/asset:/var/www/frontage/asset
+      - ../reverseproxy/index.html:/var/www/frontage/index.html
     ports:
       - 80:80
       - 443:443
@@ -110,7 +112,7 @@ services:
       - app:app
       - queue:queue
   dnsmasq:
-    build: ./dnsmasq
+    build: ../dnsmasq
     network_mode: host
     cap_add:
       - NET_ADMIN
