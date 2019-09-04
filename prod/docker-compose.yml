@@ -66,8 +66,6 @@ services:
     build : ../live
     user: "node"
     working_dir: /home/node/live
-    environment:
-      - NODE_ENV=production
     restart: unless-stopped
     volumes:
       - ../live/public/config.json:/home/node/live/public/config.json

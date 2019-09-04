@@ -31,7 +31,7 @@ function initServer() {
     secret: 'my-secret',
     resave: true,
     saveUninitialized: true,
-    store: new redisStore({ host: 'localhost',
+    store: new redisStore({ host: 'redis',
                             port: 6379,
                             client: redisClient,
                             ttl :  43200000 // time-to-live is set at 12 hours
