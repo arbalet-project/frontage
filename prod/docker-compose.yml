@@ -30,7 +30,7 @@ services:
     build: ../queue
     restart: unless-stopped
     volumes:
-      - ../arbalet/frontage:/usr/src/app
+      - ../queue:/usr/src/app
     env_file: .env
     links:
       - redis:redis
