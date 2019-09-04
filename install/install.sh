@@ -232,12 +232,12 @@ gen_password PWD_MQL $reply
 # build artnet service
 $pip install --no-cache-dir git+https://github.com/arbalet-project/python-artnet.git
 PWD_RBB=`grep RABBITMQ_DEFAULT_PASS ../prod/.env | cut --delimiter== -f 2`
-sed -i "s#WD#$directory/queue#" artnet.service
+sed -i "s#WDIRECTORY#$directory/queue#" artnet.service
 sed -i "s/PWD_RBB/$PWD_RBB/" artnet.service
 cp artnet.service /lib/systemd/system/
 
 # build arbalet service
-sed -i "s#WD#$directory/prod/#" arbalet.service
+sed -i "s#WDIRECTORY#$directory/prod/#" arbalet.service
 cp arbalet.service /lib/systemd/system/
 
 # set up services
