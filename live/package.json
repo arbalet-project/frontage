@@ -6,12 +6,16 @@
   "homepage": "http://www.arbalet-project.org/",
   "keywords": [
     "Arbalet",
-    "Meki",
     "Live",
     "Education",
     "Pixel",
     "Art"
   ],
+  "license" : "GNU General Public License v3 (GPL3)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arbalet-project/ArbaletLive.git"
+  },
   "author": "Lucas Demarais <lucdems@gmail.com>",
   "contributors": [
     {
