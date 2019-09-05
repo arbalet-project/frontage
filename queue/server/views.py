@@ -9,7 +9,7 @@ from server.extensions import rest_api
 from flask_expects_json import expects_json
 from utils.websock import Websock
 
-PROTOCOL_VERSION = 1   # Version of protocol betwwen front and back. Mismatch = ask the user to update
+PROTOCOL_VERSION = 2   # Version of protocol betwwen front and back. Mismatch = ask the user to update
 
 blueprint = Blueprint('views', __name__)
 
