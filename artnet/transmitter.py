@@ -79,7 +79,7 @@ class ArtNetTransmitter(object):
 
         self.logger.info('Waiting for pixel data...')
 
-        self.channel.basic_consume(self.callback, queue=queue_name)
+        self.channel.basic_consume(queue=queue_name, on_message_callback=self.callback)
         self.channel.start_consuming()
 
     def close(self):

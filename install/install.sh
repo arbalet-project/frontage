@@ -238,7 +238,6 @@ ln -fs /etc/systemd/system/autologin@.service /etc/systemd/system/getty.target.w
 systemctl set-default multi-user.target
 systemctl daemon-reload
 systemctl enable docker.service
-systemctl enable artnet.service
 systemctl enable arbalet.service
 
 # build containers

@@ -118,7 +118,16 @@ services:
       - "67:67/udp"
       - "67:67/tcp"
     restart: unless-stopped
-
+  artnet:
+    build: ../artnet
+    restart: unless-stopped
+    volumes:
+      - ../artnet/config:/usr/src/app/config
+    env_file: .env
+    links:
+      - rabbit:rabbit
+    ports:
+      - 6454:6454/udp
 volumes:
   db-data:
   mariadb:
