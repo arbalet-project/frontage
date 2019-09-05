@@ -73,7 +73,6 @@ services:
     links:
       - redis:redis
       - rabbit:rabbit
-    command: "node main.js"
   mariadb:
     image: "mariadb"
     command: --max-allowed-packet=64MB
