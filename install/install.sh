@@ -248,8 +248,8 @@ cd $directory/install
 
 # ethernet interfaces
 netplan_config `ip link show | grep \ en | cut --delimiter=: -f 2`
-mv hosts /etc/hosts
-mv hostname /etc/hostname
+cp hosts /etc/hosts
+cp hostname /etc/hostname
 
 # firewall
 read -p "Do you want to set up a firewall ? (y/N)" reply
