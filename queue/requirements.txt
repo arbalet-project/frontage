@@ -17,7 +17,6 @@ gunicorn
 pika
 numpy
 petname
-pygame
 click
 asyncio
 websockets

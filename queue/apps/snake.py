@@ -20,9 +20,6 @@ from apps.actions import Actions
 from utils.tools import Rate
 from utils.colors import name_to_rgb
 
-# from arbalet.core import Application, Rate
-# import pygame
-
 LEFT = (0, -1)
 RIGHT = (0, 1)
 DOWN = (1, 0)
