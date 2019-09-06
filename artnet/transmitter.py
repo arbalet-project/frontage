@@ -8,10 +8,15 @@ from os import environ
 from artnet import dmx
 from os.path import realpath, dirname, join
 
+"""
+Art-Net I UDP broadcasting to all Art-Net nodes 2.xxx.xxx.xxx
+Note: UDP doesn't forward over NAT, so running this script from a container needs to bind to the host network:
+    docker run artnet --net=host
+"""
 class ArtNetTransmitter(object):
     FPS = 15
     ARTNET_BROADCAST_IP = "2.255.255.255"
-    RABBIT_HOST = 'rabbit'
+    RABBIT_HOST = 'localhost'  # Connect on localhost on the host side. Warning: wait-for-it.sh also waits on localhost
     def __init__(self):
         self.logger = logging.getLogger("Artnet")
         self.logger.setLevel(logging.INFO)

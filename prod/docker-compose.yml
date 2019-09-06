@@ -128,6 +128,7 @@ services:
       - rabbit:rabbit
     ports:
       - 6454:6454/udp
+    network_mode: "host"
 volumes:
   db-data:
   mariadb:
