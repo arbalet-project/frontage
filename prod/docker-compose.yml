@@ -124,8 +124,6 @@ services:
     volumes:
       - ../artnet/config:/usr/src/app/config
     env_file: .env
-    links:
-      - rabbit:rabbit
     ports:
       - 6454:6454/udp
     network_mode: "host"
