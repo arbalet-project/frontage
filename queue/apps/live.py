@@ -11,11 +11,6 @@ from os import environ
 import sys
 from json import dumps, loads
 
-from flask import Flask, request, abort
-from flask_cors import CORS
-
-from threading import RLock
-
 from apps.fap import Fap
 from scheduler_state import SchedulerState
 from utils.security import authentication_required, is_admin
