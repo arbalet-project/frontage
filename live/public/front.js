@@ -40,9 +40,10 @@ if(!simulation_enabled){
   });
 
   function beaconChecker() {
-    console.log("beanconChecker");
-    if ( (lastbeacon != null) && (new Date()).getTime() - lastbeacon > 3000){
+    console.log("Checking connection...");
+    if ( (lastbeacon != null) && (new Date()).getTime() - lastbeacon > 30000){
       granted = false;
+      console.log("Disconnection detected");
       $('.connect-style').replaceWith('<p class="connect-style">Déconnecté</p>');
     }
   }
