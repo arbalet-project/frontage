@@ -191,7 +191,7 @@ async function updateConfigFile(data) {
     cols: data['cols'],
     disabled: data['disabled'],
     project: "Frontage",
-    simuation: false};
+    simulation: false};
   fs.writeFile("./public/config.json", JSON.stringify(conf), function(err) {
     if (err) throw err;
   });
