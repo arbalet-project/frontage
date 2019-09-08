@@ -10,9 +10,6 @@ services:
     restart: unless-stopped
     hostname: "rabbit"
     env_file: .env
-    ports:
-      - 5672:5672
-      - 15672:15672
   app:
     build: ../queue
     restart: unless-stopped
@@ -36,8 +33,6 @@ services:
       - redis:redis
       - rabbit:rabbit
       - postgres:postgres
-    ports:
-      - 33460:33460
     command: ["scheduler"]
   queue:
     build: ../queue
@@ -49,16 +44,11 @@ services:
       - rabbit:rabbit
       - redis:redis
       - postgres:postgres
-    ports:
-      - 33406:33406
-      - 33450:33450
     command: ["queue"]
   postgres:
     image: postgres
     restart: unless-stopped
     env_file: .env
-    ports:
-      - 5544:5432
     volumes:
       - db-data:/var/lib/postgresql/data
   live:

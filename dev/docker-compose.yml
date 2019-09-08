@@ -36,8 +36,6 @@ services:
       - redis:redis
       - rabbit:rabbit
       - postgres:postgres
-    ports:
-      - 33460:33460
     command: ["scheduler"]
   queue:
     build: ../queue
@@ -51,14 +49,11 @@ services:
       - postgres:postgres
     ports:
       - 33406:33406
-      - 33450:33450
     command: ["queue"]
   postgres:
     image: postgres
     restart: unless-stopped
     env_file: .env-dev
-    ports:
-      - 5544:5432
     volumes:
       - db-data:/var/lib/postgresql/data
   live:
@@ -73,6 +68,8 @@ services:
     links:
       - redis:redis
       - rabbit:rabbit
+    ports:
+      - 33450:3000
   mariadb:
     image: "mariadb"
     command: --max-allowed-packet=64MB
@@ -92,6 +89,8 @@ services:
       - .env-dev
     links:
       - mariadb:mariadb
+    ports:
+      - 33460:80
   reverseproxy:
     image: "nginx:alpine"
     restart: unless-stopped
