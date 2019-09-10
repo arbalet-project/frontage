@@ -96,7 +96,7 @@ class Simulator(object):
 
         self.logger.info('Waiting for pixel data in order to open the simulation window...')
 
-        self.channel.basic_consume(self.callback, queue=queue_name)
+        self.channel.basic_consume(queue=queue_name, on_message_callback=self.callback, auto_ack=True)
         self.channel.start_consuming()
 
     def close(self):

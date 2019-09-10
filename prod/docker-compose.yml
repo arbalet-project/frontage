@@ -12,7 +12,6 @@ services:
     env_file: .env
     ports:
       - 5672:5672
-      - 15672:15672
   app:
     build: ../queue
     restart: unless-stopped
