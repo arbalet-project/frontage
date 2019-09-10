@@ -14,7 +14,16 @@ When the backend is started for the first time (or completely recreated), matomo
  - application
 
  Ntd : if they are not set in the right order, you will recieved information comming from those site but they won't match their name in matomo entries. The first entry is live service, the second is the landing page and the last one is the app.
- 
+
+Then in Administration > System > General settings, enable CORS for:
+http://localhost:33400
+http://localhost:33450
+http://localhost:33460
+http://localhost:8100
+http://frontage.arbalet-project.org
+http://live.arbalet-project.org
+http://matomo.arbalet-project.org
+
 # Sentry config
 ```
 cd Arbalet/frontage/sentry
