@@ -65,7 +65,7 @@ class Frontage(Thread):
 
         while self.frontage_running:
             # ASYNCHRONOUS END FRAME UPDATE LOOP
-            method, properties, body = self.channel_app_model.basic_get(queue=queue_name)
+            method, properties, body = self.channel_app_model.basic_get(queue=queue_name, auto_ack=True)
             if self.fade_out_idx > 1:
                 self.model = self.model.__mul__(0.9)
                 self.fade_out_idx -= 1
