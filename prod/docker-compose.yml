@@ -114,7 +114,7 @@ services:
     build: ../artnet
     restart: unless-stopped
     volumes:
-      - ../artnet/config:/usr/src/app/config
+      - ../artnet:/usr/src/app
     env_file: .env
     ports:
       - 6454:6454/udp
