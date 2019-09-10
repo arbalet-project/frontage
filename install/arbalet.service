@@ -1,9 +1,10 @@
 [Unit]
-Description=Arbalet Autostart
+Description=Arbalet Frontage
 Wants=network-online.target
 After=network-online.target
 
 [Service]
+User=CURRENTUSER
 Type=simple
 WorkingDirectory=WDIRECTORY
 ExecStart=/usr/bin/docker-compose up --force-recreate

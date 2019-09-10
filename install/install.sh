@@ -231,6 +231,7 @@ gen_password PWD_MQL $reply
 
 # build arbalet service
 sed -i "s#WDIRECTORY#$directory/prod/#" arbalet.service
+sed -i "s#CURRENTUSER#$username#" arbalet.service
 cp arbalet.service /lib/systemd/system/
 
 # set up services
