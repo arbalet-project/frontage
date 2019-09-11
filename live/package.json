@@ -1,7 +1,7 @@
 {
-  "name": "arbalet_meki_live",
+  "name": "arbalet_live",
   "version": "1.1.0",
-  "description": "Desktop Application for Arbalet Meki Live",
+  "description": "Arbalet Live",
   "main": "main.js",
   "homepage": "http://www.arbalet-project.org/",
   "keywords": [
@@ -58,36 +58,5 @@
     "path": "^0.12.7",
     "redis": "^2.8.0",
     "socket.io": "^2.2.0"
-  },
-  "build": {
-    "appId": "com.example.arbalet",
-    "productName": "Arbalet Meki Live",
-    "mac": {
-      "category": "education"
-    },
-    "dmg": {
-      "contents": [
-        {
-          "x": 110,
-          "y": 150
-        },
-        {
-          "x": 240,
-          "y": 150,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ]
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ]
-    },
-    "win": {
-      "target": "portable",
-      "icon": "build/icon.ico"
-    }
   }
 }

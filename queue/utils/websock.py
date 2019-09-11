@@ -8,7 +8,6 @@ from threading import Thread
 
 KEY_WS_SEND         = "KEY_WS_SEND"
 KEY_USERS           = "KEY_USERS"
-KEY_HASCHANGED      = "KEY_FRONTAGE_HAS_CHANGED"
 KEY_GRANTUSER       = "KEY_GRANTED_USER"
 
 class Websock(Thread):
@@ -25,13 +24,6 @@ class Websock(Thread):
         if (users == 'None'):
             return {'users': {'id': 'turnoff', 'username':'turnoff'}}
         return users
-
-    @staticmethod
-    def set_has_changed(bool=False, r=None, c=None, d=None):
-        redis.set(KEY_HASCHANGED, json.dumps({'haschanged': bool,
-                                              'rows': r,
-                                              'cols': c,
-                                              'disabled': d}))
 
     @staticmethod
     def set_grantUser(user): # user : { 'id': string, 'username': string}

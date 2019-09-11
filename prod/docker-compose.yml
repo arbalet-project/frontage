@@ -59,7 +59,7 @@ services:
     working_dir: /home/node/live
     restart: unless-stopped
     volumes:
-      - ../live/public/config.json:/home/node/live/public/config.json
+      - ../live:/home/node/live
     env_file:
       - .env
     links:

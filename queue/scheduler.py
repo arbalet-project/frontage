@@ -27,7 +27,6 @@ class Scheduler(object):
 
         redis.set(SchedulerState.KEY_USERS_Q, '[]')
         redis.set(SchedulerState.KEY_FORCED_APP, 'False')
-        Websock.set_has_changed(True, SchedulerState.get_rows(), SchedulerState.get_cols(), SchedulerState.get_disabled())
         Websock.set_grantUser({'id': "turnoff", 'username':"turnoff"})
 
         self.frontage = Frontage()
@@ -229,6 +228,9 @@ class Scheduler(object):
                 logging.info(SchedulerState.get_scheduled_off_time())
         self.count += 1
 
+    def update_geometry(self):
+        SchedulerState.update_geometry(SchedulerState.get_rows(), SchedulerState.get_cols(), SchedulerState.get_disabled())
+
     def run(self):
         # last_state = False
         # we reset the value
@@ -243,6 +245,7 @@ class Scheduler(object):
                     logging.info('Locked')
                 else:
                     self.run_scheduler()
+                    self.update_geometry()
                     self.print_scheduler_info()
                 sleep(0.1)
         except:

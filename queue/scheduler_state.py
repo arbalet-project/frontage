@@ -25,6 +25,7 @@ class SchedulerState(object):
 
     # KEY_APP_START_LOCK = 'key_app_start_lock'
     KEY_USABLE = 'frontage_usable'
+    KEY_GEOMETRY = 'frontage_geometry'
     KEY_ENABLE_STATE = 'frontage_enable_state'
     KEY_FRONTAGE_ON_OFF = 'key_frontage_on_off'
     KEY_NOTICE_EXPIRE_SOON = 'key_notice_expire_soon'
@@ -77,6 +78,7 @@ class SchedulerState(object):
 
     @staticmethod
     def get_disabled():
+        return []
         session = session_factory()
         pixels = SchedulerState.get_pixels_dic()
         rows = SchedulerState.get_rows()
@@ -125,6 +127,11 @@ class SchedulerState(object):
         session.commit()
         session.close()
 
+    @staticmethod
+    def update_geometry(r=None, c=None, d=None):
+        redis.set(SchedulerState.KEY_GEOMETRY, json.dumps({'rows': r,
+                                                           'cols': c,
+                                                           'disabled': d}))
 
     @staticmethod
     def add_cell(x, y, mac_address, ind):

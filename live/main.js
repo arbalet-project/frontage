@@ -16,8 +16,7 @@ let rabbitPublisher;
 let clientsLogged = new Map();
 let userlist = new Array();
 let grantedUser = {id:"turnoff", username:"turnoff"};
-let frontageConnected = false;
-
+let config = {"language":"fr", "rows":4, "cols":19, "disabled":[], "project":"Frontage", "simulation":false}
 
 /*
  * Set up the server configuration :
@@ -192,24 +191,24 @@ async function updateConfigFile(data) {
     disabled: data['disabled'],
     project: "Frontage",
     simulation: false};
-  fs.writeFile("./public/config.json", JSON.stringify(conf), function(err) {
+    fs.writeFile("./public/config.json", JSON.stringify(conf), function(err) {
     if (err) throw err;
   });
-  console.log("config.json modified !");
 }
 
 /**
  * get informations about frontage geometry and the granted user.
  */
 function updateValues(){
-  redisClient.get('KEY_FRONTAGE_HAS_CHANGED', function(err, reply) {
-    let change_config = JSON.parse(reply);
-    if (change_config != null && change_config.haschanged){
-      change_config.haschanged = false;
-      redisClient.set('KEY_FRONTAGE_HAS_CHANGED', JSON.stringify(change_config));
-      updateConfigFile(change_config);
+  redisClient.get('frontage_geometry', function(err, reply) {
+    let newConfig = JSON.parse(reply);
+    if (newConfig != null && (config["cols"] != newConfig["cols"] || config["rows"] != newConfig["rows"])) {
+      config = newConfig;
+      console.error("Updated JSON configuration file!");
+      updateConfigFile(config);
     }
   });
+
   redisClient.get('KEY_GRANTED_USER', function(err, reply) {
     let newGranted = JSON.parse(reply);
     if (newGranted != null && newGranted['id'] != grantedUser['id']){
