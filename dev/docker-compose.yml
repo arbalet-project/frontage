@@ -80,8 +80,6 @@ services:
       - .env-dev
   matomo:
     image: "matomo"
-    environment:
-      - MATOMO_DATABASE_HOST=mariadb:3306
     restart: unless-stopped
     volumes:
       - matomo:/var/www/html
