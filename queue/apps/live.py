@@ -94,7 +94,7 @@ class Snap(Fap):
         queue_name = result.method.queue
 
         self.channelserver.queue_bind(exchange='logs', queue=queue_name)
-        self.channel.basic_consume(queue=queue_name, on_message_callback=self.callback, auto_ack=True)
+        self.channelserver.basic_consume(queue=queue_name, on_message_callback=self.callback, auto_ack=True)
 
         logging.info('Waiting for pixel data on queue "{}".'.format(queue_name))
         self.channelserver.start_consuming()
