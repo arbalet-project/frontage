@@ -1,7 +1,7 @@
-FROM node:8
-RUN mkdir -p /home/node/live
-COPY . /home/node/live
+FROM node:12
 COPY wait-for-it.sh /
-RUN cd /home/node/live && npm i
+RUN mkdir -p /home/node/live
+COPY . /home/node/live/
 WORKDIR /home/node/live
+RUN cd /home/node/live && npm i --verbose
 ENTRYPOINT ["/home/node/live/docker-entrypoint.sh"]

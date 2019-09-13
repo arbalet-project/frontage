@@ -58,8 +58,6 @@ services:
     user: "node"
     working_dir: /home/node/live
     restart: unless-stopped
-    volumes:
-      - ../live:/home/node/live
     env_file:
       - .env
     links:
