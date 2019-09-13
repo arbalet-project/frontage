@@ -249,7 +249,7 @@ docker-compose run --rm app init
 cd $directory/install
 
 # ethernet interfaces
-netplan_config `ip link show | grep \ en | cut --delimiter=: -f 2`
+netplan_config `ip link show | grep \ en | cut --delimiter=: -f 2 | sort`
 cp hosts /etc/hosts
 cp hostname /etc/hostname
 
