@@ -63,6 +63,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env-dev
+    volumes:
+      - ../live/public/config.json:/home/node/live/public/config.json
     links:
       - redis:redis
       - rabbit:rabbit

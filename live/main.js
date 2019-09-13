@@ -99,7 +99,7 @@ function initSocket() {
         userlist.push({id: socket.handshake.session.id, username: login});
         // post userlist on redis
         console.log("user : "+ login + " has logged");
-        console.log("list of users: " + userlist.inspect());
+        console.log("list of users: " + JSON.stringify({users: userlist}));
         redisClient.set('KEY_USERS', JSON.stringify({users: userlist}));
         let client = clientsLogged.get(socket.handshake.session.id);
         socket.emit('logged', {name: client.login, ip: client.ip});
