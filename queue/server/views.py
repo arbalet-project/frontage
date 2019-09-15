@@ -287,7 +287,9 @@ def app_position(user):
 @authentication_required
 def set_is_alive_current_app(user):
     SchedulerState.set_is_alive(user)
-    return jsonify(pouet='pouet')
+    c_app = SchedulerState.get_current_app()
+    keep_alive = "userid" in c_app and c_app['userid'] == user['userid']
+    return jsonify(keepAlive=keep_alive)
 
 @blueprint.route('/b/apps/quit', methods=['GET'])
 @authentication_required
