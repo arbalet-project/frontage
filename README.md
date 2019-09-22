@@ -43,6 +43,14 @@ Then compile, deploy and open [the frontend app](https://github.com/arbalet-proj
 
 If you want to stop the backend, just press Ctl+C once, it will nicely closes all processes.
 
+### Dev ports
+
+* 33400: Frontage landing page (Nginx Wifi captive portal)
+* 33405: REST API (Python/Gunicorn)
+* 33406: Websocket (Python/Gunicorn)
+* 33450: Arbalet Frontage Live (Node JS server)
+* 33460: Matomo analytics (PHP/Mariadb)
+
 ## Production
 Refer to the [install](install) procedure to deploy the app on a production server.
 
