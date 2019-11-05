@@ -34,8 +34,8 @@ class SchedulerState(object):
     KEY_REGISTERED_APP = 'frontage_registered_app'
     KEY_EVENT_LOCK = 'key_event_lock'
     KEY_APP_STARTED_AT = 'frontage_app_started_at'
-    KEY_ON_TIME = 'astronomical_twilight_end'
-    KEY_OFF_TIME = 'astronomical_twilight_begin'
+    KEY_ON_TIME = 'sunset'
+    KEY_OFF_TIME = 'sunrise'
     KEY_DEFAULT_APP_CURRENT_INDEX = 'key_default_app_current_index'
     KEY_SET_DEFAULT_DRAWING = 'key_set_default_drawing'
 
