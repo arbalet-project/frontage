@@ -2,7 +2,6 @@ from __future__ import print_function
 
 from os import environ
 from model import Model
-from db.models import DimensionsModel
 from threading import Thread
 
 from scheduler_state import SchedulerState
@@ -20,7 +19,6 @@ class Frontage(Thread):
     def __init__(self, height=4, width=19):
         Thread.__init__(self)
         self.setDaemon(True)
-        DimensionsModel()
         self.model = Model(height, width)
         self.rate = Rate(self.RATE_HZ)
         self.frontage_running = False

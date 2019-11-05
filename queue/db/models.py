@@ -18,45 +18,33 @@ def cln_str(s):
             '')
     return ''
 
+class DisabledPixelsModel(Base):
+    __tablename__ = 'disabledmodel'
+
+    uniqid = Column(String(36), primary_key=True)
+    row = Column(Integer)
+    col = Column(Integer)
+
+    def __init__(self, row, col):
+        self.uniqid = str(uuid4())
+        self.row = row
+        self.col = col
+
 class DimensionsModel(Base):
     __tablename__ = 'dimensionsmodel'
 
     uniqid = Column(String(36), primary_key=True)
     rows = Column(Integer)
     cols = Column(Integer)
-    amount = Column(Integer)
-    initialised = Column(Integer)
 
-    def __init__(self):
+    def __init__(self, rows, cols):
         self.uniqid = str(uuid4())
-        self.rows = 4
-        self.cols = 19
-        self.amount = 1
-        self.initialised = 0
+        self.rows = rows
+        self.cols = cols
 
     def __repr__(self):
-        return '<dimensionsmodel %r (%r) (%r) (%r) (%r)>' % (
-            self.uniqid, self.rows, self.cols, self.amount, self.initialised)
-
-class CellTableModel(Base):
-    __tablename__ = 'celltablemodel'
-
-    uniqid = Column(String(36), primary_key=True)
-    X = Column(Integer)
-    Y = Column(Integer)
-    MacAddress = Column(String(60))
-    Ind = Column(Integer)
-
-    def __init__(self, x, y, macAddress, ind):
-        self.uniqid = str(uuid4())
-        self.X = x
-        self.Y = y
-        self.MacAddress = macAddress
-        self.Ind = ind
-
-    def __repr__(self):
-        return '<celltablemodel %r (%r) (%r) (%r) (%r)>' % (
-            self.uniqid, self.X, self.Y, self.MacAddress, self.Ind)
+        return '<dimensionsmodel %r %r %r>' % (
+            self.uniqid, self.rows, self.cols)
 
 class FappModel(Base):
     __tablename__ = 'fapp'

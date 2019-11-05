@@ -16,6 +16,3 @@ Then follow the notebook cells.
 1. Switch to newer Art-Net version with UDP unicast
 2. Switch back to non-host network mode in docker-compose.yml (prod)
 3. Uncomment the wait-for-it script in docker-entrypoint.sh so that RabbitMQ is ready before starting the transmitter
-
-### Dynamic mapping configuration
-Generate the mapping from the ama.py f-app and store the mapping on redis

@@ -1,15 +1,18 @@
 # Arbalet Frontage backend
 
-This is the backend of Arbalet Frontage, the [pixelated building facade of Bordeaux University](https://vimeo.com/arbalet/frontage). It drives 4 rows x 19 columns of RGB Art-Net/DMX fixtures. See [Network schematics](frontage.svg).
-
+This is the backend of Arbalet Frontage, the [pixelated building facade software](https://vimeo.com/arbalet/frontage).
+By default it drives 4 rows x 19 columns of RGB Art-Net I (DMX) fixtures.
+See [Network schematics](frontage.svg).
 
 ## Development
 ### First startup
+#### 1. Backend startup
+
 Default keys and passwords are fine for a dev environment.
 Make sure [docker-compose](https://docs.docker.com/compose/) is installed on your workstation and then build and run with docker:
 ```
 git clone https://github.com/arbalet-project/frontage.git
-cd frontage
+cd frontage/dev
 docker-compose run --rm app init # Prompt will ask you to create your admin password
 docker-compose up
 ```
@@ -37,11 +40,31 @@ scheduler_1  | []
 * Forced app is true is the current running f-app is being forced by and admin (will stop only when unforced)
 * Waiting queue shows the list of users waiting for controlling the frontage
 
-If you're meeting authorizations issues on Linux, make sure your username is in the docker group: `sudo usermod -aG docker $USER` Log out and log back in so that your group membership is re-evaluated.
+If you meet authorization issues on Linux, make sure your username is in the docker group: `sudo usermod -aG docker $USER` Log out and log back in so that your group membership is re-evaluated.
 
-Then compile, deploy and open [the frontend app](https://github.com/arbalet-project/frontage-frontend) and edit its environment so that it calls the IP of your dev workstation (usually `127.0.0.1` in `environment.ts`)
+#### 2. Open the simulator
+Then Open the facade simulator:
+```
+cd frontage/simulator
+python3 simulator.py
+```
 
-If you want to stop the backend, just press Ctl+C once, it will nicely closes all processes.
+You must see a 4x19 pixelated window. It may be black since by default the systems comes up at sunset until sunrise. The mobile app lets you change these settings.
+
+
+#### 3. Take control with the mobile app 
+Then compile, deploy and open [the frontend app](https://github.com/arbalet-project/frontage-frontend) and edit its environment so that it calls the IP of your dev workstation (usually `127.0.0.1:PORT` in `environment.ts` instead of default arbalet-project.org URLs)
+
+The dev environment has the following open ports:
+* 33400: Frontage landing page: users will be redirected and welcomed there if they connect through Wifi
+* 33405: Main REST API for mobile frontend app (used for general control, start and close f-apps, ...)
+* 33406: Websocket API for mobile frontend app (used for joystick control and events)
+* 33450: Arbalet Live programming environement: Blockly-based environment for programming workshops (f-app Snap/Live)
+* 33460: Matomo analytics: reports the traffic of the landing page, the mobile app and Arbalet Live environment
+
+Refer to the doc of the frontend for more further details.
+
+To stop the backend, press Ctl+C once, it will nicely closes all processes.
 
 ### Dev ports
 

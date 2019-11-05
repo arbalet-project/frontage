@@ -18,7 +18,6 @@ from apps.snake import Snake
 from apps.tetris import Tetris
 from apps.live import Snap
 from apps.drawing import Drawing
-from apps.ama import Ama
 
 class TestApp():
     def run(self, params):

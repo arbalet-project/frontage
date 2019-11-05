@@ -29,7 +29,7 @@ class Scheduler(object):
         redis.set(SchedulerState.KEY_FORCED_APP, 'False')
         Websock.set_grantUser({'id': "turnoff", 'username':"turnoff"})
 
-        self.frontage = Frontage()
+        self.frontage = Frontage(SchedulerState.get_rows(), SchedulerState.get_cols())
         self.current_app_state = None
         self.queue = None
         self.count = 0

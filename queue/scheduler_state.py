@@ -5,7 +5,7 @@ import time
 
 from time import sleep
 from utils.red import redis, redis_get
-from db.models import FappModel, ConfigModel, DimensionsModel, CellTableModel
+from db.models import FappModel, ConfigModel, DimensionsModel, DisabledPixelsModel
 from db.base import session_factory, engine
 from db.tools import to_dict, serialize
 
@@ -63,13 +63,6 @@ class SchedulerState(object):
         return cols
 
     @staticmethod
-    def get_amount():
-        session = session_factory()
-        amount = session.query(DimensionsModel).first().amount
-        session.close()
-        return amount
-
-    @staticmethod
     def get_initialised():
         session = session_factory()
         initialised = session.query(DimensionsModel).first().initialised
@@ -78,21 +71,12 @@ class SchedulerState(object):
 
     @staticmethod
     def get_disabled():
-        return []
         session = session_factory()
-        pixels = SchedulerState.get_pixels_dic()
-        rows = SchedulerState.get_rows()
-        cols = SchedulerState.get_cols()
-        model = [[ False for i in range(cols)] for j in range(rows)]
-        for pixel in pixels.values() :
-            ((x,y), ind) = pixel
-            if( x < rows and y < cols):
-                model[x][y] = True
+        disabled_model = session.query(DisabledPixelsModel).all()
         disabled = []
-        for i in range(rows):
-            for j in range(cols):
-                if (not model[i][j]) :
-                    disabled += [[i,j]]
+        for disabled_pixel in disabled_model:
+            disabled.append([disabled_pixel.row, disabled_pixel.col])
+        session.close()
         return disabled
 
     @staticmethod
@@ -112,14 +96,6 @@ class SchedulerState(object):
         session.close()
 
     @staticmethod
-    def set_amount(value):
-        session = session_factory()
-        conf = session.query(DimensionsModel).first()
-        conf.amount = value
-        session.commit()
-        session.close()
-
-    @staticmethod
     def set_initialised(value):
         session = session_factory()
         conf = session.query(DimensionsModel).first()
@@ -132,51 +108,6 @@ class SchedulerState(object):
         redis.set(SchedulerState.KEY_GEOMETRY, json.dumps({'rows': r,
                                                            'cols': c,
                                                            'disabled': d}))
-
-    @staticmethod
-    def add_cell(x, y, mac_address, ind):
-        logging.info("Considering {0} at (({1}, {2}), {3})".format(mac_address, x, y, ind))
-        session = session_factory()
-        table = session.query(CellTableModel).all()
-        isInTable = False
-        for cell in table:
-            if (cell.X == x and cell.Y == y):
-                logging.info("Found its position : updating mac and ind...")
-                isInTable = True
-                cell.MacAddress = mac_address
-                cell.Ind = ind
-            elif (cell.MacAddress == mac_address) :
-                logging.info("Found its mac : updating position and ind...")
-                isInTable = True
-                cell.Ind = ind
-                cell.X == x
-                cell.Y == y
-        if (isInTable == False):
-            logging.error("Not found : adding to table")
-            cell = CellTableModel(x, y, mac_address, ind)
-            session.add(cell)
-            session.commit()
-
-        session.close()
-
-    @staticmethod
-    def get_pixels_dic() :
-        session = session_factory()
-        table = session.query(CellTableModel).all()
-        dic = {}
-        for cell in table :
-            dic[cell.MacAddress] = ((cell.X, cell.Y), cell.Ind)
-        session.close()
-        return dic
-
-    @staticmethod
-    def drop_dic() :
-        session = session_factory()
-        table = session.query(CellTableModel).all()
-        for cell in table :
-            session.delete(cell)
-        session.commit()
-        session.close()
 
     @staticmethod
     def get_expires_value():

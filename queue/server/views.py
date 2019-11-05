@@ -322,7 +322,6 @@ def status():
                    current_time=datetime.datetime.now().isoformat(),
                    height=SchedulerState.get_rows(),
                    width=SchedulerState.get_cols(),
-                   amount=SchedulerState.get_amount(),
                    disabled=SchedulerState.get_disabled())
 
 @blueprint.route('/b/restart', methods=['POST'])
@@ -342,101 +341,7 @@ rest_api.add_resource(DrawingAppDefault, '/b/apps/drawing/default')
 rest_api.add_resource(AppRunningView, '/b/apps/running')
 rest_api.add_resource(AppListView, '/b/apps')
 
-
-
-# arbalet mesh additions
-@blueprint.route('/b/admin/settings/mesh/dimensions', methods=['POST'])
-@authentication_required
-def set_building_dimensions(user):
-    if not is_admin(user):
-        abort(403, "Forbidden Bru")
-
-    body = request.get_json()
-    if 'height' not in body:
-        abort(415, 'Missing height value')
-    if 'width' not in body:
-        abort(415, 'Missing width value')
-    if 'amount' not in body:
-        abort(415, 'Missing amount value')
-
-    SchedulerState.set_rows(body['height'])
-    SchedulerState.set_cols(body['width'])
-    SchedulerState.set_amount(body['amount'])
-    return jsonify(height=SchedulerState.get_rows(),
-                  width=SchedulerState.get_cols(),
-                  amount=SchedulerState.get_amount())
-
-@blueprint.route('/b/admin/settings/mesh/dimensions', methods=['GET'])
-@authentication_required
-def get_building_dimensions(user):
-    return jsonify(height=SchedulerState.get_rows(),
-                  width=SchedulerState.get_cols(),
-                  amount=SchedulerState.get_amount(),
-                  disabled=SchedulerState.get_disabled())
-
-@blueprint.route('/b/admin/settings/mesh/pixel/set', methods=['POST'])
-@authentication_required
-#TODO : call Fapp AMA
-def set_pixel_position(user):
-    if not is_admin(user):
-        abort(403, "Forbidden Bru")
-
-    body = request.get_json()
-    if 'row' not in body:
-        abort(415, 'Missing height value')
-    if 'column' not in body:
-        abort(415, 'Missing width value')
-
-    #TODO: variable mac a changer en string pour voir l'erreur
-    mac = 1
-    SchedulerState.add_cell(body['column'], body['row'], mac)
-
-    return jsonify(row=body['row'], column=body['column'])
-
-@blueprint.route('/b/admin/settings/mesh/pixel/reset', methods=['POST'])
-@authentication_required
-def reset_pixel_position(user):
-    if not is_admin(user):
-        abort(403, "Forbidden Bru")
-
-    logging.info("reset")
-    return jsonify(success='true')
-    # body = request.get_json()
-    # return jsonify(row=body['row'],
-    #                column=body['column'])
-
-@blueprint.route('/b/admin/settings/mesh/pixel/confirm', methods=['POST'])
-@authentication_required
-def confirm_pixel_position(user):
-    if not is_admin(user):
-        abort(403, "Forbidden Bru")
-
-    logging.info("confirmed")
-    return jsonify(success='true')
-
-
-
-@blueprint.route('/b/admin/settings/mesh/initialised', methods=['GET'])
-@authentication_required
-def get_initialised(user):
-    if not is_admin(user):
-        abort(403, "Forbidden Bru")
-
-    return jsonify(initialised=SchedulerState.get_initialised())
-
-@blueprint.route('/b/admin/settings/mesh/initialised', methods=['POST'])
-@authentication_required
-def set_initialised(user):
-    if not is_admin(user):
-        abort(403, "Forbidden Bru")
-
-    body = request.get_json()
-    if 'initialised' not in body:
-        abort(415, 'Missing initialised value')
-
-    SchedulerState.set_initialised(body['initialised'])
-    return jsonify(initialised=SchedulerState.get_initialised())
-
+# ARBALET LIVE
 @blueprint.route('/b/admin/snap/users', methods=['GET'])
 @authentication_required
 def get_users(user):
