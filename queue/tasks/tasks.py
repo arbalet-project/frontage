@@ -34,11 +34,11 @@ def clear_all_task():
 def start_default_fap(app):
     SchedulerState.set_app_started_at()
     # app['expire_at'] = str(
-    #     datetime.datetime.now())
+    #     datetime.datetime.utcnow())
     if 'params' not in app:
         app['params'] = {}
     app['expire_at'] = str(
-        datetime.datetime.now() +
+        datetime.datetime.utcnow() +
         datetime.timedelta(
             seconds=app['expires']))
 
@@ -51,7 +51,7 @@ def start_default_fap(app):
     app['last_alive'] = time.time()
     app['username'] = '>>>default<<<'
     app['userid'] = '>>>default<<<'
-    app['started_at'] = datetime.datetime.now().isoformat()
+    app['started_at'] = datetime.datetime.utcnow().isoformat()
 
     SchedulerState.set_current_app(app)
     SchedulerState.set_event_lock(False)
@@ -67,13 +67,13 @@ def start_default_fap(app):
 def start_fap(app):
     SchedulerState.set_app_started_at()
     app['expire_at'] = str(
-        datetime.datetime.now() +
+        datetime.datetime.utcnow() +
         datetime.timedelta(
             seconds=app['expires']))
     app['is_default'] = False
     app['is_forced'] = False
     app['task_id'] = start_fap.request.id
-    app['started_at'] = datetime.datetime.now().isoformat()
+    app['started_at'] = datetime.datetime.utcnow().isoformat()
     SchedulerState.pop_user_app_queue()
     SchedulerState.set_current_app(app)
     SchedulerState.set_event_lock(False)
@@ -100,10 +100,10 @@ def start_forced_fap(fap):
         'params': fap['params'],
         'task_id': start_forced_fap.request.id,
         'last_alive': time.time(),
-        'started_at': datetime.datetime.now().isoformat(),
+        'started_at': datetime.datetime.utcnow().isoformat(),
         'is_default': False,
         'is_forced': True,
-        'expire_at': str(datetime.datetime.now() + datetime.timedelta(weeks=52))}
+        'expire_at': str(datetime.datetime.utcnow() + datetime.timedelta(weeks=52))}
     SchedulerState.set_current_app(app)
     SchedulerState.set_event_lock(False)
     fap = globals()[name](app['username'], app['userid'])

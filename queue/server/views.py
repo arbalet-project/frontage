@@ -92,7 +92,7 @@ def admin_enabled_scheduler(user):
     return jsonify(is_usable=SchedulerState.usable(),
                    is_forced=SchedulerState.get_forced_app(),
                    state=SchedulerState.get_enable_state(),
-                   current_time=datetime.datetime.now().isoformat())
+                   current_time=datetime.datetime.utcnow().isoformat())
 
 
 @blueprint.route('/b/admin/cal', methods=['GET'])
@@ -319,7 +319,7 @@ def status():
                    current_app=c_app_name,
                    next_on_time=SchedulerState.get_scheduled_on_time().isoformat(),
                    state=SchedulerState.get_enable_state(),
-                   current_time=datetime.datetime.now().isoformat(),
+                   current_time=datetime.datetime.utcnow().isoformat(),
                    height=SchedulerState.get_rows(),
                    width=SchedulerState.get_cols(),
                    disabled=SchedulerState.get_disabled())

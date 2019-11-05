@@ -339,7 +339,7 @@ class SchedulerState(object):
     @staticmethod
     def _get_scheduled_off_time():
         time_off = SchedulerState.get_time_off()
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
 
         if time_off in ['sunrise', 'sunset']:
             at = now.strftime('%Y-%m-%d')
@@ -364,7 +364,7 @@ class SchedulerState(object):
     def get_scheduled_off_time():
         off_time = SchedulerState._get_scheduled_off_time()
         on_time = SchedulerState._get_scheduled_on_time()
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
 
         if on_time > off_time and now > off_time:
             off_time = off_time + datetime.timedelta(days=1)
@@ -374,7 +374,7 @@ class SchedulerState(object):
     def get_scheduled_on_time():
         off_time = SchedulerState._get_scheduled_off_time()
         on_time = SchedulerState._get_scheduled_on_time()
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
 
         if on_time > off_time and now < off_time:
             on_time = on_time + datetime.timedelta(days=-1)
@@ -383,7 +383,7 @@ class SchedulerState(object):
     @staticmethod
     def _get_scheduled_on_time():
         time_on = SchedulerState.get_time_on()
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
 
         if time_on in ['sunrise', 'sunset']:
             at = now.strftime('%Y-%m-%d')
@@ -511,7 +511,7 @@ class SchedulerState(object):
     def set_app_started_at():
         redis.set(
             SchedulerState.KEY_APP_STARTED_AT,
-            datetime.datetime.now().isoformat())
+            datetime.datetime.utcnow().isoformat())
 
     @staticmethod
     def app_started_at():
@@ -600,7 +600,7 @@ class SchedulerState(object):
 
         # New request from the same user makes the current app expiring
         if c_app and c_app.get('userid', False) == userid:
-            c_app['expire_at'] = str(datetime.datetime.now())
+            c_app['expire_at'] = str(datetime.datetime.utcnow())
             SchedulerState.set_current_app(c_app)
             removed_previous = True
 
@@ -608,7 +608,7 @@ class SchedulerState(object):
                       'username': username,
                       'userid': userid,
                       'params': params,
-                      'started_wait_at': datetime.datetime.now().isoformat(),
+                      'started_wait_at': datetime.datetime.utcnow().isoformat(),
                       'expires': expires,
                       'task_id': None,
                       'last_alive': time.time(),

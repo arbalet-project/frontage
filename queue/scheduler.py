@@ -55,7 +55,7 @@ class Scheduler(object):
         return False
 
     def check_on_off_table(self):
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
         sunrise = SchedulerState.get_scheduled_off_time()
         sunset = SchedulerState.get_scheduled_on_time()
 
@@ -116,7 +116,7 @@ class Scheduler(object):
         SchedulerState.wait_task_to_start()
 
     def app_is_expired(self, c_app):
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
         return now > datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f")
 
     def start_default_app(self):
@@ -139,7 +139,7 @@ class Scheduler(object):
         # collect usefull struct & data
         queue = SchedulerState.get_user_app_queue()  # User waiting app
         c_app = SchedulerState.get_current_app()  # Current running app
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
 
         forced_app = SchedulerState.get_forced_app_request()
 
