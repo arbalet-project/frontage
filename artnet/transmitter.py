@@ -34,13 +34,18 @@ class ArtNetTransmitter(object):
                 for col in range(len(self.mapping[0])):
                     matches = self.mapping[row][col]
                     # matches should be as such: [{"uni": 0, "dmx": 511}, {"uni": 0, "dmx": 500}, ...]
-                    r, g, b = raw[row][col]
-                    for match in matches:
-                        universe = match["universe"]
-                        dmx = match["dmx"]
-                        self.frames[universe][dmx] = min(255, max(0, int(r*255)))
-                        self.frames[universe][dmx+1] = min(255, max(0, int(g*255)))
-                        self.frames[universe][dmx+2] = min(255, max(0, int(b*255)))
+                    try:
+                        r, g, b = raw[row][col]
+                    except IndexError:
+                        # Might happen if matrix config is ot consistent with Artnet config
+                        pass
+                    else:
+                        for match in matches:
+                            universe = match["universe"]
+                            dmx = match["dmx"]
+                            self.frames[universe][dmx] = min(255, max(0, int(r*255)))
+                            self.frames[universe][dmx+1] = min(255, max(0, int(g*255)))
+                            self.frames[universe][dmx+2] = min(255, max(0, int(b*255)))
 
             for universe in self.frames:
                 self.dmx.add(iter([self.frames[universe]]), universe)
