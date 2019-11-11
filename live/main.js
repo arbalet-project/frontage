@@ -16,7 +16,7 @@ let rabbitPublisher;
 let clientsLogged = new Map();
 let userlist = new Array();
 let grantedUser = {id:"turnoff", username:"turnoff"};
-let config = {"language":"fr", "rows":4, "cols":19, "disabled":[], "project":"Frontage", "simulation":false}
+let config = {"language":"fr", "rows":1, "cols":1, "disabled":[], "project":"Frontage", "simulation":false}
 
 /*
  * Set up the server configuration :
