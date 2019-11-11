@@ -4,6 +4,7 @@ import click
 from db.base import session_factory, Base, engine
 from db.models import FappModel, ConfigModel, DimensionsModel, DisabledPixelsModel
 
+from utils.version import version
 from utils.security import hash_password
 from apps import get_app_names
 from getpass import getpass
@@ -37,7 +38,7 @@ def drop_all():
 @click.command()
 @with_appcontext
 def init():
-    click.echo('Initialization of Arbalet backend...')
+    click.echo('Initialization of Arbalet backend v{}...'.format(version))
     _create_all()
     _set_admin_credentials()
 
@@ -78,7 +79,7 @@ def _set_admin_credentials():
     conf.admin_hash = hash_password(password)
     session.commit()
     session.close()
-    click.echo("Backend initialized")
+    click.echo("Backend v{} initialized.".format(version))
 
 @click.command()
 def clean():

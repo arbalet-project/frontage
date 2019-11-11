@@ -322,7 +322,8 @@ def status():
                    current_time=datetime.datetime.utcnow().isoformat(),
                    height=SchedulerState.get_rows(),
                    width=SchedulerState.get_cols(),
-                   disabled=SchedulerState.get_disabled())
+                   disabled=SchedulerState.get_disabled(),
+                   version=SchedulerState.get_version())
 
 @blueprint.route('/b/restart', methods=['POST'])
 @authentication_required

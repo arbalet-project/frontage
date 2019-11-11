@@ -4,6 +4,7 @@ import datetime
 import time
 
 from time import sleep
+from utils.version import version
 from utils.red import redis, redis_get
 from db.models import FappModel, ConfigModel, DimensionsModel, DisabledPixelsModel
 from db.base import session_factory, engine
@@ -47,6 +48,10 @@ class SchedulerState(object):
     KEY_USERS_Q = 'frontage_users_q'
 
     KEY_CURRENT_RUNNING_APP = 'frontage_current_running_app'
+
+    @staticmethod
+    def get_version():
+        return version
 
     @staticmethod
     def get_rows():
