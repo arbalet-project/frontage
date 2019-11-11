@@ -94,52 +94,50 @@ def clean():
 
 def initiate_db_dimensions():
     session = session_factory()
-    conf = session.query(DimensionsModel).first()
-    if not conf:
-        height, width = -1, -1
-        while True:
-            height_in = input("Enter height (number of rows): ")
-            width_in = input("Enter width (number of columns): ")
+    height, width = -1, -1
+    while True:
+        height_in = input("Enter height (number of rows): ")
+        width_in = input("Enter width (number of columns): ")
+        try:
+            height = int(height_in)
+            width = int(width_in)
+        except:
+            pass
+        if height > 0 and width > 0:
+            break
+        else:
+            click.echo("Invalid dimensions, please retry")
+    conf = DimensionsModel(height, width)
+    session.add(conf)
+
+    # Adding optional disabled pixels (inexisting pixels)
+    num_disabled = 0
+    while True:
+        click.echo("{} pixels have been disabled so far".format(num_disabled))
+        answer = input("Is there any {}disabled pixel? [y/N] ".format("other " if num_disabled > 0 else ""))
+        if answer in ['y', 'Y']:
+            row, col = -1, -1
+            row_in = input("Enter disabled pixel's row: ")
+            col_in = input("Enter disabled pixel's column: ")
             try:
-                height = int(height_in)
-                width = int(width_in)
+                row = int(row_in)
+                col = int(col_in)
             except:
                 pass
-            if height > 0 and width > 0:
-                break
+            if row < 0 or col < 0:
+                click.echo("Invalid pixel, please retry")
             else:
-                click.echo("Invalid dimensions, please retry")
-        conf = DimensionsModel(height, width)
-        session.add(conf)
-
-        # Adding optional disabled pixels (inexisting pixels)
-        num_disabled = 0
-        while True:
-            click.echo("{} pixels have been disabled so far".format(num_disabled))
-            answer = input("Is there any {}disabled pixel? [y/N] ".format("other " if num_disabled > 0 else ""))
-            if answer in ['y', 'Y']:
-                row, col = -1, -1
-                row_in = input("Enter disabled pixel's row: ")
-                col_in = input("Enter disabled pixel's column: ")
-                try:
-                    row = int(row_in)
-                    col = int(col_in)
-                except:
-                    pass
-                if row < 0 or col < 0:
-                    click.echo("Invalid pixel, please retry")
-                else:
-                    dis_pix = DisabledPixelsModel(row, col)
-                    session.add(dis_pix)
-                    click.echo("Pixel ({}, {}) has been disabled".format(row, col))
-                    num_disabled += 1
-            else:
-                break
-        
-        if num_disabled > 0:
-            click.echo("{} pixels have been disabed in total".format(num_disabled))
+                dis_pix = DisabledPixelsModel(row, col)
+                session.add(dis_pix)
+                click.echo("Pixel ({}, {}) has been disabled".format(row, col))
+                num_disabled += 1
         else:
-            click.echo("No pixel have been disabed")
+            break
+    
+    if num_disabled > 0:
+        click.echo("{} pixels have been disabed in total".format(num_disabled))
+    else:
+        click.echo("No pixel have been disabed")
 
     session.commit()
     session.close()
