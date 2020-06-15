@@ -203,7 +203,7 @@ fi
 
 # check if git respository is here if not download it
 exist=`[ -f ../.git/config ] && echo true || echo false`
-if [[ "$exist" == "true"]]; then
+if [[ "$exist" == "true" ]]; then
   directory=`echo $directory | sed 's/\/install//'`
   echo $directory
   echo "Repository already downloaded : Skipp downloading"
