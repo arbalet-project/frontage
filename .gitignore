@@ -107,3 +107,6 @@ live/node_modules
 
 # asset cache
 .sass-cache
+
+# vscode
+.vscode/
