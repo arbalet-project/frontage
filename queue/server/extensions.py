@@ -4,7 +4,6 @@ import flask
 from flask_cors import CORS
 from flask_restful import Api
 from celery import Celery
-from raven.contrib.flask import Sentry
 
 
 class FlaskCelery(Celery):
@@ -41,7 +40,6 @@ class FlaskCelery(Celery):
 # db = SQLAlchemy()
 cors = CORS()
 rest_api = Api()
-sentry = Sentry()
 
 celery = FlaskCelery('tasks',
                      broker='redis://' + 'redis',

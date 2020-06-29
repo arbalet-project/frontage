@@ -1,9 +1,0 @@
-.git
-.gitignore
-.dockerignore
-Makefile
-README.md
-*.pyc
-*.tar
-docker-compose.yml
-data/

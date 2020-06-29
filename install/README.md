@@ -4,8 +4,6 @@
  - *arbalet.service* (backend)
 and *systemd-resolved.service* will be disabled.
 
-Sentry service is still to install manually as indicated below.
-
 # Matomo initialisation
 
 When the backend is started for the first time (or completely recreated), matomo service is still to configure. Open a web browser to [matomo.arbalet-project.org](matomo.arbalet-project.org). Follow the initialisation procedure (the prefilled information concerning mariadb are correct) and choose an admin login and password. Once it is done, add the site you want to follow in the next order :
@@ -24,27 +22,6 @@ http://frontage.arbalet-project.org
 http://live.arbalet-project.org
 http://matomo.arbalet-project.org
 
-# Sentry config
-```
-cd Arbalet/frontage/sentry
-docker-compose run --rm web config generate-secret-key
-nano docker-compose.yml  # Add the Sentry's secret key to the environment file
-docker-compose run --rm web upgrade # Build the database. Use the interactive prompts to create a user account.
-```
-
-* Open a web browser to [192.168.0.42:9000](192.168.0.42:9000) and login
-* Set `Root URL [REQUIRED]` to http://192.168.0.42:9000 and some e-mail address
-* Go to `New Project > Python > Project settings > Client Keys (DSN)` and paste the `DSN` **(PRIVATE)** in .env (back)
-* Go to `New Project > Angular > Project settings > Client Keys (DSN)` and paste the `DSN (Public)` in `environment.ts` (front)
-
-```
-cd ../install
-sudo cp sentry.service /lib/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable sentry.service
-
-sudo reboot
-```
 
 # Manage services
 ```
