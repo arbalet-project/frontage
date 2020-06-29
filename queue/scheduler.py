@@ -13,7 +13,6 @@ from scheduler_state import SchedulerState
 
 from apps.fap import Fap
 from db.base import Base
-from utils.sentry_client import SENTRY
 from utils.websock import Websock
 from apps import *
 
@@ -267,5 +266,4 @@ if __name__ == '__main__':
         scheduler = Scheduler()
         scheduler.run()
     except:
-        SENTRY.captureException()
         raise   # Re-raise since Docker will restart the scheduler
