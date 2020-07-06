@@ -112,7 +112,6 @@ class Fap(object):
         struct['params_list'] = self.PARAMS_LIST
         struct['playable'] = self.PLAYABLE
         struct['activated'] = self.ACTIVATED
-        struct['max_time'] = self.max_time
         return struct
 
     def close(self):
