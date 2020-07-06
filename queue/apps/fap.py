@@ -28,8 +28,6 @@ class Fap(object):
 
     def __init__(self, username, userid):
         SchedulerState.set_expire_soon(False)
-        self.max_time = None
-        self.params = None
         self.username = username
         self.userid = userid
         self.ws = None
@@ -108,7 +106,6 @@ class Fap(object):
     def jsonify(self):
         struct = {}
         struct['name'] = self.__class__.__name__
-        struct['params'] = self.params
         struct['params_list'] = self.PARAMS_LIST
         struct['playable'] = self.PLAYABLE
         struct['activated'] = self.ACTIVATED
