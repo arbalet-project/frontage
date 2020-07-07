@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "types": [
+      "node"
+    ],
+    "sourceMap": true,
+    "target": "es6",
+    "outDir": "./build",
+    "pretty": true
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+  ]
+}

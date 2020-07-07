@@ -1,0 +1,11 @@
+# Node
+node_modules
+
+# Typescript
+build/
+
+# Environment
+*.env
+
+# VSCode
+.vscode
