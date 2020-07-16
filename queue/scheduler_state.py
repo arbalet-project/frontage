@@ -552,9 +552,6 @@ class SchedulerState(object):
     @staticmethod
     def get_user_app_queue():
         return SchedulerState.get_user_queue()
-        # from tasks.celery import app
-        # return
-        # app.control.inspect(['celery@workerqueue']).reserved()['celery@workerqueue']
 
     @staticmethod
     def get_user_position(user):

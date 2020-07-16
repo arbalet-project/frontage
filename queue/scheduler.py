@@ -1,4 +1,3 @@
-
 import json
 import datetime
 import time
@@ -12,13 +11,12 @@ from collections import OrderedDict
 from scheduler_state import SchedulerState
 
 from apps.fap import Fap
-from db.base import Base
 from utils.websock import Websock
 from apps import *
 
-
 EXPIRE_SOON_DELAY = 30
 logging.basicConfig(level=logging.INFO)
+
 
 class Scheduler(object):
     def __init__(self):
@@ -26,7 +24,7 @@ class Scheduler(object):
 
         redis.set(SchedulerState.KEY_USERS_Q, '[]')
         redis.set(SchedulerState.KEY_FORCED_APP, 'False')
-        Websock.set_grantUser({'id': "turnoff", 'username':"turnoff"})
+        Websock.set_grantUser({'id': "turnoff", 'username': "turnoff"})
 
         self.frontage = Frontage(SchedulerState.get_rows(), SchedulerState.get_cols())
         self.current_app_state = None
@@ -35,7 +33,6 @@ class Scheduler(object):
         self.apps = OrderedDict([(app, globals()[app]('', '')) for app in get_app_names()])
         SchedulerState.set_registered_apps(self.apps)
 
-
     def keep_alive_waiting_app(self):
         queue = SchedulerState.get_user_app_queue()
         for c_app in list(queue):
@@ -43,12 +40,11 @@ class Scheduler(object):
             if time.time() > (
                     c_app['last_alive'] +
                     SchedulerState.DEFAULT_KEEP_ALIVE_DELAY):
-                # to_remove.append(i)
                 queue.remove(c_app)
 
     def keep_alive_current_app(self, current_app):
         if not current_app.get('is_default', False) and not current_app.get('is_forced', False) and \
-                        time.time() > (current_app['last_alive'] + SchedulerState.DEFAULT_CURRENT_APP_KEEP_ALIVE_DELAY):
+                time.time() > (current_app['last_alive'] + SchedulerState.DEFAULT_CURRENT_APP_KEEP_ALIVE_DELAY):
             self.stop_app(current_app, None, 'User has disappeared')
             return True
         return False
@@ -68,8 +64,8 @@ class Scheduler(object):
         c_app = SchedulerState.get_current_app()
         if c_app:
             self.stop_app(c_app,
-                        Fap.CODE_CLOSE_APP,
-                        'The admin disabled Arbalet Frontage')
+                          Fap.CODE_CLOSE_APP,
+                          'The admin disabled Arbalet Frontage')
 
     def stop_app(self, c_app, stop_code=None, stop_message=None):
         # flask_log(" ========= STOP_APP ====================")
@@ -85,7 +81,6 @@ class Scheduler(object):
         app.control.revoke(c_app['task_id'], terminate=True)
         self.frontage.fade_out()
         SchedulerState.set_current_app({})
-
 
     def run_scheduler(self):
         # check usable value, based on ON/OFF AND if a forced app is running
@@ -124,7 +119,8 @@ class Scheduler(object):
             # if not default_scheduled_app['expires'] or default_scheduled_app['expires'] == 0: # TODO restore when each default app has a duration
             #    default_scheduled_app['expires'] = SchedulerState.get_default_fap_lifetime()
             default_scheduled_app['expires'] = SchedulerState.get_default_fap_lifetime()
-            default_scheduled_app['default_params']['name'] = default_scheduled_app['name']  # Fix for Colors (see TODO refactor in colors.py)
+            default_scheduled_app['default_params']['name'] = default_scheduled_app[
+                'name']  # Fix for Colors (see TODO refactor in colors.py)
             SchedulerState.set_event_lock(True)
 
             logging.info("## Starting {} [DEFAULT]".format(default_scheduled_app['name']))
@@ -160,7 +156,9 @@ class Scheduler(object):
             if self.keep_alive_current_app(c_app):
                 return
             # is expire soon ?
-            if not c_app.get('is_default', False) and now > (datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(seconds=EXPIRE_SOON_DELAY)):
+            if not c_app.get('is_default', False) and now > (
+                    datetime.datetime.strptime(c_app['expire_at'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(
+                    seconds=EXPIRE_SOON_DELAY)):
                 if not SchedulerState.get_expire_soon():
                     Fap.send_expires_soon(EXPIRE_SOON_DELAY, c_app['username'], c_app['userid'])
             # is the current_app expired ?
@@ -228,14 +226,13 @@ class Scheduler(object):
         self.count += 1
 
     def update_geometry(self):
-        SchedulerState.update_geometry(SchedulerState.get_rows(), SchedulerState.get_cols(), SchedulerState.get_disabled())
+        SchedulerState.update_geometry(SchedulerState.get_rows(), SchedulerState.get_cols(),
+                                       SchedulerState.get_disabled())
 
     def run(self):
-        # last_state = False
         # we reset the value
         SchedulerState.set_frontage_on(True)
         SchedulerState.set_enable_state(SchedulerState.get_enable_state())
-        # usable = SchedulerState.usable()
         logging.info('[SCHEDULER] Entering loop')
         self.frontage.start()
         try:
@@ -259,6 +256,7 @@ def load_day_table(file_name):
         SUN_TABLE = json.loads(f.read())
         redis.set(SchedulerState.KEY_DAY_TABLE, json.dumps(SUN_TABLE))
 
+
 if __name__ == '__main__':
     try:
         load_day_table(SchedulerState.CITY)
@@ -266,4 +264,4 @@ if __name__ == '__main__':
         scheduler = Scheduler()
         scheduler.run()
     except:
-        raise   # Re-raise since Docker will restart the scheduler
+        raise  # Re-raise since Docker will restart the scheduler
