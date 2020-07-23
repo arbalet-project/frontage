@@ -18,6 +18,7 @@ from apps.fap import Fap
 from apps.actions import Actions
 from utils.colors import name_to_rgb
 from scheduler_state import SchedulerState
+from json import loads
 
 from random import randrange as rand
 from time import sleep
@@ -185,15 +186,17 @@ class Tetris(Fap):
             self.gameover = False
 
     def handle_message(self, data, path=None):
-        self.needs_update = True
-        if data == Actions.K_UP:
-            self.rotate_stone()
-        elif data == Actions.K_DOWN:
-            self.insta_drop()
-        elif data == Actions.K_RIGHT:
-            self.move(-1)
-        elif data == Actions.K_LEFT:
-            self.move(1)
+        if data is not None:
+            self.needs_update = True
+            direction = loads(data)['direction']
+            if direction == Actions.K_UP:
+                self.rotate_stone()
+            elif direction == Actions.K_DOWN:
+                self.insta_drop()
+            elif direction == Actions.K_RIGHT:
+                self.move(-1)                        
+            elif direction == Actions.K_LEFT:
+                self.move(1)          
 
     def update_and_sleep(self):
         self.needs_update = True
