@@ -19,6 +19,7 @@ from apps.fap import Fap
 from apps.actions import Actions
 from utils.tools import Rate
 from utils.colors import name_to_rgb
+from json import loads
 
 LEFT = (0, -1)
 RIGHT = (0, 1)
@@ -48,21 +49,23 @@ class Snake(Fap):
         self.rate = 2
 
     def handle_message(self, data, path=None): # noqa
-        new_dir = None
+        if data is not None:
+            direction = loads(data)['direction']
+            new_dir = None
 
-        if data == Actions.K_UP:
-            new_dir = UP
-        elif data == Actions.K_DOWN:
-            new_dir = DOWN
-        elif data == Actions.K_RIGHT:
-            new_dir = RIGHT
-        elif data == Actions.K_LEFT:
-            new_dir = LEFT
-
-        if new_dir  is not None:
-            if not (self.DIRECTION[0] == -new_dir[0] and self.DIRECTION[1] == new_dir[1] or \
-                    self.DIRECTION[0] == new_dir[0] and self.DIRECTION[1] == -new_dir[1]):
-                self.DIRECTION = new_dir
+            if direction == Actions.K_UP:
+                new_dir = UP
+            elif direction == Actions.K_DOWN:
+                new_dir = DOWN
+            elif direction == Actions.K_RIGHT:
+                new_dir = RIGHT
+            elif direction == Actions.K_LEFT:
+                new_dir = LEFT
+    
+            if new_dir  is not None:
+                if not (self.DIRECTION[0] == -new_dir[0] and self.DIRECTION[1] == new_dir[1] or \
+                        self.DIRECTION[0] == new_dir[0] and self.DIRECTION[1] == -new_dir[1]):
+                    self.DIRECTION = new_dir
 
     def game_over(self):
         self.send_game_over()
