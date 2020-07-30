@@ -30,7 +30,7 @@ class Snap(Fap):
         self.consumme = 0
         self.connectionserver = None
         credentials = pika.PlainCredentials(environ['RABBITMQ_DEFAULT_USER'], environ['RABBITMQ_DEFAULT_PASS'])
-        self.paramsserver = pika.ConnectionParameters(host='rabbit', credentials=credentials, connection_attempts = 100, heartbeat = 0)
+        self.paramsserver = pika.ConnectionParameters(host='rabbit', credentials=credentials, connection_attempts = 100, heartbeat = 600)
 
     @staticmethod
     def scale(v):
