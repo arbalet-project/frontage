@@ -371,3 +371,25 @@ def set_user(user):
         guser = {'id':"turnoff", 'username':"turnoff" }
     Websock.set_grantUser(guser)
     return jsonify(success=True, message="Client authorized successfully")
+
+CONFIG_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'apps': {'type': 'array'},
+        'general' : {'type': 'object'},
+        'mappings' : {'type': 'array'}
+    },
+    'required': ['apps']
+}
+@blueprint.route('/b/admin/config', methods=['POST'])
+@authentication_required
+@expects_json(CONFIG_SCHEMA)
+def load_config(user):
+    general = g.data.get('general', False)
+    mappings = g.data.get('mappings', [])
+
+    # Configure width and height.
+    SchedulerState.set_cols(len(mappings))
+    SchedulerState.set_rows(len(mappings[0]))
+
+    return jsonify(success=True)

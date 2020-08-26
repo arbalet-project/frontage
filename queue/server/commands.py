@@ -11,11 +11,6 @@ from getpass import getpass
 from flask.cli import with_appcontext
 from apps import *
 
-HERE = os.path.abspath(os.path.dirname(__file__))
-PROJECT_ROOT = os.path.join(HERE, os.pardir)
-TEST_PATH = os.path.join(PROJECT_ROOT, 'tests')
-
-
 @click.command()
 @with_appcontext
 def create_all():
@@ -41,6 +36,8 @@ def init():
     click.echo('Initialization of Arbalet backend v{}...'.format(version))
     _create_all()
     _set_admin_credentials()
+    click.echo("Backend v{} initialized.".format(version))
+
 
 @click.command()
 def set_admin_credentials():
@@ -79,7 +76,6 @@ def _set_admin_credentials():
     conf.admin_hash = hash_password(password)
     session.commit()
     session.close()
-    click.echo("Backend v{} initialized.".format(version))
 
 @click.command()
 def clean():
@@ -95,50 +91,13 @@ def clean():
 
 def initiate_db_dimensions():
     session = session_factory()
-    height, width = -1, -1
-    while True:
-        height_in = input("Enter height (number of rows): ")
-        width_in = input("Enter width (number of columns): ")
-        try:
-            height = int(height_in)
-            width = int(width_in)
-        except:
-            pass
-        if height > 0 and width > 0:
-            break
-        else:
-            click.echo("Invalid dimensions, please retry")
+    height, width = 1, 1
     conf = DimensionsModel(height, width)
     session.add(conf)
 
-    # Adding optional disabled pixels (inexisting pixels)
-    num_disabled = 0
-    while True:
-        click.echo("{} pixels have been disabled so far".format(num_disabled))
-        answer = input("Is there any {}disabled pixel? [y/N] ".format("other " if num_disabled > 0 else ""))
-        if answer in ['y', 'Y']:
-            row, col = -1, -1
-            row_in = input("Enter disabled pixel's row: ")
-            col_in = input("Enter disabled pixel's column: ")
-            try:
-                row = int(row_in)
-                col = int(col_in)
-            except:
-                pass
-            if row < 0 or col < 0:
-                click.echo("Invalid pixel, please retry")
-            else:
-                dis_pix = DisabledPixelsModel(row, col)
-                session.add(dis_pix)
-                click.echo("Pixel ({}, {}) has been disabled".format(row, col))
-                num_disabled += 1
-        else:
-            break
-    
-    if num_disabled > 0:
-        click.echo("{} pixels have been disabed in total".format(num_disabled))
-    else:
-        click.echo("No pixel have been disabed")
+    # To disable some pixels do this method !
+    # dis_pix = DisabledPixelsModel(row, col)
+    # session.add(dis_pix)
 
     session.commit()
     session.close()
