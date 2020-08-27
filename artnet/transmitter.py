@@ -77,7 +77,7 @@ class ArtNetTransmitter(object):
         rabbit_host, rabbit_user, rabbit_pwd = self.RABBIT_HOST, environ['RABBITMQ_DEFAULT_USER'], environ['RABBITMQ_DEFAULT_PASS']
 
         credentials = pika.PlainCredentials(rabbit_user, rabbit_pwd)
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbit_host, credentials=credentials, heartbeat = 600))
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbit_host, credentials=credentials, heartbeat = 10))
         self.channel = self.connection.channel()
 
         self.channel.exchange_declare(exchange='pixels', exchange_type='fanout')
