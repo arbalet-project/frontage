@@ -412,7 +412,8 @@ def load_dimensions_config(user):
         SchedulerState.set_rows(g.data.get('rows', 0))
         return jsonify(success=True)
     else:
-        return jsonify(sucess=False)
+        return jsonify(success=False)
+
 
 CONFIG_GENERAL_SCHEMA = {
     'type': 'object',
@@ -422,6 +423,8 @@ CONFIG_GENERAL_SCHEMA = {
     },
     'required': ['id', 'name']
 }
+
+
 @blueprint.route('/b/admin/config/general', methods=['POST'])
 @authentication_required
 @expects_json(CONFIG_GENERAL_SCHEMA)
@@ -432,4 +435,30 @@ def load_general_config(user):
         SchedulerState.set_name(g.data.get('name', ''))
         return jsonify(success=True)
     else:
-        return jsonify(sucess=False)
+        return jsonify(success=False)
+
+
+CONFIG_MAPPINGS_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'mappings': {'type': 'array'},
+    },
+    'required': ['mappings']
+}
+
+
+@blueprint.route('/b/admin/config/mappings', methods=['POST'])
+@authentication_required
+@expects_json(CONFIG_MAPPINGS_SCHEMA)
+def load_mapping_config(user):
+    # Configure id and name of the apps.
+    if is_admin(user):
+        mappings = g.data.get('mappings', [])
+        print(len(mappings), flush=True)
+        print(len(mappings[0]), flush=True)
+        for row in range(len(mappings)):
+            for col in range(len(mappings[row])):
+                SchedulerState.set_mappings(row, col, mappings[row][col])
+        return jsonify(success=True)
+    else:
+        return jsonify(success=False)

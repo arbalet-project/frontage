@@ -6,7 +6,7 @@ import time
 from time import sleep
 from utils.version import version
 from utils.red import redis, redis_get
-from db.models import FappModel, ConfigModel, DimensionsModel, DisabledPixelsModel
+from db.models import FappModel, ConfigModel, DimensionsModel, DisabledPixelsModel, ArtnetModel, DMXModel
 from db.base import session_factory, engine
 from db.tools import to_dict, serialize
 
@@ -656,28 +656,59 @@ class SchedulerState(object):
                 return True
         return False
 
-    def set_id(self, id):
+    @staticmethod
+    def set_id(id):
         session = session_factory()
         conf = session.query(ConfigModel).first()
         conf.id = id
         session.commit()
         session.close()
 
-    def get_id(self):
+    @staticmethod
+    def get_id():
         session = session_factory()
         conf = session.query(ConfigModel).first()
         val = conf.id
         session.close()
+        return val
 
-    def set_name(self, name):
+    @staticmethod
+    def set_name(name):
         session = session_factory()
         conf = session.query(ConfigModel).first()
         conf.name = name
         session.commit()
         session.close()
 
-    def get_name(self):
+    @staticmethod
+    def get_name():
         session = session_factory()
         conf = session.query(ConfigModel).first()
         val = conf.name
+        session.close()
+        return val
+
+    @staticmethod
+    def reset_mappings():
+        session = session_factory()
+        session.query(DMXModel).delete()
+        session.query(ArtnetModel).delete()
+        session.commit()
+        session.close()
+    
+    @staticmethod
+    def set_mappings(row, col, mappings):
+        session = session_factory()
+        artnet = ArtnetModel()
+        artnet.row = row
+        artnet.column = col
+        session.add(artnet)
+        for mapping in mappings:
+            print(mapping)
+            dmx = DMXModel()
+            dmx.artnet = artnet.uniqid
+            dmx.address = mapping['dmx']
+            dmx.universe = mapping['universe']
+            session.add(dmx)
+        session.commit()
         session.close()
