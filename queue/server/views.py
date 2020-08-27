@@ -392,7 +392,7 @@ def set_user(user):
     return jsonify(success=True, message="Client authorized successfully")
 
 
-CONFIG_SCHEMA = {
+CONFIG_DIM_SCHEMA = {
     'type': 'object',
     'properties': {
         'columns': {'type': 'number'},
@@ -404,12 +404,32 @@ CONFIG_SCHEMA = {
 
 @blueprint.route('/b/admin/config/dimensions', methods=['POST'])
 @authentication_required
-@expects_json(CONFIG_SCHEMA)
-def load_config(user):
+@expects_json(CONFIG_DIM_SCHEMA)
+def load_dimensions_config(user):
     # Configure width and height.
     if is_admin(user):
         SchedulerState.set_cols(g.data.get('columns', 0))
         SchedulerState.set_rows(g.data.get('rows', 0))
+        return jsonify(success=True)
+    else:
+        return jsonify(sucess=False)
+
+CONFIG_GENERAL_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'id': {'type': 'string'},
+        'name': {'type': 'string'},
+    },
+    'required': ['id', 'name']
+}
+@blueprint.route('/b/admin/config/general', methods=['POST'])
+@authentication_required
+@expects_json(CONFIG_GENERAL_SCHEMA)
+def load_general_config(user):
+    # Configure id and name of the apps.
+    if is_admin(user):
+        SchedulerState.set_id(g.data.get('id', ''))
+        SchedulerState.set_name(g.data.get('name', ''))
         return jsonify(success=True)
     else:
         return jsonify(sucess=False)

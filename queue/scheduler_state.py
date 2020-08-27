@@ -10,6 +10,7 @@ from db.models import FappModel, ConfigModel, DimensionsModel, DisabledPixelsMod
 from db.base import session_factory, engine
 from db.tools import to_dict, serialize
 
+
 def add_secs_to_time(timeval, secs_to_add):
     dummy_date = datetime.date(1, 1, 1)
     full_datetime = datetime.datetime.combine(dummy_date, timeval)
@@ -48,6 +49,9 @@ class SchedulerState(object):
     KEY_USERS_Q = 'frontage_users_q'
 
     KEY_CURRENT_RUNNING_APP = 'frontage_current_running_app'
+
+    # mappings
+    KEY_MAPPINGS = 'mappings'
 
     @staticmethod
     def get_version():
@@ -167,7 +171,8 @@ class SchedulerState(object):
     @staticmethod
     def get_close_app_request():
         # Return (boolean, userid) = has a request been initiated? If yes, by who?
-        request = json.loads(redis_get(SchedulerState.KEY_STOP_APP_REQUEST, '{}'))
+        request = json.loads(
+            redis_get(SchedulerState.KEY_STOP_APP_REQUEST, '{}'))
         if 'userid' in request:
             return True, request['userid']
         return False, None
@@ -175,7 +180,8 @@ class SchedulerState(object):
     @staticmethod
     def get_default_drawing_request():
         # Return true if a request has been initiated to set the current drawing as the default
-        request = redis_get(SchedulerState.KEY_SET_DEFAULT_DRAWING, False) == 'True'
+        request = redis_get(
+            SchedulerState.KEY_SET_DEFAULT_DRAWING, False) == 'True'
         redis.set(SchedulerState.KEY_SET_DEFAULT_DRAWING, 'False')
         return request
 
@@ -198,7 +204,8 @@ class SchedulerState(object):
         if SchedulerState.get_forced_app():
             return False
 
-        redis.set(SchedulerState.KEY_FORCED_APP_REQUEST, json.dumps({'name': app_name, 'params': params}))
+        redis.set(SchedulerState.KEY_FORCED_APP_REQUEST,
+                  json.dumps({'name': app_name, 'params': params}))
         return True
 
     @staticmethod
@@ -350,13 +357,15 @@ class SchedulerState(object):
             at = now.strftime('%Y-%m-%d')
             calendar = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
             if calendar and at in calendar:
-                v = calendar[at].get(SchedulerState.KEY_OFF_TIME if time_off=='sunrise' else SchedulerState.KEY_ON_TIME, now.isoformat())
+                v = calendar[at].get(SchedulerState.KEY_OFF_TIME if time_off ==
+                                     'sunrise' else SchedulerState.KEY_ON_TIME, now.isoformat())
                 off_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
                 return off_time + datetime.timedelta(seconds=float(SchedulerState.get_offset_time_off()))
         else:
             # Other values of time_off can be "%H:%M"
             try:
-                formatted_time_off = datetime.datetime.strptime(time_off, "%H:%M")
+                formatted_time_off = datetime.datetime.strptime(
+                    time_off, "%H:%M")
             except ValueError:
                 SchedulerState.set_time_off('23:00')
             else:
@@ -394,13 +403,15 @@ class SchedulerState(object):
             at = now.strftime('%Y-%m-%d')
             calendar = json.loads(redis.get(SchedulerState.KEY_DAY_TABLE))
             if calendar and at in calendar:
-                v = calendar[at].get(SchedulerState.KEY_OFF_TIME if time_on=='sunrise' else SchedulerState.KEY_ON_TIME, now.isoformat())
+                v = calendar[at].get(SchedulerState.KEY_OFF_TIME if time_on ==
+                                     'sunrise' else SchedulerState.KEY_ON_TIME, now.isoformat())
                 on_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
                 return on_time + datetime.timedelta(seconds=float(SchedulerState.get_offset_time_on()))
         else:
             # Other values of time_on can be "%H:%M"
             try:
-                formatted_time_on = datetime.datetime.strptime(time_on, "%H:%M")
+                formatted_time_on = datetime.datetime.strptime(
+                    time_on, "%H:%M")
             except ValueError:
                 SchedulerState.set_time_on('20:00')
             else:
@@ -638,8 +649,35 @@ class SchedulerState(object):
         from os.path import isfile
         from os import system
         if isfile('/home/arbalet/Arbalet/frontage/docker-compose.prod.yml') and isfile('/usr/bin/docker-compose'):
-            out = system('cd /home/arbalet/Arbalet/frontage && /usr/bin/docker-compose down')
+            out = system(
+                'cd /home/arbalet/Arbalet/frontage && /usr/bin/docker-compose down')
             # Do not docker-compose up again, systemd will restart the stack
             if out == 0:
                 return True
         return False
+
+    def set_id(self, id):
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        conf.id = id
+        session.commit()
+        session.close()
+
+    def get_id(self):
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        val = conf.id
+        session.close()
+
+    def set_name(self, name):
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        conf.name = name
+        session.commit()
+        session.close()
+
+    def get_name(self):
+        session = session_factory()
+        conf = session.query(ConfigModel).first()
+        val = conf.name
+        session.close()

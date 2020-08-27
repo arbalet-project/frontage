@@ -3,7 +3,8 @@ import datetime
 # from server.extensions import db
 from uuid import uuid4
 from db.base import Base
-from sqlalchemy import table, Column, Integer, String, DateTime, Boolean
+from sqlalchemy import table, Column, Integer, String, DateTime, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
 
 def cln_str(s):
     if s:
@@ -84,6 +85,9 @@ class ConfigModel(Base):
     admin_login = Column(String(36))
     admin_hash = Column(String(512))
 
+    id = Column(String(512))
+    name = Column(String(512))
+
     def __init__(self):
         # Default values when initializing a new database
         self.uniqid = str(uuid4())
@@ -94,7 +98,36 @@ class ConfigModel(Base):
         self.offset_time_on = 0
         self.default_app_lifetime = 15 * 60
         self.expires_delay = 90
+        self.id = ''
+        self.name = ''
 
     def __repr__(self):
         return '<ConfigModel %r (%r) (%r)>' % (
             self.uniqid, self.expires_delay, self.forced_sunset)
+
+
+class ArtnetModel(Base):
+    __tablename__ = 'artnet_model'
+
+    uniqid = Column(String(36), primary_key=True)
+    row = Column(Integer)
+    column = Column(Integer)
+    children = relationship("DMXModel")
+
+    def __init__(self):
+        self.uniqid = str(uuid4())
+        self.column = 0
+        self.row = 0
+
+class DMXModel(Base):
+    __tablename__ = 'dmx_model'
+
+    uniqid = Column(String(36), primary_key=True)
+    address = Column(Integer)
+    universe = Column(Integer)
+    artnet = Column(String, ForeignKey('artnet_model.uniqid'))
+
+    def __init__(self):
+        self.uniqid = str(uuid4())
+        self.address = 0
+        self.universe = 0
