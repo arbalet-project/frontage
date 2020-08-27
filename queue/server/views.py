@@ -9,7 +9,8 @@ from server.extensions import rest_api
 from flask_expects_json import expects_json
 from utils.websock import Websock
 
-PROTOCOL_VERSION = 2   # Version of protocol betwwen front and back. Mismatch = ask the user to update
+# Version of protocol betwwen front and back. Mismatch = ask the user to update
+PROTOCOL_VERSION = 3
 
 blueprint = Blueprint('views', __name__)
 
@@ -110,12 +111,14 @@ def admin_cal_at():
 def admin_set_state(user):
     if request.get_json().get('offset_time_on'):
         try:
-            SchedulerState.set_offset_time_on(int(request.get_json().get('offset_time_on')))
+            SchedulerState.set_offset_time_on(
+                int(request.get_json().get('offset_time_on')))
         except ValueError:
             return jsonify(done=False)
     if request.get_json().get('offset_time_off'):
         try:
-            SchedulerState.set_offset_time_off(int(request.get_json().get('offset_time_off')))
+            SchedulerState.set_offset_time_off(
+                int(request.get_json().get('offset_time_off')))
         except ValueError:
             return jsonify(done=False)
     if request.get_json().get('time_on'):
@@ -152,6 +155,7 @@ def admin_clear_queue(user):
         abort(403, "Forbidden Bru")
     return '', 204
 
+
 @blueprint.route('/b/apps/admin/running', methods=['POST'])
 @authentication_required
 def admin_app_force(user):
@@ -173,12 +177,13 @@ def admin_app_force(user):
     else:
         abort(403, "Forbidden Bru")
 
+
 @blueprint.route('/b/apps/admin/quit', methods=['GET'])
 @authentication_required
 def admin_app_quit(user):
     if is_admin(user):
         if (SchedulerState.get_current_app()['name'] == "Snap"):
-            Websock.set_grantUser({'id':"turnoff", 'username':"turnoff"})
+            Websock.set_grantUser({'id': "turnoff", 'username': "turnoff"})
         removed = SchedulerState.stop_forced_app_request(user)
         return jsonify(removed=removed)
     else:
@@ -199,7 +204,8 @@ class AppRunningView(Resource):
         params = request.get_json().get('params', {})
         expires = SchedulerState.get_expires_value()
 
-        queued, removed_previous = SchedulerState.start_user_app_request(user['username'], user['userid'], name, params, expires)
+        queued, removed_previous = SchedulerState.start_user_app_request(
+            user['username'], user['userid'], name, params, expires)
         return jsonify(queued=queued, removed_previous=removed_previous,
                        keep_alive_delay=SchedulerState.DEFAULT_KEEP_ALIVE_DELAY)
 
@@ -222,12 +228,14 @@ class AppDefaultListView(Resource):
     def post(self, user):
         return True
 
+
 class DrawingAppDefault(Resource):
     @authentication_required
     def post(self, user):
         if not is_admin(user):
             abort(403, "Forbidden Bru")
         return jsonify(done=SchedulerState.set_default_drawing())
+
 
 class AppDefaultParamView(Resource):
     @authentication_required
@@ -254,7 +262,8 @@ class AppDefaultView(Resource):
             abort(403, "Forbidden Bru")
 
         app_state_bool = request.get_json().get('app_state', False)
-        SchedulerState.set_default_scheduled_app_state(request.get_json().get('app_name'), app_state_bool)
+        SchedulerState.set_default_scheduled_app_state(
+            request.get_json().get('app_name'), app_state_bool)
 
         return SchedulerState.get_default_scheduled_apps(serialized=True)
 
@@ -269,11 +278,13 @@ class AppListView(Resource):
             apps = {k: v for k, v in apps.items() if v['activated']}
 
         formated = []
-        defaults_apps = SchedulerState.get_default_scheduled_apps(serialized=False)
+        defaults_apps = SchedulerState.get_default_scheduled_apps(
+            serialized=False)
         defaults_apps_names = [x['name'] for x in defaults_apps]
         for x in apps:
             ext_app = apps[x]
-            ext_app['scheduled'] = False if (x not in defaults_apps_names) else True
+            ext_app['scheduled'] = False if (
+                x not in defaults_apps_names) else True
             formated.append(ext_app)
         return formated
 
@@ -283,6 +294,7 @@ class AppListView(Resource):
 def app_position(user):
     return jsonify(position=SchedulerState.get_user_position(user))
 
+
 @blueprint.route('/b/apps/iamalive', methods=['POST'])
 @authentication_required
 def set_is_alive_current_app(user):
@@ -290,6 +302,7 @@ def set_is_alive_current_app(user):
     c_app = SchedulerState.get_current_app()
     keep_alive = "userid" in c_app and c_app['userid'] == user['userid']
     return jsonify(keepAlive=keep_alive)
+
 
 @blueprint.route('/b/apps/quit', methods=['GET'])
 @authentication_required
@@ -300,6 +313,7 @@ def quit_user_app(user):
         SchedulerState.stop_app_request(user)
         removed = True
     return jsonify(removed=removed)
+
 
 @blueprint.route('/b/queue/quit', methods=['GET'])
 @authentication_required
@@ -325,12 +339,14 @@ def status():
                    disabled=SchedulerState.get_disabled(),
                    version=SchedulerState.get_version())
 
+
 @blueprint.route('/b/restart', methods=['POST'])
 @authentication_required
 def restart_service(user):
     if is_admin(user):
         return jsonify(done=SchedulerState.restart_service())
     return jsonify(done=False)
+
 
 rest_api.add_resource(ConfigView, '/b/config/')
 
@@ -343,14 +359,17 @@ rest_api.add_resource(AppRunningView, '/b/apps/running')
 rest_api.add_resource(AppListView, '/b/apps')
 
 # ARBALET LIVE
+
+
 @blueprint.route('/b/admin/snap/users', methods=['GET'])
 @authentication_required
 def get_users(user):
-    if  (not is_admin(user)):
+    if (not is_admin(user)):
         abort(403, "Forbidden Bru")
     users = (json.loads(Websock.get_users()))['users']
     guser = (json.loads(Websock.get_grantUser()))
     return jsonify(list_clients=users, selected_client=guser)
+
 
 @blueprint.route('/b/admin/snap/guser', methods=['POST'])
 @authentication_required
@@ -368,28 +387,29 @@ def set_user(user):
         if (guser == None):
             return jsonify(success=False, message="No such client")
     else:
-        guser = {'id':"turnoff", 'username':"turnoff" }
+        guser = {'id': "turnoff", 'username': "turnoff"}
     Websock.set_grantUser(guser)
     return jsonify(success=True, message="Client authorized successfully")
+
 
 CONFIG_SCHEMA = {
     'type': 'object',
     'properties': {
-        'apps': {'type': 'array'},
-        'general' : {'type': 'object'},
-        'mappings' : {'type': 'array'}
+        'columns': {'type': 'number'},
+        'rows': {'type': 'number'},
     },
-    'required': ['apps']
+    'required': ['columns', 'rows']
 }
-@blueprint.route('/b/admin/config', methods=['POST'])
+
+
+@blueprint.route('/b/admin/config/dimensions', methods=['POST'])
 @authentication_required
 @expects_json(CONFIG_SCHEMA)
 def load_config(user):
-    general = g.data.get('general', False)
-    mappings = g.data.get('mappings', [])
-
     # Configure width and height.
-    SchedulerState.set_cols(len(mappings))
-    SchedulerState.set_rows(len(mappings[0]))
-
-    return jsonify(success=True)
+    if is_admin(user):
+        SchedulerState.set_cols(g.data.get('columns', 0))
+        SchedulerState.set_rows(g.data.get('rows', 0))
+        return jsonify(success=True)
+    else:
+        return jsonify(sucess=False)
