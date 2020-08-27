@@ -704,7 +704,6 @@ class SchedulerState(object):
         artnet.column = col
         session.add(artnet)
         for mapping in mappings:
-            print(mapping)
             dmx = DMXModel()
             dmx.artnet = artnet.uniqid
             dmx.address = mapping['dmx']

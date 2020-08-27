@@ -453,9 +453,8 @@ CONFIG_MAPPINGS_SCHEMA = {
 def load_mapping_config(user):
     # Configure id and name of the apps.
     if is_admin(user):
+        SchedulerState.reset_mappings()
         mappings = g.data.get('mappings', [])
-        print(len(mappings), flush=True)
-        print(len(mappings[0]), flush=True)
         for row in range(len(mappings)):
             for col in range(len(mappings[row])):
                 SchedulerState.set_mappings(row, col, mappings[row][col])
