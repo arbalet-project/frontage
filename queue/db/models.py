@@ -6,19 +6,6 @@ from db.base import Base
 from sqlalchemy import table, Column, Integer, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
-def cln_str(s):
-    if s:
-        return s.replace(
-            "'",
-            "").replace(
-            '\\',
-            '').replace(
-            '%',
-            '').replace(
-                ';',
-            '')
-    return ''
-
 class DisabledPixelsModel(Base):
     __tablename__ = 'disabledmodel'
 
