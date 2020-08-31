@@ -29,15 +29,19 @@ case "$1" in
         ;;
     reset)
         cd /usr/src/app/
-        flask drop_all
+        flask drop-all
         ;;
     init)
         cd /usr/src/app/
         flask init
         ;;
+    help)
+        cd /usr/src/app/
+        flask --help
+        ;;
     set_admin_credentials)
         cd /usr/src/app/
-        flask set_admin_credentials
+        flask set-admin-credentials
         ;;
     *)
         echo "Please specify argument (prod|dev) [ARGS..]";
