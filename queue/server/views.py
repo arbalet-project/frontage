@@ -109,13 +109,13 @@ def admin_cal_at():
 @blueprint.route('/b/admin/state', methods=['PATCH'])
 @authentication_required
 def admin_set_state(user):
-    if request.get_json().get('offset_time_on'):
+    if request.get_json().get('offset_time_on') is not None:
         try:
             SchedulerState.set_offset_time_on(
                 int(request.get_json().get('offset_time_on')))
         except ValueError:
             return jsonify(done=False)
-    if request.get_json().get('offset_time_off'):
+    if request.get_json().get('offset_time_off')  is not None:
         try:
             SchedulerState.set_offset_time_off(
                 int(request.get_json().get('offset_time_off')))
