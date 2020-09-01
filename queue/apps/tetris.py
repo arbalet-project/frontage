@@ -84,7 +84,6 @@ def new_board():
 
 class Tetris(Fap):
     PLAYABLE = True
-    ACTIVATED = True
     PARAMS_LIST = {}
 
     cols = 0

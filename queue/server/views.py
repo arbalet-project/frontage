@@ -272,9 +272,7 @@ class AppListView(Resource):
     @authentication_required
     def get(self, user):
         apps = SchedulerState.get_available_apps()
-        if is_admin(user):
-            apps = SchedulerState.get_available_apps()
-        else:
+        if not is_admin(user):
             apps = {k: v for k, v in apps.items() if v['activated']}
 
         formated = []
@@ -458,6 +456,26 @@ def load_mapping_config(user):
         for row in range(len(mappings)):
             for col in range(len(mappings[row])):
                 SchedulerState.set_mappings(row, col, mappings[row][col])
+        return jsonify(success=True)
+    else:
+        return jsonify(success=False)
+
+CONFIG_APPS_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'apps' : {'type': 'array'},
+    },
+    'required': ['apps']
+}
+
+
+@blueprint.route('/b/admin/config/apps', methods=['POST'])
+@authentication_required
+@expects_json(CONFIG_APPS_SCHEMA)
+def load_fapps_config(user):
+    # Configure id and name of the apps.
+    if is_admin(user):
+        SchedulerState.set_activated(g.data.get('apps'));
         return jsonify(success=True)
     else:
         return jsonify(success=False)

@@ -33,7 +33,6 @@ class Snake(Fap):
     FOOD_COLOR = 'green'
 
     PLAYABLE = True
-    ACTIVATED = True
 
     PARAMS_LIST = {}
 

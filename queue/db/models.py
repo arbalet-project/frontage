@@ -42,6 +42,7 @@ class FappModel(Base):
     is_scheduled = Column(Boolean)
     default_params = Column(String(4096))
     position = Column(Integer)
+    activated = Column(Boolean)
 
     def __init__(self, app_name, is_scheduled=False):
         self.uniqid = str(uuid4())
@@ -49,6 +50,7 @@ class FappModel(Base):
         self.name = app_name
         self.is_scheduled = is_scheduled
         self.default_params = '{}'
+        self.activated = True
 
     def __repr__(self):
         return '<Fapp %r (%r) (%r) (%r)>' % (

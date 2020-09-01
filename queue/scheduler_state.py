@@ -695,7 +695,7 @@ class SchedulerState(object):
         session.query(ArtnetModel).delete()
         session.commit()
         session.close()
-    
+
     @staticmethod
     def set_mappings(row, col, mappings):
         session = session_factory()
@@ -711,3 +711,22 @@ class SchedulerState(object):
             session.add(dmx)
         session.commit()
         session.close()
+
+    @staticmethod
+    def set_activated(apps):
+        session = session_factory()
+        fapps = session.query(FappModel).all()
+        for app in fapps:
+            if app.name in apps:
+                app.activated = True
+            else:
+                app.activated = False
+        session.commit()
+        session.close()
+
+    @staticmethod
+    def get_activated(name): 
+        session = session_factory()
+        fapp = session.query(FappModel).filter_by(name=name).first()
+        session.close()
+        return fapp.activated

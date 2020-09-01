@@ -18,7 +18,6 @@ from utils.websock import Websock
 
 class Snap(Fap):
     PLAYABLE = True
-    ACTIVATED = False
     OFF = {'id':"turnoff", 'username':"turnoff"}
 
     def __init__(self, username, userid):

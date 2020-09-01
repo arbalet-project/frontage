@@ -24,7 +24,6 @@ from json import dumps
 
 class Drawing(Fap):
     PLAYABLE = True
-    ACTIVATED = True
     def __init__(self, username, userid):
         self.rate = Rate(10)
         Fap.__init__(self, username, userid)

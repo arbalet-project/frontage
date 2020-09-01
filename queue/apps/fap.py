@@ -21,8 +21,6 @@ class Fap(object):
 
     PARAMS_LIST = []
     PLAYABLE = False
-    ACTIVATED = True
-    ENABLE = True
     LOCK = RWLock()
     LOCK_WS = RWLock()
 
@@ -102,13 +100,16 @@ class Fap(object):
             raise e
         finally:
             self.LOCK.release()
+    
+    def get_activated(self):
+        return SchedulerState.get_activated(self.__class__.__name__)
 
     def jsonify(self):
         struct = {}
         struct['name'] = self.__class__.__name__
         struct['params_list'] = self.PARAMS_LIST
         struct['playable'] = self.PLAYABLE
-        struct['activated'] = self.ACTIVATED
+        struct['activated'] = self.get_activated()
         return struct
 
     def close(self):

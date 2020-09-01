@@ -9,7 +9,6 @@ from scheduler_state import SchedulerState
 
 class Flags(Fap):
     PLAYABLE = False
-    ACTIVATED = True
 
     PARAMS_LIST = {'flags': ['french',
                             'italy',
