@@ -74,6 +74,12 @@ To stop the backend, press Ctl+C once, it will nicely closes all processes.
 * 33450: Arbalet Frontage Live (Node JS server)
 * 33460: Matomo analytics (PHP/Mariadb)
 
+### Dev tools
+
+A adminer tools is set to see the content of the PostgreSQL database.
+* http://localhost:8080 to go in the front page.
+* Fill correct form (warning about database host)
+
 ## Production
 Refer to the [install](install) procedure to deploy the app on a production server.
 

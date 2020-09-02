@@ -56,6 +56,11 @@ services:
     env_file: .env-dev
     volumes:
       - db-data:/var/lib/postgresql/data
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
   live:
     build : ../live
     user: "node"
