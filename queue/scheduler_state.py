@@ -733,6 +733,7 @@ class SchedulerState(object):
     @staticmethod
     def set_day_table(dates):
         session = session_factory()
+        session.query(SunriseSunset).delete()
         for date in dates:
             session.add(SunriseSunset(date, dates[date]))
             session.commit()
