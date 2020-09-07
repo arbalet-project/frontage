@@ -6,7 +6,7 @@ import time
 from time import sleep
 from utils.version import version
 from utils.red import redis, redis_get
-from db.models import FappModel, ConfigModel, DimensionsModel, DisabledPixelsModel, ArtnetModel, DMXModel
+from db.models import FappModel, ConfigModel, DimensionsModel, DisabledPixelsModel, ArtnetModel, DMXModel, SunriseSunset
 from db.base import session_factory, engine
 from db.tools import to_dict, serialize
 
@@ -23,9 +23,7 @@ class SchedulerState(object):
     DEFAULT_KEEP_ALIVE_DELAY = 60  # in second
     DEFAULT_CURRENT_APP_KEEP_ALIVE_DELAY = 15  # in second
     KEY_DAY_TABLE = 'frontage_day_table'
-    CITY = 'data/sun/bordeaux.json'
 
-    # KEY_APP_START_LOCK = 'key_app_start_lock'
     KEY_USABLE = 'frontage_usable'
     KEY_GEOMETRY = 'frontage_geometry'
     KEY_ENABLE_STATE = 'frontage_enable_state'
@@ -730,3 +728,22 @@ class SchedulerState(object):
         fapp = session.query(FappModel).filter_by(name=name).first()
         session.close()
         return fapp.activated
+
+    
+    @staticmethod
+    def set_day_table(dates):
+        session = session_factory()
+        for date in dates:
+            session.add(SunriseSunset(date, dates[date]))
+            session.commit()
+        session.close()    
+    
+    @staticmethod
+    def get_day_table():
+        session = session_factory()
+        dates = session.query(SunriseSunset).all()
+        sunset = {}
+        for date in dates:
+            sunset[date.date] = { "sunset": date.sunset, "sunrise" : date.sunrise}
+        redis.set(SchedulerState.KEY_DAY_TABLE, json.dumps(sunset))
+        session.close()

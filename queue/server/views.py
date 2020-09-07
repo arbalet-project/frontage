@@ -460,6 +460,7 @@ def load_mapping_config(user):
     else:
         return jsonify(success=False)
 
+
 CONFIG_APPS_SCHEMA = {
     'type': 'object',
     'properties': {
@@ -467,8 +468,6 @@ CONFIG_APPS_SCHEMA = {
     },
     'required': ['apps']
 }
-
-
 @blueprint.route('/b/admin/config/apps', methods=['POST'])
 @authentication_required
 @expects_json(CONFIG_APPS_SCHEMA)
@@ -476,6 +475,24 @@ def load_fapps_config(user):
     # Configure id and name of the apps.
     if is_admin(user):
         SchedulerState.set_activated(g.data.get('apps'));
+        return jsonify(success=True)
+    else:
+        return jsonify(success=False)
+
+CONFIG_SUNSETSUNRISE_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'dates' : {'type': 'object'},
+    },
+    'required': ['dates']
+}
+@blueprint.route('/b/admin/config/sunset_sunrise', methods=['POST'])
+@authentication_required
+@expects_json(CONFIG_SUNSETSUNRISE_SCHEMA)
+def load_sunrise_config(user):
+    # Configure id and name of the apps.
+    if is_admin(user):
+        SchedulerState.set_day_table(g.data.get('dates'));
         return jsonify(success=True)
     else:
         return jsonify(success=False)

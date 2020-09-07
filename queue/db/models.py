@@ -120,3 +120,15 @@ class DMXModel(Base):
         self.uniqid = str(uuid4())
         self.address = 0
         self.universe = 0
+
+class SunriseSunset(Base):
+    __tablename__ = 'sunrise_sunset'
+
+    date = Column(String(30), primary_key=True)
+    sunrise = Column(String(30))
+    sunset = Column(String(30))
+
+    def __init__(self, date, json):
+        self.date = date
+        self.sunrise = json["sunrise"]
+        self.sunset = json["sunset"]
