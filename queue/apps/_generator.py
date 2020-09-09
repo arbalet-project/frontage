@@ -95,7 +95,9 @@ def gen_random_flashing(n_frames, n_frames_fade, n_frames_rand, colors):
     :param n_frames_rand: Random seed for this pixel, extra duration added to n_frames to get the total duration
     :param colors: At least 2 HSV elements to fade
     """
-    h0, s0, v0 = colors[0]
+    h0 = colors[0]
+    s0= colors[1] 
+    v0 = colors[2]
     n_frames = n_frames + n_frames_rand
 
     # This loop fades up
