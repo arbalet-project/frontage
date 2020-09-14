@@ -359,6 +359,10 @@ class SchedulerState(object):
                                      'sunrise' else SchedulerState.KEY_ON_TIME, now.isoformat())
                 off_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
                 return off_time + datetime.timedelta(seconds=float(SchedulerState.get_offset_time_off()))
+            else: 
+                SchedulerState.set_enable_state("off")
+                return;
+
         else:
             # Other values of time_off can be "%H:%M"
             try:
@@ -378,7 +382,7 @@ class SchedulerState(object):
         on_time = SchedulerState._get_scheduled_on_time()
         now = datetime.datetime.utcnow()
 
-        if on_time > off_time and now > off_time:
+        if on_time is not None and off_time is not None and on_time > off_time and now > off_time:
             off_time = off_time + datetime.timedelta(days=1)
         return off_time
 
@@ -388,7 +392,7 @@ class SchedulerState(object):
         on_time = SchedulerState._get_scheduled_on_time()
         now = datetime.datetime.utcnow()
 
-        if on_time > off_time and now < off_time:
+        if on_time is not None and off_time is not None and on_time > off_time and now < off_time:
             on_time = on_time + datetime.timedelta(days=-1)
         return on_time
 
@@ -405,6 +409,10 @@ class SchedulerState(object):
                                      'sunrise' else SchedulerState.KEY_ON_TIME, now.isoformat())
                 on_time = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%S')
                 return on_time + datetime.timedelta(seconds=float(SchedulerState.get_offset_time_on()))
+            else: 
+                SchedulerState.set_enable_state("off")
+                return;
+
         else:
             # Other values of time_on can be "%H:%M"
             try:
@@ -691,6 +699,7 @@ class SchedulerState(object):
         session = session_factory()
         session.query(DMXModel).delete()
         session.query(ArtnetModel).delete()
+        session.query(DisabledPixelsModel).delete()
         session.commit()
         session.close()
 
@@ -702,6 +711,10 @@ class SchedulerState(object):
         artnet.column = col
         session.add(artnet)
         for mapping in mappings:
+            if mapping['disabled']:
+                dis_pix = DisabledPixelsModel(row, col)
+                session.add(dis_pix)
+                break;
             dmx = DMXModel()
             dmx.artnet = artnet.uniqid
             dmx.address = mapping['dmx']

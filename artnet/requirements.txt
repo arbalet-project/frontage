@@ -1,3 +1,4 @@
 pika
 bitstring
 SQLAlchemy
+psycopg2==2.8

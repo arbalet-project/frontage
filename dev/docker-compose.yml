@@ -54,6 +54,8 @@ services:
     image: postgres
     restart: unless-stopped
     env_file: .env-dev
+    ports:
+      - 5432:5432
     volumes:
       - db-data:/var/lib/postgresql/data
   adminer:
@@ -109,7 +111,15 @@ services:
       - live:live
       - app:app
       - queue:queue
-
+  artnet:
+    build: ../artnet
+    restart: unless-stopped
+    volumes:
+      - ../artnet:/usr/src/app
+    env_file: .env-dev
+    ports:
+      - 6454:6454/udp
+    network_mode: "host"
 volumes:
   db-data:
   mariadb:

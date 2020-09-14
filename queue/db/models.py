@@ -101,7 +101,7 @@ class ArtnetModel(Base):
     uniqid = Column(String(36), primary_key=True)
     row = Column(Integer)
     column = Column(Integer)
-    children = relationship("DMXModel")
+    children = relationship("DMXModel", backref="dmxmodels")
 
     def __init__(self):
         self.uniqid = str(uuid4())

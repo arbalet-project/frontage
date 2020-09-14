@@ -389,30 +389,6 @@ def set_user(user):
     Websock.set_grantUser(guser)
     return jsonify(success=True, message="Client authorized successfully")
 
-
-CONFIG_DIM_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'columns': {'type': 'number'},
-        'rows': {'type': 'number'},
-    },
-    'required': ['columns', 'rows']
-}
-
-
-@blueprint.route('/b/admin/config/dimensions', methods=['POST'])
-@authentication_required
-@expects_json(CONFIG_DIM_SCHEMA)
-def load_dimensions_config(user):
-    # Configure width and height.
-    if is_admin(user):
-        SchedulerState.set_cols(g.data.get('columns', 0))
-        SchedulerState.set_rows(g.data.get('rows', 0))
-        return jsonify(success=True)
-    else:
-        return jsonify(success=False)
-
-
 CONFIG_GENERAL_SCHEMA = {
     'type': 'object',
     'properties': {
@@ -421,8 +397,6 @@ CONFIG_GENERAL_SCHEMA = {
     },
     'required': ['id', 'name']
 }
-
-
 @blueprint.route('/b/admin/config/general', methods=['POST'])
 @authentication_required
 @expects_json(CONFIG_GENERAL_SCHEMA)
@@ -443,8 +417,6 @@ CONFIG_MAPPINGS_SCHEMA = {
     },
     'required': ['mappings']
 }
-
-
 @blueprint.route('/b/admin/config/mappings', methods=['POST'])
 @authentication_required
 @expects_json(CONFIG_MAPPINGS_SCHEMA)
@@ -453,6 +425,8 @@ def load_mapping_config(user):
     if is_admin(user):
         SchedulerState.reset_mappings()
         mappings = g.data.get('mappings', [])
+        SchedulerState.set_cols(len(mappings[0]))
+        SchedulerState.set_rows(len(mappings))
         for row in range(len(mappings)):
             for col in range(len(mappings[row])):
                 SchedulerState.set_mappings(row, col, mappings[row][col])

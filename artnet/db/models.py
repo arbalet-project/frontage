@@ -11,7 +11,7 @@ class ArtnetModel(Base):
     uniqid = Column(String(36), primary_key=True)
     row = Column(Integer)
     column = Column(Integer)
-    children = relationship("DMXModel")
+    children = relationship("DMXModel", backref="dmxmodels")
 
     def __init__(self):
         self.uniqid = str(uuid4())
@@ -30,3 +30,19 @@ class DMXModel(Base):
         self.uniqid = str(uuid4())
         self.address = 0
         self.universe = 0
+
+class DimensionsModel(Base):
+    __tablename__ = 'dimensionsmodel'
+
+    uniqid = Column(String(36), primary_key=True)
+    rows = Column(Integer)
+    cols = Column(Integer)
+
+    def __init__(self, rows, cols):
+        self.uniqid = str(uuid4())
+        self.rows = rows
+        self.cols = cols
+
+    def __repr__(self):
+        return '<dimensionsmodel %r %r %r>' % (
+            self.uniqid, self.rows, self.cols)
