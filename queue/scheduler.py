@@ -239,9 +239,15 @@ class Scheduler(object):
             logging.info(SchedulerState.get_user_app_queue())
             if SchedulerState.get_enable_state() == 'scheduled':
                 logging.info("---------- Scheduled ON")
-                logging.info(SchedulerState.get_scheduled_on_time())
+                logging.info(SchedulerState.get_scheduled_on_time().strftime(
+                    "%d-%m-%Y %H:%M:%S UTC+00"))
                 logging.info("---------- Scheduled OFF")
-                logging.info(SchedulerState.get_scheduled_off_time())
+                logging.info(SchedulerState.get_scheduled_off_time().strftime(
+                    "%d-%m-%Y %H:%M:%S UTC+00"))
+                logging.info("---------- TIME NOW")
+                logging.info(datetime.datetime.now().strftime(
+                    "%d-%m-%Y %H:%M:%S UTC+00"))
+
         self.count += 1
 
     def update_geometry(self):
