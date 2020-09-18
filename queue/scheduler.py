@@ -56,7 +56,7 @@ class Scheduler(object):
         sunrise = SchedulerState.get_scheduled_off_time()
         sunset = SchedulerState.get_scheduled_on_time()
 
-        if sunset < now and now < sunrise:
+        if sunset is not None and sunset < now and now < sunrise:
             SchedulerState.set_frontage_on(True)
         else:
             SchedulerState.set_frontage_on(False)

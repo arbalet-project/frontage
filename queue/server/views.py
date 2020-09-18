@@ -467,6 +467,7 @@ def load_sunrise_config(user):
     # Configure id and name of the apps.
     if is_admin(user):
         SchedulerState.set_day_table(g.data.get('dates'));
+        SchedulerState.get_day_table();
         return jsonify(success=True)
     else:
         return jsonify(success=False)

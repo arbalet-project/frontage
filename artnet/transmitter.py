@@ -86,7 +86,10 @@ class ArtNetTransmitter(object):
                             # Declare a new universe with 512 DMX addresses = 0
                             self.frames[universe] = [0]*512
         # e.g. universes 4,5 will create universes 0,1,2,3,4,5
-        self.num_universes = max(self.frames) + 1
+        if len(self.frames) == 0:
+            raise EnvironmentError("Artnet configuration is not set")
+        else:
+            self.num_universes = max(self.frames) + 1
         self.dmx = dmx.Controller(
             self.ARTNET_BROADCAST_IP, universes=self.num_universes, fps=self.FPS)
         self.dmx.start()
