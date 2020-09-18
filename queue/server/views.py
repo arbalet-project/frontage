@@ -106,7 +106,7 @@ def admin_cal_at():
 # format .strftime('%Y-%m-%d')
 
 
-@blueprint.route('/b/admin/state', methods=['PATCH'])
+@blueprint.route('/b/admin/state', methods=['POST'])
 @authentication_required
 def admin_set_state(user):
     if request.get_json().get('offset_time_on') is not None:
