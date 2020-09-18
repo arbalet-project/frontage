@@ -29,7 +29,7 @@ class Snap(Fap):
         self.consumme = 0
         self.connectionserver = None
         credentials = pika.PlainCredentials(environ['RABBITMQ_DEFAULT_USER'], environ['RABBITMQ_DEFAULT_PASS'])
-        self.paramsserver = pika.ConnectionParameters(host='rabbit', credentials=credentials, connection_attempts = 100, heartbeat = 10)
+        self.paramsserver = pika.ConnectionParameters(host='rabbit', credentials=credentials, connection_attempts = 100, heartbeat = 60)
 
     @staticmethod
     def scale(v):
@@ -39,7 +39,6 @@ class Snap(Fap):
         self.consumme += 1
         listpixels = loads(body.decode('ascii'))
         nuser = loads(Websock.get_grantUser())
-
         if(nuser.get('id') is None or nuser.get('id') == "turnoff"):
             logging.info("Turn off request")
             self.erase_all()

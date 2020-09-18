@@ -84,7 +84,7 @@ class Simulator(object):
         rabbit_host, rabbit_user, rabbit_pwd = self.RABBIT_HOST, 'frontage', 'uHm65hK6]yfabDwUUksqeFDbOu'
 
         credentials = pika.PlainCredentials(rabbit_user, rabbit_pwd)
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbit_host, credentials=credentials, heartbeat = 10))
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbit_host, credentials=credentials, heartbeat = 60))
         self.channel = self.connection.channel()
 
         self.channel.exchange_declare(exchange='pixels', exchange_type='fanout')
