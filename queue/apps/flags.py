@@ -72,68 +72,7 @@ class Flags(Fap):
                             'venezuela',
                             'vietnam',
                             'yemen'],
-                            'uapp': ['french',
-                            'italy',
-                            'spain',
-                            'germany',
-                            'algeria',
-                            'saudi',
-                            'argentina',
-                            'armenia',
-                            'austria',
-                            'belgium',
-                            'brazil',
-                            'burkina',
-                            'cameroon',
-                            'canada',
-                            'chile',
-                            'china',
-                            'colombia',
-                            'ivory',
-                            'denmark',
-                            'emirates',
-                            'usa',
-                            'finland',
-                            'greece',
-                            'india',
-                            'indonesia',
-                            'ireland',
-                            'iceland',
-                            'japan',
-                            'latvia',
-                            'lebanon',
-                            'lgbtq',
-                            'libya',
-                            'liechtenstein',
-                            'lituania',
-                            'luxembourg',
-                            'mali',
-                            'malta',
-                            'morocco',
-                            'mexico',
-                            'monaco',
-                            'nigeria',
-                            'norway',
-                            'netherlands',
-                            'pakistan',
-                            'paraguay',
-                            'peru',
-                            'poland',
-                            'portugal',
-                            'qatar',
-                            'romania',
-                            'russia',
-                            'sweden',
-                            'swiss',
-                            'syria',
-                            'czech',
-                            'tunisia',
-                            'turkey',
-                            'ukraine',
-                            'uruguay',
-                            'venezuela',
-                            'vietnam',
-                            'yemen']}
+                            }
 
     def french(self): # scalable
         cols = SchedulerState.get_cols()
@@ -814,8 +753,10 @@ class Flags(Fap):
 
     def handle_message(self, data, path=None):  # noqa
         if data is not None:
-            flag = loads(data)['flag']
-            if flag in self.PARAMS_LIST['uapp']:
+            print(loads(data), flush=True)
+            flag = loads(data)['flags']
+            print(flag, flush=True)
+            if flag in self.PARAMS_LIST['flags']:
                 self.model.set_all('black')
                 getattr(self, flag)()
             self.send_model()
@@ -823,8 +764,8 @@ class Flags(Fap):
     def run(self, params, expires_at=None):
         self.start_socket()
         self.params = params
-        if params and params.get('uapp', False) in self.PARAMS_LIST['uapp']:
-            getattr(self, params.get('uapp'))()
+        if params and params.get('flags', False) in self.PARAMS_LIST['flags']:
+            getattr(self, params.get('flags'))()
         else:
             self.french()
 
