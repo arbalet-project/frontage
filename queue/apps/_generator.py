@@ -22,7 +22,8 @@ animations = {'swipe': {'rate': 20, 'dur_min': 30, 'dur_max': 35, 'generator_id'
                           'colors': map(name_to_hsv, ['darkblue'])},
 
               'gender': {'rate': 20, 'dur_min': 5, 'dur_max': 20, 'generator_id': 2,
-                         'colors': map(name_to_hsv, ['darkblue', 'deeppink'])},
+                         'colors': [name_to_hsv('darkblue'), name_to_hsv('deeppink')]
+                        },
 
               'cold': {'rate': 20, 'dur_min': 5, 'dur_max': 20, 'generator_id': 2,
                           'colors': [name_to_hsv('skyblue'), name_to_hsv('darkblue'), name_to_hsv('darkturquoise')]
