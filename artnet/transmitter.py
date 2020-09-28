@@ -63,28 +63,24 @@ class ArtNetTransmitter(object):
     """
     This will declare all existing universes
     """
-
     def init(self):
         session = session_factory()
         rows = session.query(DimensionsModel).first().rows
         cols = session.query(DimensionsModel).first().cols
-        self.mapping = []
-        for i in range(rows):
-            self.mapping.append([[] * 1] * cols)
+        self.mapping = [[[] for c in range(cols)] for r in range(rows)]
         for row in range(rows):
             for col in range(cols):
                 artnets = session.query(ArtnetModel).filter_by(
-                    row=row, column=col).all()
-                for artnet in artnets:
-                    for dmx_model in artnet.children:
-                        dmx_mapping = dict()
-                        dmx_mapping["universe"] = dmx_model.universe
-                        dmx_mapping["dmx"] = dmx_model.address
-                        self.mapping[row][col].append(dmx_mapping)
-                        universe = dmx_model.universe
-                        if universe not in self.frames:
-                            # Declare a new universe with 512 DMX addresses = 0
-                            self.frames[universe] = [0]*512
+                    row=row, column=col).first()
+                for dmx_model in artnets.children:
+                    dmx_mapping = {}
+                    dmx_mapping["universe"] = dmx_model.universe
+                    dmx_mapping["dmx"] = dmx_model.address
+                    self.mapping[row][col].append(dmx_mapping)
+                    universe = dmx_model.universe
+                    if universe not in self.frames:
+                        # Declare a new universe with 512 DMX addresses = 0
+                        self.frames[universe] = [0]*512
         # e.g. universes 4,5 will create universes 0,1,2,3,4,5
         if len(self.frames) == 0:
             raise EnvironmentError("Artnet configuration is not set")
