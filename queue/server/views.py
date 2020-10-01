@@ -60,7 +60,8 @@ LOGIN_ADMIN_SCHEMA = {
 def login_admin():
     username = g.data.get('username', False)
     password = g.data.get('password', False)
-    password.strip()
+    username = username.strip()
+    password = password.strip()
     auth_username, hash = SchedulerState.get_admin_credentials()
 
     if (username == auth_username and verify_password(hash, password)):
