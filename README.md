@@ -43,6 +43,12 @@ scheduler_1  | []
 If you meet authorization issues on Linux, make sure your username is in the docker group: `sudo usermod -aG docker $USER` Log out and log back in so that your group membership is re-evaluated.
 
 #### 2. Open the simulator
+
+Install pika et pygame :
+```
+pip 3 install pika pygame
+```
+
 Then Open the facade simulator:
 ```
 cd frontage/simulator
