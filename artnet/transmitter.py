@@ -72,6 +72,8 @@ class ArtNetTransmitter(object):
             for col in range(cols):
                 artnets = session.query(ArtnetModel).filter_by(
                     row=row, column=col).first()
+                if artnets is None:
+                    continue
                 for dmx_model in artnets.children:
                     dmx_mapping = {}
                     dmx_mapping["universe"] = dmx_model.universe
