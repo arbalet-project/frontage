@@ -6,7 +6,7 @@ Flask
 Flask-Cors
 Flask-RESTful
 Flask-SQLAlchemy
-PyJWT==1.7.1
+PyJWT==2.4.0
 cryptography
 passlib
 cffi
